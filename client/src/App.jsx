@@ -7,6 +7,7 @@ import Team from "./pages/Team";
 import Feature from "./pages/Feature";
 import Testimonial from "./pages/Testimonial";
 import Contact from "./pages/Contact";
+import Login from "./pages/Login";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -26,6 +27,7 @@ function App() {
           <Route path="/team" element={<Team />} />
           <Route path="/testimonial" element={<Testimonial />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
 
         <Footer />

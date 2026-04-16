@@ -85,6 +85,7 @@ function Navbar() {
               >
                 Courses
               </NavLink>
+
               <div className="nav-item dropdown">
                 <a
                   href="#"
@@ -116,9 +117,13 @@ function Navbar() {
                 Contact
               </NavLink>
             </div>
-            <a href="" className="btn btn-primary py-2 px-4 d-none d-lg-block">
-              Join Us
-            </a>
+            <NavLink
+              to="/Login"
+              className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
+              activeClassName="active"
+            >
+              Get Started
+            </NavLink>
           </div>
         </nav>
       </div>

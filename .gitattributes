@@ -1,0 +1,15 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+# Binary files (prevent text processing)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+
+# Force LF for scripts
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
