@@ -1,7 +1,31 @@
-import React from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
-function Navbar() {
+function AdminNavbar() {
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const updateAuth = () => setIsLoggedIn(!!localStorage.getItem("token"));
+
+    updateAuth();
+    window.addEventListener("storage", updateAuth);
+    window.addEventListener("authChange", updateAuth);
+
+    return () => {
+      window.removeEventListener("storage", updateAuth);
+      window.removeEventListener("authChange", updateAuth);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setIsLoggedIn(false);
+    window.dispatchEvent(new Event("authChange"));
+    navigate("/", { replace: true });
+  };
+
   return (
     <>
       {/* Topbar Start */}
@@ -65,65 +89,40 @@ function Navbar() {
           >
             <div className="navbar-nav mx-auto py-0">
               <NavLink
-                to="/"
+                to="/mentor"
                 className="nav-item nav-link"
                 activeClassName="active"
               >
-                Home
-              </NavLink>
-              <NavLink
-                to="/about"
-                className="nav-item nav-link"
-                activeClassName="active"
-              >
-                About
-              </NavLink>
-              <NavLink
-                to="/courses"
-                className="nav-item nav-link"
-                activeClassName="active"
-              >
-                Courses
+                MentorDashboard
               </NavLink>
 
-              <div className="nav-item dropdown">
-                <a
-                  href="#"
-                  className="nav-link dropdown-toggle"
-                  data-toggle="dropdown"
+              {isLoggedIn && (
+                <NavLink
+                  to="/mentor/create-session"
+                  className="nav-item nav-link"
+                  activeClassName="active"
                 >
-                  Pages
-                </a>
-                <div className="dropdown-menu m-0">
-                  <Link to="/detail" className="dropdown-item">
-                    Course Detail
-                  </Link>
-                  <Link to="/features" className="dropdown-item">
-                    Our Features
-                  </Link>
-                  <Link to="/team" className="dropdown-item">
-                    Instructors
-                  </Link>
-                  <Link to="/testimonial" className="dropdown-item">
-                    Testimonial
-                  </Link>
-                </div>
-              </div>
+                  CreateSession
+                </NavLink>
+              )}
+            </div>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
+              >
+                Logout
+              </button>
+            ) : (
               <NavLink
-                to="/contact"
-                className="nav-item nav-link"
+                to="/login"
+                className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
                 activeClassName="active"
               >
-                Contact
+                Get Started
               </NavLink>
-            </div>
-            <NavLink
-              to="/Login"
-              className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
-              activeClassName="active"
-            >
-              Get Started
-            </NavLink>
+            )}
           </div>
         </nav>
       </div>
@@ -132,4 +131,4 @@ function Navbar() {
   );
 }
 
-export default Navbar;
+export default AdminNavbar;

@@ -1,8 +1,14 @@
 import React from "react";
+
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { PuffLoader } from "react-spinners";
+
+
 
 function Home() {
+  
+
   useEffect(() => {
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
@@ -103,8 +109,10 @@ function Home() {
         destroyCarousel(".team-carousel");
         destroyCarousel(".testimonial-carousel");
       }
+      
     };
   }, []);
+  
   return (
     <>
       <>

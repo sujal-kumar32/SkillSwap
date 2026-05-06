@@ -1,10 +1,16 @@
-const mongoose=require("mongoose");
+const mongoose = require("mongoose");
 
+const mongoUri = process.env.MONGO_URI;
 
-mongoose.connect("mongodb://localhost:27017/Skill-Swap").then(()=>{
-       console.log("DB Connected")
-     
-}).catch((err)=>{
+if (!mongoUri) {
+  throw new Error("MONGO_URI is not configured");
+}
+
+mongoose
+  .connect(mongoUri)
+  .then(() => {
+    console.log("DB Connected");
+  })
+  .catch((err) => {
     console.log(err);
-    
-})
+  });

@@ -19,6 +19,7 @@ function About() {
 
     return () => clearTimeout(timer);
   }, []);
+
   return (
     <>
       <>
