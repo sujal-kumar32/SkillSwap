@@ -125,7 +125,6 @@ function Login() {
       if (!userData) return;
 
       showToast.success("Login successful");
-      console.log("FULL RESPONSE:", userData);
 
       // ROLE CHECK
       if (userData.data?.roles?.includes("admin")) {

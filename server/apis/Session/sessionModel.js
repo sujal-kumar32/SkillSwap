@@ -19,6 +19,11 @@ const sessionSchema = new mongoose.Schema(
       required: true,
     },
 
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+    },
+
     mentorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", 

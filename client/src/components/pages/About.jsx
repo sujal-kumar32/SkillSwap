@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 function About() {
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log("ALL INIT RUNNING");
 
       if (window.$) {
         if (window.$.fn.counterUp) {

@@ -54,7 +54,7 @@ const BookingHistory = () => {
                       <h6 className="fw-bold mb-1">{booking.sessionId?.title}</h6>
                       <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>
                     </td>
-                    <td>{booking.date}</td>
+                    <td>{booking.date || booking.sessionId?.date || "—"}</td>
                     <td>{booking.paymentStatus}</td>
                     <td>
                       <div className="d-flex align-items-center gap-2">

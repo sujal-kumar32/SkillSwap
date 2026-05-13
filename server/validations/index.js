@@ -122,8 +122,7 @@ const request = {
     sessionId: Joi.string().required().messages({
       "string.empty": "Session ID is required",
     }),
-    date: Joi.date().allow(""),
-    timeSlot: Joi.string().allow(""),
+    note: Joi.string().trim().max(500).allow(""),
   }),
   updateStatus: Joi.object({
     status: Joi.string()

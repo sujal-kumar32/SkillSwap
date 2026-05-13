@@ -94,7 +94,7 @@ const MyBookings = () => {
                         </div>
                       </div>
                     </td>
-                    <td>{booking.date} <span className="text-muted">{booking.timeSlot}</span></td>
+                    <td>{booking.date || booking.sessionId?.date || "—"} <span className="text-muted">{booking.timeSlot || booking.sessionId?.time || ""}</span></td>
                     <td>{booking.paymentStatus}</td>
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">

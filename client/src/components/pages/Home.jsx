@@ -83,7 +83,6 @@ function Home() {
     };
 
     const timer = setTimeout(() => {
-      console.log("ALL INIT RUNNING");
 
       if (window.$) {
         if (window.$.fn.counterUp) {
@@ -505,7 +504,7 @@ function Home() {
                           className="custom-select bg-light border-0 px-3"
                           style={{ height: 60 }}
                         >
-                          <option selected="">Select Your Skill</option>
+                          <option defaultValue="">Select Your Skill</option>
                           <option value={1}>Web Development</option>
                           <option value={2}>Creative Arts</option>
                           <option value={3}>Sports & Music</option>

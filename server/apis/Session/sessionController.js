@@ -55,6 +55,7 @@ exports.createSession = async (req, res) => {
     const session = await Session.create({
       title,
       skillId,
+      categoryId: skill.categoryId,
       description,
       price: numericPrice,
       isPaid: numericPrice > 0,
@@ -126,12 +127,18 @@ exports.getMySessions = async (req, res) => {
 // GET ALL SESSIONS
 exports.getSessions = async (req, res) => {
   try {
-    const { search, sort } = req.query;
+    const { search, sort, category, skill, price, sessionType } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
     const skip = (page - 1) * limit;
 
     let filter = isAdmin(req) ? {} : { status: "active" };
+
+    if (category) filter.categoryId = category;
+    if (skill) filter.skillId = skill;
+    if (sessionType) filter.sessionType = sessionType;
+    if (price === "free") filter.price = 0;
+    else if (price === "paid") filter.price = { $gt: 0 };
 
     if (search) {
       filter.$or = [
@@ -144,6 +151,7 @@ exports.getSessions = async (req, res) => {
     if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
     else if (sort === "oldest") sortObj = { createdAt: 1 };
     else if (sort === "price") sortObj = { price: 1 };
+    else if (sort === "price-desc") sortObj = { price: -1 };
     else if (sort === "name") sortObj = { title: 1 };
     else sortObj = { createdAt: -1 };
 

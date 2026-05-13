@@ -187,6 +187,10 @@ class Apiservices {
   verifyPayment(data) {
     return axios.post(baseUrl + "payments/verify-payment", data, this.getToken());
   }
+
+  processRefund(data) {
+    return axios.post(baseUrl + "payments/refund", data, this.getToken());
+  }
 }
 
 export default new Apiservices();

@@ -8,8 +8,7 @@ import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
 const BookSession = () => {
   const { id } = useParams();
   const [session, setSession] = useState(null);
-  const [date, setDate] = useState("");
-  const [timeSlot, setTimeSlot] = useState("");
+  const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -44,15 +43,14 @@ const BookSession = () => {
 
   const submitBooking = async (event) => {
     event.preventDefault();
-    if (!date || !timeSlot) {
-      showToast.error("Please select date and time");
-      return;
-    }
 
     try {
       setSubmitting(true);
 
-      const bookRes = await Apiservices.bookSession({ sessionId: session._id, date, timeSlot });
+      const payload = { sessionId: session._id };
+      if (note.trim()) payload.note = note.trim();
+
+      const bookRes = await Apiservices.bookSession(payload);
       const requestId = bookRes.data.data?._id;
 
       if (session.price && session.price > 0) {
@@ -118,6 +116,13 @@ const BookSession = () => {
     }
   };
 
+  const formatDate = (date) => {
+    if (!date) return "Flexible";
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric",
+    });
+  };
+
   if (loading) return <LoadingState label="Loading booking page..." />;
 
   if (!session) {
@@ -150,22 +155,31 @@ const BookSession = () => {
 
   return (
     <>
-      <PageHeader title="Book Session" subtitle="Choose a date and time, then confirm your booking." />
+      <PageHeader title="Book Session" subtitle="Review the session schedule and confirm your booking." />
       <div className="row g-4">
         <div className="col-lg-7">
           <form className="learner-card p-4" onSubmit={submitBooking}>
-            <h5 className="fw-bold mb-3">Select your slot</h5>
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Date</label>
-              <input type="date" className="form-control rounded-pill" value={date} onChange={(e) => setDate(e.target.value)} />
+            <h5 className="fw-bold mb-3">Session Schedule</h5>
+            <div className="d-flex align-items-center gap-4 mb-4 p-3 rounded-4" style={{ background: "#f8faff" }}>
+              <div style={{ width: 60, height: 60, borderRadius: 16, background: "linear-gradient(135deg, #2878eb15, #2878eb05)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#2878eb", lineHeight: 1 }}>{session.date ? new Date(session.date).getDate() : "—"}</span>
+                <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#2878eb", textTransform: "uppercase", lineHeight: 1 }}>{session.date ? new Date(session.date).toLocaleString("en", { month: "short" }) : ""}</span>
+              </div>
+              <div>
+                <h6 className="fw-bold mb-1">{formatDate(session.date)}</h6>
+                <p className="text-muted mb-0 small">
+                  {session.time || "Flexible time"} &middot; {session.duration || 60} min
+                </p>
+              </div>
             </div>
+
             <div className="mb-4">
-              <label className="form-label fw-semibold">Time</label>
-              <select className="form-select rounded-pill" value={timeSlot} onChange={(e) => setTimeSlot(e.target.value)}>
-                <option value="">Choose time</option>
-                {["09:00", "11:00", "15:00", "18:00", "20:00"].map((slot) => <option key={slot}>{slot}</option>)}
-              </select>
+              <label className="form-label fw-semibold">Add a note (optional)</label>
+              <textarea className="form-control rounded-4" rows="3" value={note} onChange={(e) => setNote(e.target.value)}
+                placeholder="e.g. I need help with React hooks and API integration."
+                style={{ border: "1px solid #eef2f7", padding: "12px 16px", resize: "vertical" }} />
             </div>
+
             <div className="alert alert-info rounded-4">
               {session.price ? "Paid session: you will be redirected to Razorpay for secure payment." : "This is a free session. No payment required."}
             </div>
@@ -181,6 +195,8 @@ const BookSession = () => {
             <h6 className="fw-bold">{session.title}</h6>
             <p className="text-muted small">{session.mentorId?.name || "SkillSwap Mentor"}</p>
             <div className="list-group list-group-flush">
+              <div className="list-group-item px-0 d-flex justify-content-between"><span>Date</span><strong>{formatDate(session.date)}</strong></div>
+              <div className="list-group-item px-0 d-flex justify-content-between"><span>Time</span><strong>{session.time || "Flexible"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Duration</span><strong>{session.duration || 60} min</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Type</span><strong>{session.sessionType || "online"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Total</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>

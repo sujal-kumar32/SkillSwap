@@ -8,7 +8,7 @@ const isAdmin = (req) => req.user?.roles?.includes("admin");
 
 exports.createSkill = async (req, res) => {
   try {
-    const { name, categoryId, description } = req.body;
+    const { name, categoryId, description, level, tags } = req.body;
 
     if (!name || !categoryId) {
       return res.status(400).json({
@@ -45,10 +45,14 @@ exports.createSkill = async (req, res) => {
       thumbnail = { url: result.secure_url, publicId: result.public_id };
     }
 
+    const parsedTags = typeof tags === "string" ? tags.split(",").map((t) => t.trim()).filter(Boolean) : Array.isArray(tags) ? tags : [];
+
     const skill = await Skill.create({
       name: trimmedName,
       categoryId,
       description: description?.trim() || "",
+      level: ["beginner", "intermediate", "advanced", "all"].includes(level) ? level : "all",
+      tags: parsedTags,
       thumbnail: thumbnail.url,
       thumbnailPublicId: thumbnail.publicId,
       createdBy: req.user.id,
@@ -70,7 +74,7 @@ exports.createSkill = async (req, res) => {
 // GET ALL SKILLS
 exports.getSkills = async (req, res) => {
   try {
-    const { search, sort, category, includeDeleted } = req.query;
+    const { search, sort, category, includeDeleted, level, tag } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
     const skip = (page - 1) * limit;
@@ -91,10 +95,19 @@ exports.getSkills = async (req, res) => {
       filter.categoryId = category;
     }
 
+    if (level && ["beginner", "intermediate", "advanced", "all"].includes(level)) {
+      filter.level = level;
+    }
+
+    if (tag) {
+      filter.tags = { $in: [tag.toLowerCase()] };
+    }
+
     if (search) {
       const searchOr = [
         { name: { $regex: search, $options: "i" } },
         { description: { $regex: search, $options: "i" } },
+        { tags: { $regex: search, $options: "i" } },
       ];
       if (filter.$or) {
         filter.$and = [

@@ -26,9 +26,17 @@ const paymentSchema = new mongoose.Schema(
 
     paymentStatus: {
       type: String,
-      enum: ["pending", "success", "failed"],
+      enum: ["pending", "success", "failed", "refunded", "refund_initiated"],
       default: "pending",
     },
+
+    refundId: String,
+    refundStatus: {
+      type: String,
+      enum: ["none", "initiated", "processed", "failed"],
+      default: "none",
+    },
+    refundedAt: Date,
 
     learnerId: {
       type: mongoose.Schema.Types.ObjectId,

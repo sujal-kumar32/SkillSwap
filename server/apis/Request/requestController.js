@@ -1,5 +1,7 @@
 const Request = require("./requestModel");
 const Session = require("../Session/sessionModel");
+const Payment = require("../Payment/paymentModel");
+const razorpay = require("../../config/razorpay");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -9,7 +11,7 @@ const idsEqual = (left, right) => {
 // CREATE REQUEST (BOOK SESSION)
 exports.createRequest = async (req, res) => {
   try {
-    const { sessionId, date, timeSlot } = req.body;
+    const { sessionId, note } = req.body;
 
     if (!sessionId) {
       return res.status(400).json({
@@ -44,8 +46,7 @@ exports.createRequest = async (req, res) => {
       sessionId,
       learnerId: req.user.id,
       mentorId: session.mentorId,
-      date,
-      timeSlot,
+      note,
     });
 
     res.status(201).json({
@@ -291,10 +292,48 @@ exports.updateRequestStatus = async (req, res) => {
     request.requestStatus = status;
     await request.save();
 
+    let refundInfo = null;
+    if (status === "rejected" && request.paymentStatus === "paid") {
+      try {
+        const payment = await Payment.findOne({ requestId: request._id, paymentStatus: "success" });
+        if (payment && payment.razorpayPaymentId) {
+          payment.refundStatus = "initiated";
+          payment.paymentStatus = "refund_initiated";
+          await payment.save();
+
+          const refundRes = await razorpay.payments.refund(payment.razorpayPaymentId, {
+            amount: Math.round(payment.amount * 100),
+            notes: { requestId: String(request._id), reason: "Mentor rejected booking" },
+          });
+
+          payment.refundId = refundRes.id;
+          payment.refundStatus = "processed";
+          payment.paymentStatus = "refunded";
+          payment.refundedAt = new Date();
+          await payment.save();
+
+          request.paymentStatus = "refunded";
+          await request.save();
+          refundInfo = { refundId: refundRes.id, refundStatus: "processed" };
+        } else if (payment) {
+          payment.paymentStatus = "refunded";
+          payment.refundStatus = "processed";
+          payment.refundedAt = new Date();
+          await payment.save();
+          request.paymentStatus = "refunded";
+          await request.save();
+          refundInfo = { refundStatus: "processed", note: "No Razorpay ID — marked refunded" };
+        }
+      } catch (refundErr) {
+        console.error("Auto-refund failed:", refundErr.message);
+      }
+    }
+
     res.json({
       success: true,
       message: `Request ${status}`,
       data: request,
+      refund: refundInfo,
     });
   } catch (err) {
     res.status(500).json({

@@ -40,22 +40,29 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ success: false, message: "This session does not require payment" });
     }
 
-    if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID.startsWith("rzp_test_Your")) {
-      return res.status(500).json({ success: false, message: "Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in .env" });
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ success: false, message: "Razorpay is not configured" });
+    }
+
+    const amountInPaisa = Math.round(sessionPrice * 100);
+    if (isNaN(amountInPaisa) || amountInPaisa <= 0) {
+      return res.status(400).json({ success: false, message: "Invalid payment amount" });
     }
 
     const options = {
-      amount: Math.round(sessionPrice * 100),
+      amount: amountInPaisa,
       currency: "INR",
-      receipt: `receipt_${requestId}_${Date.now()}`,
+      receipt: `rcpt_${requestId}_${Date.now()}`.slice(0, 40),
     };
 
     let order;
     try {
       order = await razorpay.orders.create(options);
     } catch (razorpayErr) {
-      console.error("Razorpay order creation failed:", razorpayErr.message);
-      return res.status(502).json({ success: false, message: "Payment gateway error: " + razorpayErr.message });
+      const razorpayMsg = razorpayErr.error?.description || razorpayErr.message || JSON.stringify(razorpayErr);
+      console.error("Razorpay order creation failed:", razorpayMsg);
+      console.error("Full error:", JSON.stringify(razorpayErr, Object.getOwnPropertyNames(razorpayErr)));
+      return res.status(502).json({ success: false, message: "Payment gateway error: " + razorpayMsg });
     }
 
     let payment = await Payment.findOne({ requestId, paymentStatus: { $ne: "success" } });
@@ -249,5 +256,83 @@ exports.getPayments = async (req, res) => {
       success: false,
       message: err.message,
     });
+  }
+};
+
+// PROCESS REFUND (called when mentor rejects a paid booking)
+exports.processRefund = async (req, res) => {
+  try {
+    const { requestId, reason } = req.body;
+
+    if (!requestId) {
+      return res.status(400).json({ success: false, message: "requestId is required" });
+    }
+
+    const request = await Request.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ success: false, message: "Request not found" });
+    }
+
+    if (!idsEqual(request.mentorId, req.user.id)) {
+      return res.status(403).json({ success: false, message: "Only the mentor can process refunds" });
+    }
+
+    if (request.paymentStatus !== "paid") {
+      return res.status(400).json({ success: false, message: "No paid payment to refund" });
+    }
+
+    const payment = await Payment.findOne({ requestId, paymentStatus: "success" });
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "No successful payment found" });
+    }
+
+    if (payment.refundStatus === "processed" || payment.refundStatus === "initiated") {
+      return res.status(400).json({ success: false, message: "Refund already processed or in progress" });
+    }
+
+    if (!payment.razorpayPaymentId) {
+      payment.paymentStatus = "refunded";
+      payment.refundStatus = "processed";
+      payment.refundedAt = new Date();
+      await payment.save();
+      request.paymentStatus = "refunded";
+      await request.save();
+      return res.json({ success: true, message: "Payment marked as refunded (no Razorpay ID)" });
+    }
+
+    payment.refundStatus = "initiated";
+    payment.paymentStatus = "refund_initiated";
+    await payment.save();
+
+    let refundResponse;
+    try {
+      refundResponse = await razorpay.payments.refund(payment.razorpayPaymentId, {
+        amount: Math.round(payment.amount * 100),
+        notes: { requestId, reason: reason || "Mentor rejected booking" },
+      });
+    } catch (razorpayErr) {
+      const msg = razorpayErr.error?.description || razorpayErr.message || "Refund failed";
+      payment.refundStatus = "failed";
+      await payment.save();
+      return res.status(502).json({ success: false, message: "Refund failed: " + msg });
+    }
+
+    payment.refundId = refundResponse.id;
+    payment.refundStatus = "processed";
+    payment.paymentStatus = "refunded";
+    payment.refundedAt = new Date();
+    await payment.save();
+
+    request.paymentStatus = "refunded";
+    await request.save();
+
+    res.json({
+      success: true,
+      message: "Refund processed successfully",
+      data: { refundId: refundResponse.id, refundStatus: "processed" },
+    });
+  } catch (err) {
+    console.error("processRefund error:", err);
+    res.status(500).json({ success: false, message: err.message || "Refund processing failed" });
   }
 };

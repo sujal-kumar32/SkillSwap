@@ -266,18 +266,34 @@ const CreateSession = () => {
                           Session Price
                         </label>
 
-                        <div className="modern-input-group">
-                          <span>₹</span>
-
-                          <input
-                            type="number"
-                            name="price"
-                            placeholder="500"
-                            min="0"
-                            value={form.price}
-                            onChange={handleChange}
-                          />
+                        <div className="d-flex gap-2 mb-3">
+                          <button type="button"
+                            className={`px-4 py-2 fw-semibold rounded-pill border-0 ${!form.price || Number(form.price) === 0 ? "btn btn-success" : "btn btn-outline-secondary"}`}
+                            style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
+                            onClick={() => setForm((prev) => ({ ...prev, price: "0" }))}>
+                            <i className="fa fa-gift me-2"></i>Free
+                          </button>
+                          <button type="button"
+                            className={`px-4 py-2 fw-semibold rounded-pill border-0 ${Number(form.price) > 0 ? "btn btn-primary" : "btn btn-outline-secondary"}`}
+                            style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
+                            onClick={() => setForm((prev) => ({ ...prev, price: prev.price > 0 ? prev.price : "99" }))}>
+                            <i className="fa fa-credit-card me-2"></i>Paid
+                          </button>
                         </div>
+
+                        {Number(form.price) > 0 && (
+                          <div className="modern-input-group">
+                            <span>₹</span>
+                            <input
+                              type="number"
+                              name="price"
+                              placeholder="e.g. 500"
+                              min="1"
+                              value={form.price}
+                              onChange={handleChange}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       <div className="col-md-6">

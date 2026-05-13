@@ -6,52 +6,52 @@ import { EmptyState, LoadingState, PageHeader, SessionCard } from "../../learner
 const ExploreSessions = () => {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [price, setPrice] = useState("all");
   const [type, setType] = useState("all");
-  const [sort, setSort] = useState("recommended");
+  const [sort, setSort] = useState("latest");
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadSessions = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const response = await Apiservices.fetchSessions();
-        setSessions(response.data.data || []);
-      } catch (error) {
-        console.log(error);
-        setSessions([]);
-        setError(error.response?.data?.message || "Failed to load sessions");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSessions();
+    Promise.all([
+      Apiservices.fetchSessions({ page: 1, limit: 100 }),
+      Apiservices.getCategories().catch(() => ({ data: { data: [] } })),
+    ])
+      .then(([sessRes, catRes]) => {
+        setSessions(sessRes.data.data || []);
+        setCategories(catRes.data.data || []);
+      })
+      .catch((err) => {
+        console.log(err);
+        setError(err.response?.data?.message || "Failed to load data");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const categories = useMemo(
-    () => ["all", ...new Set(sessions.map((session) => session.skillId?.categoryId?.name || "Learning"))],
-    [sessions],
+  const categoryOptions = useMemo(
+    () => categories.filter((c) => c.status === "active"),
+    [categories],
   );
 
   const filtered = useMemo(() => {
     const result = sessions.filter((session) => {
       const text = `${session.title} ${session.description} ${session.skillId?.name}`.toLowerCase();
       const matchSearch = text.includes(query.toLowerCase());
-      const matchCategory = category === "all" || (session.skillId?.categoryId?.name || "Learning") === category;
+      const catMatch = category === "all" || session.categoryId?._id === category || session.categoryId === category || session.skillId?.categoryId?._id === category;
+      const matchCategory = catMatch;
       const matchPrice = price === "all" || (price === "free" ? !session.price : session.price > 0);
       const matchType = type === "all" || session.sessionType === type;
       return matchSearch && matchCategory && matchPrice && matchType;
     });
 
     if (sort === "price-low") return result.sort((a, b) => (a.price || 0) - (b.price || 0));
+    if (sort === "price-high") return result.sort((a, b) => (b.price || 0) - (a.price || 0));
     if (sort === "rating") return result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    return result.sort((a, b) => Number(b.isAiRecommended) - Number(a.isAiRecommended));
+    return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [sessions, query, category, price, type, sort]);
 
   const pageSize = 6;
@@ -65,12 +65,15 @@ const ExploreSessions = () => {
 
       <div className="learner-card p-4 mb-4">
         <div className="row g-3">
-          <div className="col-lg-4">
+          <div className="col-lg-3">
             <input className="form-control rounded-pill" placeholder="Search skills, mentors, sessions..." value={query} onChange={(e) => setQuery(e.target.value)} />
           </div>
           <div className="col-sm-6 col-lg-2">
-            <select className="form-select rounded-pill" value={category} onChange={(e) => setCategory(e.target.value)}>
-              {categories.map((item) => <option key={item} value={item}>{item === "all" ? "All categories" : item}</option>)}
+            <select className="form-select rounded-pill" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
+              <option value="all">All Categories</option>
+              {categoryOptions.map((c) => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+              ))}
             </select>
           </div>
           <div className="col-sm-6 col-lg-2">
@@ -87,11 +90,11 @@ const ExploreSessions = () => {
               <option value="offline">Offline</option>
             </select>
           </div>
-          <div className="col-sm-6 col-lg-2">
+          <div className="col-sm-6 col-lg-3">
             <select className="form-select rounded-pill" value={sort} onChange={(e) => setSort(e.target.value)}>
-              <option value="recommended">Recommended</option>
-              <option value="rating">Top rated</option>
-              <option value="price-low">Price low</option>
+              <option value="latest">Latest</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
             </select>
           </div>
         </div>

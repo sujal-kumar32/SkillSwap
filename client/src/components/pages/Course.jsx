@@ -91,7 +91,6 @@ function Course() {
     };
 
     const timer = setTimeout(() => {
-      console.log("ALL INIT RUNNING");
 
       if (window.$) {
         if (window.$.fn.counterUp) {

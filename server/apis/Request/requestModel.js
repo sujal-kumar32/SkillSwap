@@ -18,8 +18,7 @@ const requestSchema = new mongoose.Schema(
       ref: "User",
     },
 
-    date: Date,
-    timeSlot: String,
+    note: String,
 
     requestStatus: {
       type: String,

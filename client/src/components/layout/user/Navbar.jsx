@@ -66,23 +66,20 @@ function Navbar() {
             <div className="navbar-nav mx-auto py-0">
               <NavLink
                 to="/"
-                className="nav-item nav-link"
-                activeClassName="active"
+                className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
                 end
               >
                 Home
               </NavLink>
               <NavLink
                 to="/about"
-                className="nav-item nav-link"
-                activeClassName="active"
+                className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
               >
                 About
               </NavLink>
               <NavLink
                 to="/courses"
-                className="nav-item nav-link"
-                activeClassName="active"
+                className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
               >
                 Sessions
               </NavLink>
@@ -108,16 +105,14 @@ function Navbar() {
               </div>
               <NavLink
                 to="/contact"
-                className="nav-item nav-link"
-                activeClassName="active"
+                className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
               >
                 Contact
               </NavLink>
             </div>
             <NavLink
               to="/login"
-              className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
-              activeClassName="active"
+              className={({ isActive }) => "nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block" + (isActive ? " active" : "")}
             >
               Get Started
             </NavLink>

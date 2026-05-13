@@ -90,8 +90,7 @@ function MentorNavbar() {
             <div className="navbar-nav mx-auto py-0">
               <NavLink
                 to="/mentor"
-                className="nav-item nav-link"
-                activeClassName="active"
+                className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
               >
                 MentorDashboard
               </NavLink>
@@ -99,8 +98,7 @@ function MentorNavbar() {
               {isLoggedIn && (
                 <NavLink
                   to="/mentor/create-session"
-                  className="nav-item nav-link"
-                  activeClassName="active"
+                  className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
                 >
                   CreateSession
                 </NavLink>
@@ -108,8 +106,7 @@ function MentorNavbar() {
               {isLoggedIn && (
                 <NavLink
                   to="/mentor/my-sessions"
-                  className="nav-item nav-link"
-                  activeClassName="active"
+                  className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
                 >
                   MySessions
                 </NavLink>
@@ -117,8 +114,7 @@ function MentorNavbar() {
               {isLoggedIn && (
                 <NavLink
                   to="/mentor/bookings"
-                  className="nav-item nav-link"
-                  activeClassName="active"
+                  className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
                 >
                   Bookings
                 </NavLink>
@@ -126,8 +122,7 @@ function MentorNavbar() {
               {isLoggedIn && (
                 <NavLink
                   to="/mentor/learners"
-                  className="nav-item nav-link"
-                  activeClassName="active"
+                  className={({ isActive }) => "nav-item nav-link" + (isActive ? " active" : "")}
                 >
                   Learners
                 </NavLink>
@@ -144,8 +139,7 @@ function MentorNavbar() {
             ) : (
               <NavLink
                 to="/login"
-                className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
-                activeClassName="active"
+                className={({ isActive }) => "nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block" + (isActive ? " active" : "")}
               >
                 Get Started
               </NavLink>
