@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
-function AdminNavbar() {
+function MentorNavbar() {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -105,6 +105,33 @@ function AdminNavbar() {
                   CreateSession
                 </NavLink>
               )}
+              {isLoggedIn && (
+                <NavLink
+                  to="/mentor/my-sessions"
+                  className="nav-item nav-link"
+                  activeClassName="active"
+                >
+                  MySessions
+                </NavLink>
+              )}
+              {isLoggedIn && (
+                <NavLink
+                  to="/mentor/bookings"
+                  className="nav-item nav-link"
+                  activeClassName="active"
+                >
+                  Bookings
+                </NavLink>
+              )}
+              {isLoggedIn && (
+                <NavLink
+                  to="/mentor/learners"
+                  className="nav-item nav-link"
+                  activeClassName="active"
+                >
+                  Learners
+                </NavLink>
+              )}
             </div>
             {isLoggedIn ? (
               <button
@@ -131,4 +158,4 @@ function AdminNavbar() {
   );
 }
 
-export default AdminNavbar;
+export default MentorNavbar;

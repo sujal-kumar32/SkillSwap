@@ -33,17 +33,17 @@ function Contact() {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Courses
+                    Skills
                   </button>
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="#">
-                      Courses 1
+                      Development
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 2
+                      Creative Arts
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 3
+                      Sports & Music
                     </a>
                   </div>
                 </div>
@@ -51,7 +51,7 @@ function Contact() {
                   type="text"
                   className="form-control border-light"
                   style={{ padding: "30px 25px" }}
-                  placeholder="Keyword"
+                  placeholder="Search skills, mentors, sessions..."
                 />
                 <div className="input-group-append">
                   <button className="btn btn-secondary px-4 px-lg-5">
@@ -64,7 +64,7 @@ function Contact() {
         </div>
         {/* Header End */}
         {/* Contact Start */}
-        <div className="container-fluid py-5">
+        <div className="container-fluid bg-image py-5">
           <div className="container py-5">
             <div className="row align-items-center">
               <div className="col-lg-5 mb-5 mb-lg-0">
@@ -78,7 +78,7 @@ function Contact() {
                     </div>
                     <div className="mt-n1">
                       <h4>Our Location</h4>
-                      <p className="m-0">123 Street, New York, USA</p>
+                      <p className="m-0">Bangalore, India</p>
                     </div>
                   </div>
                   <div className="d-flex align-items-center mb-5">
@@ -87,7 +87,7 @@ function Contact() {
                     </div>
                     <div className="mt-n1">
                       <h4>Call Us</h4>
-                      <p className="m-0">+012 345 6789</p>
+                      <p className="m-0">+91 98765 43210</p>
                     </div>
                   </div>
                   <div className="d-flex align-items-center">
@@ -96,7 +96,7 @@ function Contact() {
                     </div>
                     <div className="mt-n1">
                       <h4>Email Us</h4>
-                      <p className="m-0">info@example.com</p>
+                      <p className="m-0">hello@skillswap.com</p>
                     </div>
                   </div>
                 </div>
@@ -104,9 +104,9 @@ function Contact() {
               <div className="col-lg-7">
                 <div className="section-title position-relative mb-4">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    Need Help?
+                    Get In Touch
                   </h6>
-                  <h1 className="display-4">Send Us A Message</h1>
+                  <h1 className="display-4">Let's Connect</h1>
                 </div>
                 <div className="contact-form">
                   <form>

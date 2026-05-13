@@ -44,7 +44,7 @@ const protect = (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, SECRET);
+    const decoded = jwt.verify(token, SECRET, { algorithms: ["HS256"] });
 
     req.user = decoded;
 
@@ -58,27 +58,21 @@ const protect = (req, res, next) => {
 };
 
 protect.optional = (req, res, next) => {
-  try {
-    const { token, error } = getBearerToken(req);
+  const { token, error } = getBearerToken(req);
 
-    if (error) {
-      return res.status(401).json({
-        success: false,
-        message: error,
-      });
-    }
-
-    if (token) {
-      req.user = jwt.verify(token, SECRET);
-    }
-
-    next();
-  } catch (err) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid or expired token",
-    });
+  if (error) {
+    return next();
   }
+
+  if (token) {
+    try {
+      req.user = jwt.verify(token, SECRET, { algorithms: ["HS256"] });
+    } catch {
+      req.user = null;
+    }
+  }
+
+  next();
 };
 
 module.exports = protect;

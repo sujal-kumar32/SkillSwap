@@ -20,11 +20,27 @@ const paymentSchema = new mongoose.Schema(
     },
 
     transactionId: String,
+    orderId: String,
+    razorpayPaymentId: String,
+    razorpaySignature: String,
 
     paymentStatus: {
       type: String,
       enum: ["pending", "success", "failed"],
       default: "pending",
+    },
+
+    learnerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    mentorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    sessionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Session",
     },
   },
   { timestamps: true },

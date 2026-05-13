@@ -54,18 +54,6 @@ exports.requireMentor = (req, res, next) => {
   next();
 };
 
-exports.requireVerifiedMentor = (req, res, next) => {
-  if (!requireAuthUser(req, res)) return;
-
-  if (!req.user.isVerifiedMentor) {
-    return res.status(403).json({
-      success: false,
-      message: "Only verified mentors allowed",
-    });
-  }
-  next();
-};
-
 exports.requireMentorOrAdmin = (req, res, next) => {
   if (!requireAuthUser(req, res)) return;
 
@@ -73,19 +61,6 @@ exports.requireMentorOrAdmin = (req, res, next) => {
     return res.status(403).json({
       success: false,
       message: "Mentor or admin access required",
-    });
-  }
-
-  next();
-};
-
-exports.requireVerifiedMentorOrAdmin = (req, res, next) => {
-  if (!requireAuthUser(req, res)) return;
-
-  if (!req.user.isVerifiedMentor && !hasRole(req, "admin")) {
-    return res.status(403).json({
-      success: false,
-      message: "Verified mentor or admin access required",
     });
   }
 

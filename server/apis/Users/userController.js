@@ -1,14 +1,50 @@
 const User = require("./userModel");
+const jwt = require("jsonwebtoken");
+
+const SECRET = process.env.JWT_SECRET;
+const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 // GET ALL USERS (EXCEPT ADMIN)
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ roles: { $ne: "admin" } }).select(
-      "-password",
-    );
+    const { search, sort, status, role } = req.query;
+    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
+    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+    const skip = (page - 1) * limit;
+
+    let filter = { roles: { $ne: "admin" } };
+
+    if (status) {
+      filter.status = status;
+    }
+
+    if (role) {
+      filter.roles = role;
+    }
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    let sortObj = {};
+    if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
+    else if (sort === "oldest") sortObj = { createdAt: 1 };
+    else if (sort === "name") sortObj = { name: 1 };
+    else sortObj = { createdAt: -1 };
+
+    const [users, total] = await Promise.all([
+      User.find(filter).sort(sortObj).skip(skip).limit(limit).select("-password"),
+      User.countDocuments(filter),
+    ]);
 
     res.json({
       success: true,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: users,
     });
   } catch (err) {
@@ -26,7 +62,7 @@ exports.updateUserStatus = async (req, res) => {
     const { status } = req.body;
 
     // Validate status
-    if (!["pending", "active", "blocked"].includes(status)) {
+    if (!["active", "blocked"].includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Invalid status",
@@ -64,11 +100,7 @@ exports.approveUser = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { status: "active" },
-      { new: true },
-    ).select("-password");
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({
@@ -77,10 +109,19 @@ exports.approveUser = async (req, res) => {
       });
     }
 
+    if (!user.roles.includes("mentor")) {
+      user.roles.push("mentor");
+    }
+
+    user.status = "active";
+    await user.save();
+    const approvedUser = user.toObject();
+    delete approvedUser.password;
+
     res.json({
       success: true,
-      message: "User approved successfully",
-      data: user,
+      message: "Mentor approved successfully",
+      data: approvedUser,
     });
   } catch (err) {
     res.status(500).json({
@@ -167,9 +208,23 @@ exports.applyForMentor = async (req, res) => {
     user.roles.push("mentor");
     await user.save();
 
+    const token = jwt.sign(
+      {
+        id: user._id,
+        roles: user.roles,
+      },
+      SECRET,
+      { expiresIn: TOKEN_EXPIRES_IN },
+    );
+
     res.json({
       success: true,
-      message: "Applied for mentor. Awaiting verification.",
+      message: "You are now a mentor.",
+      token,
+      data: {
+        id: user._id,
+        roles: user.roles,
+      },
     });
   } catch (err) {
     res.status(500).json({

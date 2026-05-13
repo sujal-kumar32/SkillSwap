@@ -56,13 +56,33 @@ exports.createCategory = async (req, res) => {
 
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ status: "active" })
-      .lean()
-      .sort({ displayOrder: 1 });
+    const { search, sort, status } = req.query;
+    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
+    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+    const skip = (page - 1) * limit;
+
+    let filter = { status: status || "active" };
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    let sortObj = {};
+    if (sort === "name") sortObj = { name: 1 };
+    else sortObj = { displayOrder: 1 };
+
+    const [categories, total] = await Promise.all([
+      Category.find(filter).sort(sortObj).skip(skip).limit(limit).lean(),
+      Category.countDocuments(filter),
+    ]);
 
     res.json({
       success: true,
-      total: categories.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: categories,
     });
   } catch (err) {

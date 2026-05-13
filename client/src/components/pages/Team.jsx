@@ -1,6 +1,13 @@
 import React from "react";
 import { useEffect } from "react";
 
+const mentors = [
+  { name: "Priya Sharma", skill: "React & Full-Stack Development", img: "img/team-1.jpg" },
+  { name: "Arjun Kapoor", skill: "Guitar & Music Production", img: "img/team-2.jpg" },
+  { name: "Neha Patel", skill: "UI/UX Design & Branding", img: "img/team-3.jpg" },
+  { name: "Rahul Verma", skill: "Public Speaking & Communication", img: "img/team-4.jpg" },
+];
+
 function Team() {
   useEffect(() => {
     const destroyCarousel = (selector) => {
@@ -63,7 +70,7 @@ function Team() {
           style={{ marginBottom: 90 }}
         >
           <div className="container text-center py-5">
-            <h1 className="text-white display-1">Instructors</h1>
+            <h1 className="text-white display-1">Top Mentors</h1>
             <div className="d-inline-flex text-white mb-5">
               <p className="m-0 text-uppercase">
                 <a className="text-white" href="">
@@ -71,7 +78,7 @@ function Team() {
                 </a>
               </p>
               <i className="fa fa-angle-double-right pt-1 px-3" />
-              <p className="m-0 text-uppercase">Instructors</p>
+              <p className="m-0 text-uppercase">Mentors</p>
             </div>
             <div
               className="mx-auto mb-5"
@@ -86,17 +93,17 @@ function Team() {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Courses
+                    Skills
                   </button>
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="#">
-                      Courses 1
+                      Development
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 2
+                      Creative Arts
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 3
+                      Sports & Music
                     </a>
                   </div>
                 </div>
@@ -104,7 +111,7 @@ function Team() {
                   type="text"
                   className="form-control border-light"
                   style={{ padding: "30px 25px" }}
-                  placeholder="Keyword"
+                  placeholder="Search skills, mentors, sessions..."
                 />
                 <div className="input-group-append">
                   <button className="btn btn-secondary px-4 px-lg-5">
@@ -117,114 +124,44 @@ function Team() {
         </div>
         {/* Header End */}
         {/* Team Start */}
-        <div className="container-fluid py-5">
+        <div className="container-fluid bg-image py-5">
           <div className="container py-5">
             <div className="section-title text-center position-relative mb-5">
               <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                Instructors
+                Top Mentors
               </h6>
-              <h1 className="display-4">Meet Our Instructors</h1>
+              <h1 className="display-4">Learn From the Best</h1>
             </div>
             <div
               className="owl-carousel team-carousel position-relative"
               style={{ padding: "0 30px" }}
             >
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-1.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
+              {mentors.map((mentor, index) => (
+                <div className="team-item" key={index}>
+                  <img className="img-fluid w-100" src={mentor.img} alt="" />
+                  <div className="bg-light text-center p-4">
+                    <h5 className="mb-3">{mentor.name}</h5>
+                    <p className="mb-2">{mentor.skill}</p>
+                    <div className="d-flex justify-content-center">
+                      <a className="mx-1 p-1" href="#">
+                        <i className="fab fa-twitter" />
+                      </a>
+                      <a className="mx-1 p-1" href="#">
+                        <i className="fab fa-facebook-f" />
+                      </a>
+                      <a className="mx-1 p-1" href="#">
+                        <i className="fab fa-linkedin-in" />
+                      </a>
+                      <a className="mx-1 p-1" href="#">
+                        <i className="fab fa-instagram" />
+                      </a>
+                      <a className="mx-1 p-1" href="#">
+                        <i className="fab fa-youtube" />
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-2.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-3.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-4.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-1 p-1" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>

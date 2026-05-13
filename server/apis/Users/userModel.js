@@ -26,15 +26,38 @@ const userSchema = new mongoose.Schema(
       default: ["learner"],
     },
 
-    isVerifiedMentor: {
-      type: Boolean,
-      default: false,
-    },
-
     status: {
       type: String,
-      enum: ["pending", "active", "blocked"],
-      default: "pending",
+      enum: ["active", "blocked"],
+      default: "active",
+    },
+
+    profileImage: String,
+
+    profilePublicId: {
+      type: String,
+      default: "",
+    },
+
+    bio: {
+      type: String,
+      default: "",
+    },
+
+    interests: {
+      type: [String],
+      default: [],
+    },
+
+    learningGoals: {
+      type: String,
+      default: "",
+    },
+
+    socialLinks: {
+      linkedin: String,
+      github: String,
+      portfolio: String,
     },
   },
   { timestamps: true },

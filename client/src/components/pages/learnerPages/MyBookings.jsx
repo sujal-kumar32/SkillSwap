@@ -1,0 +1,143 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { showToast } from "../../../utils/toastUtils";
+import { deleteConfirmAlert } from "../../../utils/alertUtils";
+import Apiservices from "../../../../Apiservices";
+import { EmptyState, LoadingState, PageHeader, StatCard, StatusBadge } from "../../learner/LearnerUI";
+
+const MyBookings = () => {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        setError("");
+        const response = await Apiservices.fetchBookings();
+        setBookings(response.data.data || []);
+      } catch (error) {
+        console.log(error);
+        setBookings([]);
+        setError(error.response?.data?.message || "Failed to load bookings");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookings();
+  }, []);
+
+  const filtered = useMemo(
+    () =>
+      bookings.filter((booking) => {
+        const title = booking.sessionId?.title?.toLowerCase() || "";
+        const matchQuery = title.includes(query.toLowerCase());
+        const matchFilter = filter === "all" || booking.requestStatus === filter;
+        return matchQuery && matchFilter;
+      }),
+    [bookings, query, filter],
+  );
+
+  return (
+    <>
+      <PageHeader title="My Bookings" subtitle="Manage upcoming, pending, completed, and cancelled learning sessions." />
+      {error && <div className="alert alert-danger rounded-4">{error}</div>}
+      <div className="row g-4 mb-4">
+        <StatCard icon="fa-calendar-days" label="All Bookings" value={bookings.length} />
+        <StatCard icon="fa-clock" label="Pending" value={bookings.filter((b) => b.requestStatus === "pending").length} tone="warning" />
+        <StatCard icon="fa-video" label="Upcoming" value={bookings.filter((b) => b.requestStatus === "accepted").length} tone="success" />
+        <StatCard icon="fa-circle-check" label="Completed" value={bookings.filter((b) => b.requestStatus === "completed").length} tone="info" />
+      </div>
+
+      <div className="learner-card p-4 mb-4">
+        <div className="row g-3">
+          <div className="col-md-8">
+            <input className="form-control rounded-pill" placeholder="Search booked sessions..." value={query} onChange={(e) => setQuery(e.target.value)} />
+          </div>
+          <div className="col-md-4">
+            <select className="form-select rounded-pill" value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="all">All statuses</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Upcoming</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {loading ? <LoadingState /> : filtered.length ? (
+        <div className="learner-card learner-table-card">
+          <div className="table-responsive">
+            <table className="table align-middle mb-0">
+              <thead className="table-light">
+                <tr>
+                  <th>Session</th>
+                  <th>Date</th>
+                  <th>Payment</th>
+                  <th>Status</th>
+                  <th className="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((booking) => (
+                  <tr key={booking._id}>
+                    <td>
+                      <div className="d-flex align-items-center gap-3">
+                        <img src={booking.sessionId?.thumbnail} alt="" className="rounded-3" width="72" height="54" style={{ objectFit: "cover" }} />
+                        <div>
+                          <h6 className="fw-bold mb-1">{booking.sessionId?.title}</h6>
+                          <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{booking.date} <span className="text-muted">{booking.timeSlot}</span></td>
+                    <td>{booking.paymentStatus}</td>
+                    <td><StatusBadge status={booking.requestStatus} /></td>
+                    <td className="text-end">
+                      <div className="btn-group">
+                        <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-outline-primary btn-sm">Details</Link>
+                        <button className="btn btn-primary btn-sm" disabled={booking.requestStatus !== "accepted"}>Join</button>
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          disabled={!["pending", "accepted"].includes(booking.requestStatus)}
+                          onClick={async () => {
+                            const confirmed = await deleteConfirmAlert("this booking");
+                            if (!confirmed) return;
+                            try {
+                              await Apiservices.updateRequest(booking._id, "cancelled");
+                              setBookings((prev) =>
+                                prev.map((item) =>
+                                  item._id === booking._id
+                                    ? { ...item, requestStatus: "cancelled" }
+                                    : item,
+                                ),
+                              );
+                              showToast.success("Booking cancelled");
+                            } catch (error) {
+                              console.log(error);
+                              showToast.error(error.response?.data?.message || "Failed to cancel booking");
+                            }
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <EmptyState title="No bookings found" text="Book sessions to start your learning journey." actionLabel="Explore Sessions" actionTo="/learner/explore" />
+      )}
+    </>
+  );
+};
+
+export default MyBookings;

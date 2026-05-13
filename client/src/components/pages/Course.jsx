@@ -2,6 +2,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 
+const sessions = [
+  { title: "React.js – Build Modern Web Apps", mentor: "Priya Sharma", rating: "4.8", reviews: "320", img: "img/courses-1.jpg" },
+  { title: "Guitar Basics – Strum Your First Song", mentor: "Arjun Kapoor", rating: "4.9", reviews: "180", img: "img/courses-2.jpg" },
+  { title: "UI/UX Design – Figma for Beginners", mentor: "Neha Patel", rating: "4.7", reviews: "210", img: "img/courses-3.jpg" },
+  { title: "Public Speaking – Speak with Confidence", mentor: "Rahul Verma", rating: "4.6", reviews: "150", img: "img/courses-4.jpg" },
+  { title: "DSA Interview Prep – Crack the Code", mentor: "Vikram Singh", rating: "4.9", reviews: "420", img: "img/courses-5.jpg" },
+  { title: "Cricket Coaching – Batting Techniques", mentor: "Rohit Yadav", rating: "4.8", reviews: "290", img: "img/courses-6.jpg" },
+];
+
 function Course() {
   useEffect(() => {
     const destroyCarousel = (selector) => {
@@ -114,7 +123,7 @@ function Course() {
           style={{ marginBottom: 90 }}
         >
           <div className="container text-center py-5">
-            <h1 className="text-white display-1">Courses</h1>
+            <h1 className="text-white display-1">Explore Sessions</h1>
             <div className="d-inline-flex text-white mb-5">
               <p className="m-0 text-uppercase">
                 <Link className="text-white" to="/">
@@ -122,7 +131,7 @@ function Course() {
                 </Link>
               </p>
               <i className="fa fa-angle-double-right pt-1 px-3" />
-              <p className="m-0 text-uppercase">Courses</p>
+              <p className="m-0 text-uppercase">Sessions</p>
             </div>
             <div
               className="mx-auto mb-5"
@@ -137,17 +146,17 @@ function Course() {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Courses
+                    Skills
                   </button>
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="#">
-                      Courses 1
+                      Development
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 2
+                      Creative Arts
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 3
+                      Sports & Music
                     </a>
                   </div>
                 </div>
@@ -155,7 +164,7 @@ function Course() {
                   type="text"
                   className="form-control border-light"
                   style={{ padding: "30px 25px" }}
-                  placeholder="Keyword"
+                  placeholder="Search skills, mentors, sessions..."
                 />
                 <div className="input-group-append">
                   <button className="btn btn-secondary px-4 px-lg-5">
@@ -168,218 +177,49 @@ function Course() {
         </div>
         {/* Header End */}
         {/* Courses Start */}
-        <div className="container-fluid py-5">
+        <div className="container-fluid bg-image py-5">
           <div className="container py-5">
             <div className="row mx-0 justify-content-center">
               <div className="col-lg-8">
                 <div className="section-title text-center position-relative mb-5">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    Our Courses
+                    Mentor Sessions
                   </h6>
                   <h1 className="display-4">
-                    Checkout New Releases Of Our Courses
+                    Find Your Perfect Skill Session
                   </h1>
                 </div>
               </div>
             </div>
             <div className="row">
-              <div className="col-lg-4 col-md-6 pb-4">
-                <Link
-                  className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                  to="/detail"
-                >
-                  <img className="img-fluid" src="img/courses-1.jpg" alt="" />
-                  <div className="courses-text">
-                    <h4 className="text-center text-white px-3">
-                      Web design &amp; development courses for beginners
-                    </h4>
-                    <div className="border-top w-100 mt-3">
-                      <div className="d-flex justify-content-between p-4">
-                        <span className="text-white">
-                          <i className="fa fa-user mr-2" />
-                          Jhon Doe
-                        </span>
-                        <span className="text-white">
-                          <i className="fa fa-star mr-2" />
-                          4.5
-                          <small>(250)</small>
-                        </span>
+              {sessions.map((session, index) => (
+                <div className="col-lg-4 col-md-6 pb-4" key={index}>
+                  <Link
+                    className="courses-list-item position-relative d-block overflow-hidden mb-2"
+                    to="/detail"
+                  >
+                    <img className="img-fluid" src={session.img} alt="" />
+                    <div className="courses-text">
+                      <h4 className="text-center text-white px-3">
+                        {session.title}
+                      </h4>
+                      <div className="border-top w-100 mt-3">
+                        <div className="d-flex justify-content-between p-4">
+                          <span className="text-white">
+                            <i className="fa fa-user mr-2" />
+                            {session.mentor}
+                          </span>
+                          <span className="text-white">
+                            <i className="fa fa-star mr-2" />
+                            {session.rating}
+                            <small>({session.reviews})</small>
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              </div>
-              <div className="col-lg-4 col-md-6 pb-4">
-                <Link
-                  className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                  to="/detail"
-                >
-                  <img className="img-fluid" src="img/courses-2.jpg" alt="" />
-                  <div className="courses-text">
-                    <h4 className="text-center text-white px-3">
-                      Web design &amp; development courses for beginners
-                    </h4>
-                    <div className="border-top w-100 mt-3">
-                      <div className="d-flex justify-content-between p-4">
-                        <span className="text-white">
-                          <i className="fa fa-user mr-2" />
-                          Jhon Doe
-                        </span>
-                        <span className="text-white">
-                          <i className="fa fa-star mr-2" />
-                          4.5
-                          <small>(250)</small>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              <div className="col-lg-4 col-md-6 pb-4">
-                <Link
-                  className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                  to="/detail"
-                >
-                  <img className="img-fluid" src="img/courses-3.jpg" alt="" />
-                  <div className="courses-text">
-                    <h4 className="text-center text-white px-3">
-                      Web design &amp; development courses for beginners
-                    </h4>
-                    <div className="border-top w-100 mt-3">
-                      <div className="d-flex justify-content-between p-4">
-                        <span className="text-white">
-                          <i className="fa fa-user mr-2" />
-                          Jhon Doe
-                        </span>
-                        <span className="text-white">
-                          <i className="fa fa-star mr-2" />
-                          4.5
-                          <small>(250)</small>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              <div className="col-lg-4 col-md-6 pb-4">
-                <Link
-                  className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                  to="/detail"
-                >
-                  <img className="img-fluid" src="img/courses-4.jpg" alt="" />
-                  <div className="courses-text">
-                    <h4 className="text-center text-white px-3">
-                      Web design &amp; development courses for beginners
-                    </h4>
-                    <div className="border-top w-100 mt-3">
-                      <div className="d-flex justify-content-between p-4">
-                        <span className="text-white">
-                          <i className="fa fa-user mr-2" />
-                          Jhon Doe
-                        </span>
-                        <span className="text-white">
-                          <i className="fa fa-star mr-2" />
-                          4.5
-                          <small>(250)</small>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              <div className="col-lg-4 col-md-6 pb-4">
-                <Link
-                  className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                  to="/detail"
-                >
-                  <img className="img-fluid" src="img/courses-5.jpg" alt="" />
-                  <div className="courses-text">
-                    <h4 className="text-center text-white px-3">
-                      Web design &amp; development courses for beginners
-                    </h4>
-                    <div className="border-top w-100 mt-3">
-                      <div className="d-flex justify-content-between p-4">
-                        <span className="text-white">
-                          <i className="fa fa-user mr-2" />
-                          Jhon Doe
-                        </span>
-                        <span className="text-white">
-                          <i className="fa fa-star mr-2" />
-                          4.5
-                          <small>(250)</small>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              <div className="col-lg-4 col-md-6 pb-4">
-                <Link
-                  className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                  to="/detail"
-                >
-                  <img className="img-fluid" src="img/courses-6.jpg" alt="" />
-                  <div className="courses-text">
-                    <h4 className="text-center text-white px-3">
-                      Web design &amp; development courses for beginners
-                    </h4>
-                    <div className="border-top w-100 mt-3">
-                      <div className="d-flex justify-content-between p-4">
-                        <span className="text-white">
-                          <i className="fa fa-user mr-2" />
-                          Jhon Doe
-                        </span>
-                        <span className="text-white">
-                          <i className="fa fa-star mr-2" />
-                          4.5
-                          <small>(250)</small>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </div>
-              <div className="col-12">
-                <nav aria-label="Page navigation">
-                  <ul className="pagination pagination-lg justify-content-center mb-0">
-                    <li className="page-item disabled">
-                      <a
-                        className="page-link rounded-0"
-                        href="#"
-                        aria-label="Previous"
-                      >
-                        <span aria-hidden="true">«</span>
-                        <span className="sr-only">Previous</span>
-                      </a>
-                    </li>
-                    <li className="page-item active">
-                      <a className="page-link" href="#">
-                        1
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link" href="#">
-                        2
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a className="page-link" href="#">
-                        3
-                      </a>
-                    </li>
-                    <li className="page-item">
-                      <a
-                        className="page-link rounded-0"
-                        href="#"
-                        aria-label="Next"
-                      >
-                        <span aria-hidden="true">»</span>
-                        <span className="sr-only">Next</span>
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
+                  </Link>
+                </div>
+              ))}
             </div>
           </div>
         </div>

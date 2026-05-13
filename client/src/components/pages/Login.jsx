@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { showToast } from "../../utils/toastUtils";
 import illustration from "../../assets/images/image.png";
 import Apiservices from "../../../Apiservices";
 
@@ -21,7 +21,7 @@ function Login() {
       if (role === "admin") {
         navigate("/admin");
       } else {
-        navigate("/profile");
+        navigate("/workspace");
       }
     }
   }, [navigate]);
@@ -48,11 +48,12 @@ function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", role);
       localStorage.setItem("roles", JSON.stringify(roles));
+      localStorage.setItem("userName", data.data?.name || "User");
       window.dispatchEvent(new Event("authChange"));
 
       return data; // return full user data
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+      showToast.error(error.response?.data?.message || "Login failed");
       return null;
     }
   };
@@ -61,19 +62,19 @@ function Login() {
     event.preventDefault();
 
     if (!email || !password) {
-      alert("Email and password are required.");
+      showToast.error("Email and password are required.");
       return;
     }
 
     // SIGNUP FLOW
     if (isSignup) {
       if (!name || !confirmPassword) {
-        alert("Please fill all signup fields.");
+        showToast.error("Please fill all signup fields.");
         return;
       }
 
       if (password !== confirmPassword) {
-        alert("Passwords do not match.");
+        showToast.error("Passwords do not match.");
         return;
       }
 
@@ -89,7 +90,7 @@ function Login() {
         setLoading(false);
 
         if (!response.data.success) {
-          toast.error(response.data.message || "Signup failed");
+          showToast.error(response.data.message || "Signup failed");
           return;
         }
 
@@ -97,17 +98,17 @@ function Login() {
         const userData = await loginAndRedirect(email, password);
 
         if (userData) {
-          toast.success("Signup successful, logged in!");
+          showToast.success("Signup successful, logged in!");
 
           if (userData.data?.roles?.includes("admin")) {
             navigate("/admin");
           } else {
-            navigate("/profile");
+            navigate("/workspace");
           }
         }
       } catch (error) {
         setLoading(false);
-        toast.error(error.response?.data?.message || "Signup error");
+        showToast.error(error.response?.data?.message || "Signup error");
       }
 
       return;
@@ -123,18 +124,18 @@ function Login() {
 
       if (!userData) return;
 
-      toast.success("Login successful");
+      showToast.success("Login successful");
       console.log("FULL RESPONSE:", userData);
 
       // ROLE CHECK
       if (userData.data?.roles?.includes("admin")) {
         navigate("/admin");
       } else {
-        navigate("/profile");
+        navigate("/workspace");
       }
     } catch (error) {
       setLoading(false);
-      toast.error(error.message || "Login error");
+      showToast.error(error.message || "Login error");
     }
   };
 
@@ -275,7 +276,7 @@ padding: 0;
         <nav className="navbar navbar-expand-lg pt-4 px-4">
           <div className="container-fluid"></div>
         </nav>
-        <div className="container-fluid h-100 px-4 py-5">
+        <div className="container-fluid bg-image h-100 px-4 py-5">
           <div className="row align-items-center min-vh-75">
             {/* LEFT */}
             <div className="col-lg-7">

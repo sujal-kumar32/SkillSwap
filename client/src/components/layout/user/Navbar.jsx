@@ -1,31 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link, NavLink } from "react-router-dom";
 
 function Navbar() {
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    const updateAuth = () => setIsLoggedIn(!!localStorage.getItem("token"));
-
-    updateAuth();
-    window.addEventListener("storage", updateAuth);
-    window.addEventListener("authChange", updateAuth);
-
-    return () => {
-      window.removeEventListener("storage", updateAuth);
-      window.removeEventListener("authChange", updateAuth);
-    };
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    setIsLoggedIn(false);
-    window.dispatchEvent(new Event("authChange"));
-    navigate("/", { replace: true });
-  };
-
   return (
     <>
       {/* Topbar Start */}
@@ -35,12 +11,12 @@ function Navbar() {
             <div className="d-inline-flex align-items-center text-white">
               <small>
                 <i className="fa fa-phone-alt mr-2" />
-                +012 345 6789
+                +91 98765 43210
               </small>
               <small className="px-3">|</small>
               <small>
                 <i className="fa fa-envelope mr-2" />
-                info@example.com
+                hello@skillswap.com
               </small>
             </div>
           </div>
@@ -92,6 +68,7 @@ function Navbar() {
                 to="/"
                 className="nav-item nav-link"
                 activeClassName="active"
+                end
               >
                 Home
               </NavLink>
@@ -107,13 +84,8 @@ function Navbar() {
                 className="nav-item nav-link"
                 activeClassName="active"
               >
-                Courses
+                Sessions
               </NavLink>
-
-             
-
-            
-
               <div className="nav-item dropdown">
                 <a
                   href="#"
@@ -123,17 +95,14 @@ function Navbar() {
                   Pages
                 </a>
                 <div className="dropdown-menu m-0">
-                  <Link to="/detail" className="dropdown-item">
-                    Course Detail
-                  </Link>
                   <Link to="/features" className="dropdown-item">
-                    Our Features
+                    Features
                   </Link>
                   <Link to="/team" className="dropdown-item">
-                    Instructors
+                    Top Mentors
                   </Link>
                   <Link to="/testimonial" className="dropdown-item">
-                    Testimonial
+                    Testimonials
                   </Link>
                 </div>
               </div>
@@ -144,33 +113,14 @@ function Navbar() {
               >
                 Contact
               </NavLink>
-              {isLoggedIn && (
-                <NavLink
-                  to="/profile"
-                  className="nav-item nav-link"
-                  activeClassName="active"
-                >
-                  Profile
-                </NavLink>
-              )}
             </div>
-            {isLoggedIn ? (
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
-              >
-                Logout
-              </button>
-            ) : (
-              <NavLink
-                to="/login"
-                className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
-                activeClassName="active"
-              >
-                Get Started
-              </NavLink>
-            )}
+            <NavLink
+              to="/login"
+              className="nav-item nav-link btn btn-primary py-2 px-4 d-none d-lg-block"
+              activeClassName="active"
+            >
+              Get Started
+            </NavLink>
           </div>
         </nav>
       </div>

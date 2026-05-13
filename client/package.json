@@ -26,6 +26,7 @@
     "globals": "^17.4.0",
     "react-spinners": "^0.17.0",
     "react-toastify": "^11.1.0",
+    "sweetalert2": "^11.26.24",
     "vite": "^8.0.1"
   }
 }

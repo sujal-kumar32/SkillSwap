@@ -36,13 +36,67 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       roles: ["learner"],
-      status: "pending", // New users start in pending state
+      status: "active", // New users are active immediately
+    });
+
+    const userData = await User.findById(user._id).select("-password");
+
+    const payload = {
+      id: user._id,
+      roles: user.roles,
+    };
+    const token = jwt.sign(payload, SECRET, {
+      expiresIn: TOKEN_EXPIRES_IN,
     });
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      data: user,
+      token,
+      data: userData,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// CHANGE PASSWORD
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const matched = await bcrypt.compare(oldPassword, user.password);
+    if (!matched) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    if (oldPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be different from current password",
+      });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password changed successfully",
     });
   } catch (err) {
     res.status(500).json({
@@ -80,10 +134,7 @@ exports.login = async (req, res) => {
     if (user.status !== "active") {
       return res.status(403).json({
         success: false,
-        message:
-          user.status === "pending"
-            ? "Your account is pending admin approval"
-            : "Your account is blocked",
+        message: "Your account is blocked",
       });
     }
 
@@ -91,7 +142,6 @@ exports.login = async (req, res) => {
     const payload = {
       id: user._id,
       roles: user.roles,
-      isVerifiedMentor: user.isVerifiedMentor,
     };
 
     const token = jwt.sign(payload, SECRET, {
@@ -102,7 +152,7 @@ exports.login = async (req, res) => {
       success: true,
       message: "Login successful",
       token,
-      data: payload,
+      data: { ...payload, name: user.name },
     });
   } catch (err) {
     res.status(500).json({

@@ -1,16 +1,31 @@
 {
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^9.1.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.1.1",
-    "mongoose": "^9.4.1"
+    "mongoose": "^9.4.1",
+    "multer": "^2.1.1",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
     "dotenv": "^17.4.2",
+    "express-rate-limit": "^8.5.1",
+    "helmet": "^8.1.0",
+    "joi": "^18.2.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "razorpay": "^2.9.6",
+    "streamifier": "^0.1.1"
   },
   "name": "server",
   "version": "1.0.0",

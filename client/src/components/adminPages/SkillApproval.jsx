@@ -1,21 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import { confirmAlert, deleteConfirmAlert } from "../../utils/alertUtils";
+import { showToast } from "../../utils/toastUtils";
+import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
-
-const badgeClass = (status) => {
-  switch (status) {
-    case "approved":
-      return "badge-success";
-    case "rejected":
-      return "badge-danger";
-    case "pending":
-      return "badge-warning";
-    case "deleted":
-      return "badge-dark";
-    default:
-      return "badge-secondary";
-  }
-};
 
 const SkillApproval = () => {
   const [skills, setSkills] = useState([]);
@@ -35,10 +22,10 @@ const SkillApproval = () => {
       if (response.data.success) {
         setSkills(response.data.data);
       } else {
-        toast.error("Failed to load skills");
+        showToast.error("Failed to load skills");
       }
     } catch (err) {
-      toast.error("Error fetching skills");
+      showToast.error("Error fetching skills");
       console.log(err);
     } finally {
       setLoading(false);
@@ -52,31 +39,24 @@ const SkillApproval = () => {
         skill.name?.toLowerCase().includes(query) ||
         skill.categoryId?.name?.toLowerCase().includes(query) ||
         skill.createdBy?.name?.toLowerCase().includes(query);
-
       const matchesFilter =
-        filter === "All" ||
-        filter === "deleted" ||
-        skill.status?.toLowerCase() === filter.toLowerCase();
-
+        filter === "All" || filter === "deleted" || skill.status?.toLowerCase() === filter.toLowerCase();
       return matchesSearch && matchesFilter;
     });
   }, [skills, search, filter]);
 
-  // HANDLERS
   const handleApprove = async (id) => {
     setActionLoading(id);
     try {
       const response = await Apiservices.updateSkillStatus(id, "approved");
       if (response.data.success) {
-        setSkills((prev) =>
-          prev.map((s) => (s._id === id ? { ...s, status: "approved" } : s)),
-        );
-        toast.success("Skill Approved");
+        setSkills((prev) => prev.map((s) => (s._id === id ? { ...s, status: "approved" } : s)));
+        showToast.success("Skill Approved");
       } else {
-        toast.error(response.data.message || "Failed to approve skill");
+        showToast.error(response.data.message || "Failed to approve skill");
       }
     } catch (err) {
-      toast.error("Failed to approve skill");
+      showToast.error("Failed to approve skill");
       console.log(err);
     } finally {
       setActionLoading(null);
@@ -84,19 +64,19 @@ const SkillApproval = () => {
   };
 
   const handleReject = async (id) => {
+    const confirmed = await confirmAlert("Reject this skill? This can be changed later.");
+    if (!confirmed) return;
     setActionLoading(id);
     try {
       const response = await Apiservices.updateSkillStatus(id, "rejected");
       if (response.data.success) {
-        setSkills((prev) =>
-          prev.map((s) => (s._id === id ? { ...s, status: "rejected" } : s)),
-        );
-        toast.success("Skill Rejected");
+        setSkills((prev) => prev.map((s) => (s._id === id ? { ...s, status: "rejected" } : s)));
+        showToast.success("Skill Rejected");
       } else {
-        toast.error(response.data.message || "Failed to reject skill");
+        showToast.error(response.data.message || "Failed to reject skill");
       }
     } catch (err) {
-      toast.error("Failed to reject skill");
+      showToast.error("Failed to reject skill");
       console.log(err);
     } finally {
       setActionLoading(null);
@@ -104,183 +84,139 @@ const SkillApproval = () => {
   };
 
   const handleDelete = async (id) => {
+    const confirmed = await deleteConfirmAlert("this skill");
+    if (!confirmed) return;
+    setActionLoading(id);
     try {
       const response = await Apiservices.deleteSkill(id);
       if (response.data.success) {
         setSkills((prev) => prev.filter((s) => s._id !== id));
-        toast.success("Skill Deleted");
+        showToast.success("Skill Deleted");
       } else {
-        toast.error(response.data.message || "Failed to delete skill");
+        showToast.error(response.data.message || "Failed to delete skill");
       }
     } catch (err) {
-      toast.error("Failed to delete skill");
+      showToast.error("Failed to delete skill");
       console.log(err);
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  return (
-    <div className="container py-5">
-      {/* HEADER */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4">
-        <div>
-          <h1 className="mb-2">Skill Approval</h1>
-          <p className="text-muted mb-0">
-            Review, approve or reject user-submitted skills.
-          </p>
-        </div>
+  const StatCard = ({ label, value, color }) => (
+    <div className="col-sm-4 mb-3">
+      <div className="admin-card p-4 h-100">
+        <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>{label}</p>
+        <h3 className="fw-bold mb-0" style={{ color }}>{value}</h3>
+      </div>
+    </div>
+  );
 
-        <div className="mt-3 mt-md-0 btn-group">
-          <button className="btn btn-outline-primary">Export</button>
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => fetchSkills(filter === "deleted")}
-          >
-            Refresh
-          </button>
+  return (
+    <div>
+      <div className="admin-page-header mb-4">
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h1 className="fw-bold mb-1">Skill Approval</h1>
+            <p className="text-muted mb-0">Review, approve or reject user-submitted skills.</p>
+          </div>
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }}>Export</button>
+            <button className="btn btn-outline-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={() => fetchSkills(filter === "deleted")}>
+              <i className="fa fa-refresh me-1" /> Refresh
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* STATS */}
       {!loading && filter !== "deleted" && (
-        <div className="row mb-4">
-          <div className="col-sm-4 mb-3">
-            <div className="card shadow-sm border-0">
-              <div className="card-body">
-                <h6 className="text-muted">Total Skills</h6>
-                <h3>{skills.length}</h3>
+        <div className="row g-4 mb-4">
+          <StatCard label="Total Skills" value={skills.length} color="#0d6efd" />
+          <StatCard label="Pending" value={skills.filter((s) => s.status === "pending").length} color="#d97706" />
+          <StatCard label="Rejected" value={skills.filter((s) => s.status === "rejected").length} color="#dc3545" />
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border text-primary" role="status" />
+        </div>
+      ) : (
+        <div className="admin-card">
+          <div className="p-4">
+            <div className="row align-items-center g-3 mb-4">
+              <div className="col-md-6">
+                <input type="search" className="form-control rounded-pill" placeholder="Search by skill, category or user"
+                  value={search} onChange={(e) => setSearch(e.target.value)}
+                  style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
+              </div>
+              <div className="col-md-6 text-md-end">
+                {["All", "approved", "pending", "rejected", "deleted"].map((s) => (
+                  <button key={s} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                    style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          <div className="col-sm-4 mb-3">
-            <div className="card shadow-sm border-0">
-              <div className="card-body">
-                <h6 className="text-muted">Pending</h6>
-                <h3>{skills.filter((s) => s.status === "pending").length}</h3>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-sm-4 mb-3">
-            <div className="card shadow-sm border-0">
-              <div className="card-body">
-                <h6 className="text-muted">Rejected</h6>
-                <h3>{skills.filter((s) => s.status === "rejected").length}</h3>
-              </div>
+            <div className="table-responsive">
+              <table className="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Skill</th>
+                    <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Category</th>
+                    <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Posted By</th>
+                    <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Status</th>
+                    <th className="text-end fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSkills.length ? (
+                    filteredSkills.map((skill) => (
+                      <tr key={skill._id}>
+                        <td className="fw-semibold" style={{ color: "#1e293b" }}>{skill.name}</td>
+                        <td style={{ color: "#64748b" }}>{skill.categoryId?.name || "-"}</td>
+                        <td style={{ color: "#64748b" }}>{skill.createdBy?.name || "Unknown"}</td>
+                        <td>
+                          <span className={`badge rounded-pill fw-medium ${skill.isDeleted ? "bg-dark" : skill.status === "approved" ? "bg-success" : skill.status === "pending" ? "bg-warning text-dark" : "bg-danger"}`}
+                            style={{ fontSize: "0.75rem" }}>
+                            {skill.isDeleted ? "Deleted" : skill.status}
+                          </span>
+                        </td>
+                        <td className="text-end">
+                          {skill.status === "pending" && (
+                            <>
+                              <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-success rounded-pill me-1 fw-semibold"
+                                style={{ fontSize: "0.8rem" }} onClick={() => handleApprove(skill._id)}>
+                                <i className="fa fa-check me-1" />Approve
+                              </LoadingButton>
+                              <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
+                                style={{ fontSize: "0.8rem" }} onClick={() => handleReject(skill._id)}>
+                                <i className="fa fa-times me-1" />Reject
+                              </LoadingButton>
+                            </>
+                          )}
+                          {!skill.isDeleted && (
+                            <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-outline-dark rounded-pill ms-1 fw-semibold"
+                              style={{ fontSize: "0.8rem" }} onClick={() => handleDelete(skill._id)}>
+                              <i className="fa fa-trash me-1" />Delete
+                            </LoadingButton>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="text-center py-4 text-muted">No skills found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
-
-      {/* TABLE */}
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
-          {/* SEARCH + FILTER */}
-          <div className="row mb-4">
-            <div className="col-md-6">
-              <input
-                type="search"
-                className="form-control"
-                placeholder="Search by skill, category or user"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-6 text-md-end mt-2 mt-md-0">
-              {["All", "approved", "pending", "rejected", "deleted"].map(
-                (status) => (
-                  <button
-                    key={status}
-                    className={`btn btn-sm mx-1 ${
-                      filter === status
-                        ? "btn-primary"
-                        : "btn-outline-secondary"
-                    }`}
-                    onClick={() => setFilter(status)}
-                  >
-                    {status}
-                  </button>
-                ),
-              )}
-            </div>
-          </div>
-
-          {/* TABLE */}
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>Skill</th>
-                  <th>Category</th>
-                  <th>Posted By</th>
-                  <th>Status</th>
-                  <th className="text-end">Actions</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredSkills.length ? (
-                  filteredSkills.map((skill) => (
-                    <tr key={skill._id}>
-                      <td>{skill.name}</td>
-                      <td>{skill.categoryId?.name || "-"}</td>
-                      <td>{skill.createdBy?.name || "Unknown"}</td>
-
-                      <td>
-                        <span
-                          className={`badge ${badgeClass(
-                            skill.isDeleted ? "deleted" : skill.status,
-                          )}`}
-                        >
-                          {skill.isDeleted ? "deleted" : skill.status}
-                        </span>
-                      </td>
-
-                      <td className="text-end">
-                        {skill.status === "pending" && (
-                          <>
-                            <button
-                              className="btn btn-success btn-sm me-2"
-                              onClick={() => handleApprove(skill._id)}
-                              disabled={actionLoading === skill._id}
-                            >
-                              Approve
-                            </button>
-
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleReject(skill._id)}
-                              disabled={actionLoading === skill._id}
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-
-                        {!skill.isDeleted && (
-                          <button
-                            className="btn btn-outline-danger btn-sm ms-2"
-                            onClick={() => handleDelete(skill._id)}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="text-center text-muted py-4">
-                      No skills found
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

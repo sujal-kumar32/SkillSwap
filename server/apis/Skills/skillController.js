@@ -1,5 +1,6 @@
 const Skill = require("./skillModel");
 const Category = require("../Categories/categoryModel");
+const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 
 // CREATE SKILL
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -28,7 +29,6 @@ exports.createSkill = async (req, res) => {
       });
     }
 
-    // check category exists
     const category = await Category.findById(categoryId);
     if (!category) {
       return res.status(404).json({
@@ -37,10 +37,20 @@ exports.createSkill = async (req, res) => {
       });
     }
 
+    let thumbnail = { url: "", publicId: "" };
+    if (req.file) {
+      const result = await uploadBuffer(req.file.buffer, {
+        public_id: `skill_${Date.now()}`,
+      });
+      thumbnail = { url: result.secure_url, publicId: result.public_id };
+    }
+
     const skill = await Skill.create({
       name: trimmedName,
       categoryId,
       description: description?.trim() || "",
+      thumbnail: thumbnail.url,
+      thumbnailPublicId: thumbnail.publicId,
       createdBy: req.user.id,
     });
 
@@ -60,7 +70,10 @@ exports.createSkill = async (req, res) => {
 // GET ALL SKILLS
 exports.getSkills = async (req, res) => {
   try {
-    const { category, includeDeleted } = req.query;
+    const { search, sort, category, includeDeleted } = req.query;
+    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
+    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
+    const skip = (page - 1) * limit;
     const adminUser = isAdmin(req);
 
     let filter = {};
@@ -70,7 +83,7 @@ exports.getSkills = async (req, res) => {
       filter.$or = [{ isDeleted: false }, { isDeleted: { $exists: false } }];
     }
 
-    if (!adminUser) {
+    if (!adminUser && !req.user) {
       filter.status = "approved";
     }
 
@@ -78,14 +91,41 @@ exports.getSkills = async (req, res) => {
       filter.categoryId = category;
     }
 
-    const skills = await Skill.find(filter)
-      .populate("categoryId", "name")
-      .populate("createdBy", "name")
-      .lean();
+    if (search) {
+      const searchOr = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+      if (filter.$or) {
+        filter.$and = [
+          { $or: filter.$or },
+          { $or: searchOr },
+        ];
+        delete filter.$or;
+      } else {
+        filter.$or = searchOr;
+      }
+    }
+
+    let sortObj = {};
+    if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
+    else if (sort === "oldest") sortObj = { createdAt: 1 };
+    else if (sort === "name") sortObj = { name: 1 };
+    else sortObj = { createdAt: -1 };
+
+    const [skills, total] = await Promise.all([
+      Skill.find(filter).sort(sortObj).skip(skip).limit(limit)
+        .populate("categoryId", "name")
+        .populate("createdBy", "name")
+        .lean(),
+      Skill.countDocuments(filter),
+    ]);
 
     res.json({
       success: true,
-      total: skills.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: skills,
     });
   } catch (err) {
@@ -158,6 +198,17 @@ exports.updateSkill = async (req, res) => {
       skill.status = status;
     }
 
+    if (req.file) {
+      if (skill.thumbnailPublicId) {
+        await destroyImage(skill.thumbnailPublicId).catch(() => {});
+      }
+      const result = await uploadBuffer(req.file.buffer, {
+        public_id: `skill_${Date.now()}`,
+      });
+      skill.thumbnail = result.secure_url;
+      skill.thumbnailPublicId = result.public_id;
+    }
+
     await skill.save();
 
     res.json({
@@ -182,6 +233,10 @@ exports.deleteSkill = async (req, res) => {
         success: false,
         message: "Skill not found",
       });
+    }
+
+    if (skill.thumbnailPublicId) {
+      await destroyImage(skill.thumbnailPublicId).catch(() => {});
     }
 
     skill.isDeleted = true;

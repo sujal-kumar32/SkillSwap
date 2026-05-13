@@ -120,7 +120,7 @@ function Detail() {
         </div>
         {/* Header End */}
         {/* Detail Start */}
-        <div className="container-fluid py-5">
+        <div className="container-fluid bg-image py-5">
           <div className="container py-5">
             <div className="row">
               <div className="col-lg-8">

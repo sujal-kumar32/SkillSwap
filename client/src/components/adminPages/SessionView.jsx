@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
 import Apiservices from "../../../Apiservices";
 
 const SessionView = () => {
@@ -27,76 +26,50 @@ const SessionView = () => {
         setLoading(false);
       }
     };
-
     fetchSession();
   }, [id]);
 
   return (
-    <div className="container py-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1>Session Details</h1>
-          <p className="text-muted">Review the paid session details.</p>
-        </div>
-        <div className="btn-group">
-          <button
-            className="btn btn-outline-secondary"
-            onClick={() => navigate(-1)}
-          >
-            Back
-          </button>
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate(`/admin/session/${id}/edit`)}
-          >
-            Edit Session
-          </button>
+    <div>
+      <div className="admin-page-header mb-4">
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h1 className="fw-bold mb-1">Session Details</h1>
+            <p className="text-muted mb-0">Review the paid session details.</p>
+          </div>
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={() => navigate(-1)}>
+              <i className="fa fa-arrow-left me-1" /> Back
+            </button>
+            <button className="btn btn-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={() => navigate(`/admin/session/${id}/edit`)}>
+              <i className="fa fa-edit me-1" /> Edit Session
+            </button>
+          </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
       ) : error ? (
-        <div className="alert alert-danger">{error}</div>
+        <div className="alert alert-danger rounded-4">{error}</div>
       ) : (
-        <div className="card shadow-sm">
-          <div className="card-body">
-            <div className="row gx-4 gy-4">
-              <div className="col-md-6">
-                <h5 className="mb-2">{session.title}</h5>
-                <p className="text-muted">
-                  {session.description || "No description provided."}
-                </p>
-                <p>
-                  <strong>Status:</strong> {session.status}
-                </p>
-                <p>
-                  <strong>Price:</strong> ₹{session.price ?? 0}
-                </p>
-                <p>
-                  <strong>Bookings:</strong> {session.bookings ?? 0}
-                </p>
+        <div className="admin-card p-4">
+          <div className="row g-4">
+            <div className="col-md-6">
+              <h4 className="fw-bold mb-3">{session.title}</h4>
+              <p style={{ color: "#64748b", lineHeight: 1.7 }}>{session.description || "No description provided."}</p>
+              <div className="d-flex flex-wrap gap-4 mt-4">
+                <div><span className="text-muted small">Status</span><br /><span className="fw-semibold">{session.status}</span></div>
+                <div><span className="text-muted small">Price</span><br /><span className="fw-semibold">₹{session.price ?? 0}</span></div>
+                <div><span className="text-muted small">Bookings</span><br /><span className="fw-semibold">{session.bookings ?? 0}</span></div>
               </div>
-
-              <div className="col-md-6">
-                <p>
-                  <strong>Skill:</strong> {session.skillId?.name || "Unknown"}
-                </p>
-                <p>
-                  <strong>Session type:</strong>{" "}
-                  {session.sessionType || "online"}
-                </p>
-                <p>
-                  <strong>Meeting link:</strong> {session.meetLink || "Not set"}
-                </p>
-                <p>
-                  <strong>Created:</strong>{" "}
-                  {new Date(session.createdAt).toLocaleString()}
-                </p>
+            </div>
+            <div className="col-md-6">
+              <div className="p-4 rounded-4" style={{ background: "#f8faff" }}>
+                <div className="mb-3"><span className="text-muted small">Skill</span><br /><span className="fw-semibold">{session.skillId?.name || "Unknown"}</span></div>
+                <div className="mb-3"><span className="text-muted small">Session Type</span><br /><span className="fw-semibold">{session.sessionType || "online"}</span></div>
+                <div className="mb-3"><span className="text-muted small">Meeting Link</span><br /><span className="fw-semibold">{session.meetLink || "Not set"}</span></div>
+                <div><span className="text-muted small">Created</span><br /><span className="fw-semibold">{new Date(session.createdAt).toLocaleString()}</span></div>
               </div>
             </div>
           </div>

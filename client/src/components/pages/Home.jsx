@@ -1,14 +1,9 @@
 import React from "react";
-
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PuffLoader } from "react-spinners";
 
-
-
 function Home() {
-  
-
   useEffect(() => {
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
@@ -109,10 +104,9 @@ function Home() {
         destroyCarousel(".team-carousel");
         destroyCarousel(".testimonial-carousel");
       }
-      
     };
   }, []);
-  
+
   return (
     <>
       <>
@@ -123,9 +117,9 @@ function Home() {
         >
           <div className="container text-center my-5 py-5">
             <h1 className="text-white mt-4 mb-4">
-              "Exchange Skills. Learn Anything."
+              "Learn Skills. Share Knowledge. Grow Together."
             </h1>
-            <h1 className="text-white display-1 mb-5">Education Courses</h1>
+            <h1 className="text-white display-1 mb-5">SkillSwap Platform</h1>
             <div
               className="mx-auto mb-5"
               style={{ width: "100%", maxWidth: 600 }}
@@ -139,17 +133,17 @@ function Home() {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Courses
+                    Skills
                   </button>
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="#">
-                      Courses 1
+                      Development
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 2
+                      Creative Arts
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 3
+                      Sports & Music
                     </a>
                   </div>
                 </div>
@@ -157,7 +151,7 @@ function Home() {
                   type="text"
                   className="form-control border-light"
                   style={{ padding: "30px 25px" }}
-                  placeholder="Keyword"
+                  placeholder="Search skills, mentors, sessions..."
                 />
                 <div className="input-group-append">
                   <button className="btn btn-secondary px-4 px-lg-5">
@@ -185,59 +179,56 @@ function Home() {
               <div className="col-lg-7">
                 <div className="section-title position-relative mb-4">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    About Us
+                    About SkillSwap
                   </h6>
                   <h1 className="display-4">
-                    First Choice For Online Education Anywhere
+                    Peer-to-Peer Skill Sharing & Mentorship
                   </h1>
                 </div>
                 <p>
-                  Tempor erat elitr at rebum at at clita aliquyam consetetur.
-                  Diam dolor diam ipsum et, tempor voluptua sit consetetur sit.
-                  Aliquyam diam amet diam et eos sadipscing labore. Clita erat
-                  ipsum et lorem et sit, sed stet no labore lorem sit. Sanctus
-                  clita duo justo et tempor consetetur takimata eirmod, dolores
-                  takimata consetetur invidunt magna dolores aliquyam dolores
-                  dolore. Amet erat amet et magna
+                  SkillSwap is a community-driven platform where anyone can learn a new skill and teach what they know. 
+                  Unlike traditional courses, we connect learners directly with mentors for real-time, 
+                  interactive sessions. Whether you want to master React, learn guitar, or improve your public speaking, 
+                  there's a mentor ready to help you grow.
                 </p>
                 <div className="row pt-3 mx-0">
                   <div className="col-3 px-0">
                     <div className="bg-success text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        123
+                        50
                       </h1>
                       <h6 className="text-uppercase text-white">
-                        Available<span className="d-block">Subjects</span>
+                        Available<span className="d-block">Skills</span>
                       </h6>
                     </div>
                   </div>
                   <div className="col-3 px-0">
                     <div className="bg-primary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        1234
+                        200
                       </h1>
                       <h6 className="text-uppercase text-white">
-                        Online<span className="d-block">Courses</span>
+                        Live<span className="d-block">Sessions</span>
                       </h6>
                     </div>
                   </div>
                   <div className="col-3 px-0">
                     <div className="bg-secondary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        123
+                        80
                       </h1>
                       <h6 className="text-uppercase text-white">
-                        Skilled<span className="d-block">Instructors</span>
+                        Expert<span className="d-block">Mentors</span>
                       </h6>
                     </div>
                   </div>
                   <div className="col-3 px-0">
                     <div className="bg-warning text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        1234
+                        1000
                       </h1>
                       <h6 className="text-uppercase text-white">
-                        Happy<span className="d-block">Students</span>
+                        Happy<span className="d-block">Learners</span>
                       </h6>
                     </div>
                   </div>
@@ -254,54 +245,49 @@ function Home() {
               <div className="col-lg-7 my-5 pt-5 pb-lg-5">
                 <div className="section-title position-relative mb-4">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    Why Choose Us?
+                    Why SkillSwap?
                   </h6>
                   <h1 className="display-4">
-                    Why You Should Start Learning with Us?
+                    Why Learn Through Peer Mentorship?
                   </h1>
                 </div>
                 <p className="mb-4 pb-2">
-                  Aliquyam accusam clita nonumy ipsum sit sea clita ipsum clita,
-                  ipsum dolores amet voluptua duo dolores et sit ipsum rebum,
-                  sadipscing et erat eirmod diam kasd labore clita est. Diam
-                  sanctus gubergren sit rebum clita amet.
+                  SkillSwap makes learning practical, social, and effective. Instead of watching pre-recorded videos, 
+                  you get live guidance from skilled mentors who care about your progress.
                 </p>
                 <div className="d-flex mb-3">
                   <div className="btn-icon bg-primary mr-4">
-                    <i className="fa fa-2x fa-graduation-cap text-white" />
+                    <i className="fa fa-2x fa-users text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Skilled Instructors</h4>
+                    <h4>Expert Mentors</h4>
                     <p>
-                      Labore rebum duo est Sit dolore eos sit tempor eos stet,
-                      vero vero clita magna kasd no nonumy et eos dolor magna
-                      ipsum.
+                      Learn directly from experienced mentors who have real-world skills in development, 
+                      design, music, sports, and more. Every mentor is vetted by our community.
                     </p>
                   </div>
                 </div>
                 <div className="d-flex mb-3">
                   <div className="btn-icon bg-secondary mr-4">
-                    <i className="fa fa-2x fa-certificate text-white" />
+                    <i className="fa fa-2x fa-robot text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>International Certificate</h4>
+                    <h4>AI-Powered Recommendations</h4>
                     <p>
-                      Labore rebum duo est Sit dolore eos sit tempor eos stet,
-                      vero vero clita magna kasd no nonumy et eos dolor magna
-                      ipsum.
+                      Our smart recommendation engine suggests the best sessions and mentors based on your 
+                      interests, learning history, and career goals.
                     </p>
                   </div>
                 </div>
                 <div className="d-flex">
                   <div className="btn-icon bg-warning mr-4">
-                    <i className="fa fa-2x fa-book-reader text-white" />
+                    <i className="fa fa-2x fa-clock text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Online Classes</h4>
+                    <h4>Flexible Scheduling</h4>
                     <p className="m-0">
-                      Labore rebum duo est Sit dolore eos sit tempor eos stet,
-                      vero vero clita magna kasd no nonumy et eos dolor magna
-                      ipsum.
+                      Book sessions that fit your schedule. Choose from online or offline sessions, 
+                      set your own pace, and learn from anywhere in the world.
                     </p>
                   </div>
                 </div>
@@ -325,10 +311,10 @@ function Home() {
             <div className="col-lg-6">
               <div className="section-title text-center position-relative mb-4">
                 <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                  Our Courses
-                </h6>
+                  Popular Sessions
+                  </h6>
                 <h1 className="display-4">
-                  Checkout New Releases Of Our Courses
+                  Top Skill Sessions This Week
                 </h1>
               </div>
             </div>
@@ -338,23 +324,23 @@ function Home() {
               <img className="img-fluid" src="img/courses-1.jpg" alt="" />
               <div className="courses-text">
                 <h4 className="text-center text-white px-3">
-                  Web design &amp; development courses for beginners
+                  React.js – Build Modern Web Apps
                 </h4>
                 <div className="border-top w-100 mt-3">
                   <div className="d-flex justify-content-between p-4">
                     <span className="text-white">
                       <i className="fa fa-user mr-2" />
-                      Jhon Doe
+                      Priya Sharma
                     </span>
                     <span className="text-white">
                       <i className="fa fa-star mr-2" />
-                      4.5 <small>(250)</small>
+                      4.8 <small>(320)</small>
                     </span>
                   </div>
                 </div>
                 <div className="w-100 bg-white text-center p-4">
                   <Link className="btn btn-primary" to="/detail">
-                    Course Detail
+                    Session Detail
                   </Link>
                 </div>
               </div>
@@ -363,23 +349,23 @@ function Home() {
               <img className="img-fluid" src="img/courses-2.jpg" alt="" />
               <div className="courses-text">
                 <h4 className="text-center text-white px-3">
-                  Web design &amp; development courses for beginners
+                  Guitar Basics – Strum Your First Song
                 </h4>
                 <div className="border-top w-100 mt-3">
                   <div className="d-flex justify-content-between p-4">
                     <span className="text-white">
                       <i className="fa fa-user mr-2" />
-                      Jhon Doe
+                      Arjun Kapoor
                     </span>
                     <span className="text-white">
                       <i className="fa fa-star mr-2" />
-                      4.5 <small>(250)</small>
+                      4.9 <small>(180)</small>
                     </span>
                   </div>
                 </div>
                 <div className="w-100 bg-white text-center p-4">
                   <Link className="btn btn-primary" to="/detail">
-                    Course Detail
+                    Session Detail
                   </Link>
                 </div>
               </div>
@@ -388,23 +374,23 @@ function Home() {
               <img className="img-fluid" src="img/courses-3.jpg" alt="" />
               <div className="courses-text">
                 <h4 className="text-center text-white px-3">
-                  Web design &amp; development courses for beginners
+                  UI/UX Design – Figma for Beginners
                 </h4>
                 <div className="border-top w-100 mt-3">
                   <div className="d-flex justify-content-between p-4">
                     <span className="text-white">
                       <i className="fa fa-user mr-2" />
-                      Jhon Doe
+                      Neha Patel
                     </span>
                     <span className="text-white">
                       <i className="fa fa-star mr-2" />
-                      4.5 <small>(250)</small>
+                      4.7 <small>(210)</small>
                     </span>
                   </div>
                 </div>
                 <div className="w-100 bg-white text-center p-4">
                   <Link className="btn btn-primary" to="/detail">
-                    Course Detail
+                    Session Detail
                   </Link>
                 </div>
               </div>
@@ -413,23 +399,23 @@ function Home() {
               <img className="img-fluid" src="img/courses-4.jpg" alt="" />
               <div className="courses-text">
                 <h4 className="text-center text-white px-3">
-                  Web design &amp; development courses for beginners
+                  Public Speaking – Speak with Confidence
                 </h4>
                 <div className="border-top w-100 mt-3">
                   <div className="d-flex justify-content-between p-4">
                     <span className="text-white">
                       <i className="fa fa-user mr-2" />
-                      Jhon Doe
+                      Rahul Verma
                     </span>
                     <span className="text-white">
                       <i className="fa fa-star mr-2" />
-                      4.5 <small>(250)</small>
+                      4.6 <small>(150)</small>
                     </span>
                   </div>
                 </div>
                 <div className="w-100 bg-white text-center p-4">
                   <Link className="btn btn-primary" to="/detail">
-                    Course Detail
+                    Session Detail
                   </Link>
                 </div>
               </div>
@@ -438,23 +424,23 @@ function Home() {
               <img className="img-fluid" src="img/courses-5.jpg" alt="" />
               <div className="courses-text">
                 <h4 className="text-center text-white px-3">
-                  Web design &amp; development courses for beginners
+                  DSA Interview Prep – Crack the Code
                 </h4>
                 <div className="border-top w-100 mt-3">
                   <div className="d-flex justify-content-between p-4">
                     <span className="text-white">
                       <i className="fa fa-user mr-2" />
-                      Jhon Doe
+                      Vikram Singh
                     </span>
                     <span className="text-white">
                       <i className="fa fa-star mr-2" />
-                      4.5 <small>(250)</small>
+                      4.9 <small>(420)</small>
                     </span>
                   </div>
                 </div>
                 <div className="w-100 bg-white text-center p-4">
                   <Link className="btn btn-primary" to="/detail">
-                    Course Detail
+                    Session Detail
                   </Link>
                 </div>
               </div>
@@ -463,23 +449,23 @@ function Home() {
               <img className="img-fluid" src="img/courses-6.jpg" alt="" />
               <div className="courses-text">
                 <h4 className="text-center text-white px-3">
-                  Web design &amp; development courses for beginners
+                  Cricket Coaching – Batting Techniques
                 </h4>
                 <div className="border-top w-100 mt-3">
                   <div className="d-flex justify-content-between p-4">
                     <span className="text-white">
                       <i className="fa fa-user mr-2" />
-                      Jhon Doe
+                      Rohit Yadav
                     </span>
                     <span className="text-white">
                       <i className="fa fa-star mr-2" />
-                      4.5 <small>(250)</small>
+                      4.8 <small>(290)</small>
                     </span>
                   </div>
                 </div>
                 <div className="w-100 bg-white text-center p-4">
                   <Link className="btn btn-primary" to="/detail">
-                    Course Detail
+                    Session Detail
                   </Link>
                 </div>
               </div>
@@ -488,7 +474,7 @@ function Home() {
           <div className="row justify-content-center bg-image mx-0 mb-5">
             <div className="col-lg-6 py-5">
               <div className="bg-white p-5 my-5">
-                <h1 className="text-center mb-4">30% Off For New Students</h1>
+                <h1 className="text-center mb-4">Become a Mentor Today</h1>
                 <form>
                   <div className="form-row">
                     <div className="col-sm-6">
@@ -519,10 +505,10 @@ function Home() {
                           className="custom-select bg-light border-0 px-3"
                           style={{ height: 60 }}
                         >
-                          <option selected="">Select A courses</option>
-                          <option value={1}>courses 1</option>
-                          <option value={2}>courses 1</option>
-                          <option value={3}>courses 1</option>
+                          <option selected="">Select Your Skill</option>
+                          <option value={1}>Web Development</option>
+                          <option value={2}>Creative Arts</option>
+                          <option value={3}>Sports & Music</option>
                         </select>
                       </div>
                     </div>
@@ -532,7 +518,7 @@ function Home() {
                         type="submit"
                         style={{ height: 60 }}
                       >
-                        Sign Up Now
+                        Join as Mentor
                       </button>
                     </div>
                   </div>
@@ -547,9 +533,9 @@ function Home() {
           <div className="container py-5">
             <div className="section-title text-center position-relative mb-5">
               <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                Instructors
+                Top Mentors
               </h6>
-              <h1 className="display-4">Meet Our Instructors</h1>
+              <h1 className="display-4">Learn From the Best</h1>
             </div>
             <div
               className="owl-carousel team-carousel position-relative"
@@ -558,8 +544,8 @@ function Home() {
               <div className="team-item">
                 <img className="img-fluid w-100" src="img/team-1.jpg" alt="" />
                 <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
+                  <h5 className="mb-3">Priya Sharma</h5>
+                  <p className="mb-2">React & Full-Stack Development</p>
                   <div className="d-flex justify-content-center">
                     <a className="mx-1 p-1" href="#">
                       <i className="fab fa-twitter" />
@@ -582,8 +568,8 @@ function Home() {
               <div className="team-item">
                 <img className="img-fluid w-100" src="img/team-2.jpg" alt="" />
                 <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
+                  <h5 className="mb-3">Arjun Kapoor</h5>
+                  <p className="mb-2">Guitar & Music Production</p>
                   <div className="d-flex justify-content-center">
                     <a className="mx-1 p-1" href="#">
                       <i className="fab fa-twitter" />
@@ -606,8 +592,8 @@ function Home() {
               <div className="team-item">
                 <img className="img-fluid w-100" src="img/team-3.jpg" alt="" />
                 <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
+                  <h5 className="mb-3">Neha Patel</h5>
+                  <p className="mb-2">UI/UX Design & Branding</p>
                   <div className="d-flex justify-content-center">
                     <a className="mx-1 p-1" href="#">
                       <i className="fab fa-twitter" />
@@ -630,8 +616,8 @@ function Home() {
               <div className="team-item">
                 <img className="img-fluid w-100" src="img/team-4.jpg" alt="" />
                 <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Instructor Name</h5>
-                  <p className="mb-2">Web Design &amp; Development</p>
+                  <h5 className="mb-3">Rahul Verma</h5>
+                  <p className="mb-2">Public Speaking & Communication</p>
                   <div className="d-flex justify-content-center">
                     <a className="mx-1 p-1" href="#">
                       <i className="fab fa-twitter" />
@@ -665,16 +651,13 @@ function Home() {
               <div className="col-lg-5 mb-5 mb-lg-0">
                 <div className="section-title position-relative mb-4">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    Testimonial
+                    Testimonials
                   </h6>
-                  <h1 className="display-4">What Say Our Students</h1>
+                  <h1 className="display-4">What Our Learners Say</h1>
                 </div>
                 <p className="m-0">
-                  Dolor est dolores et nonumy sit labore dolores est sed rebum
-                  amet, justo duo ipsum sanctus dolore magna rebum sit et. Diam
-                  lorem ea sea at. Nonumy et at at sed justo est nonumy tempor.
-                  Vero sea ea eirmod, elitr ea amet diam ipsum at amet. Erat sed
-                  stet eos ipsum diam
+                  Hear from our community of learners and mentors who have grown together on SkillSwap. 
+                  From career changes to new hobbies, every story inspires us to build a better learning ecosystem.
                 </p>
               </div>
               <div className="col-lg-7">
@@ -682,10 +665,9 @@ function Home() {
                   <div className="bg-white p-5">
                     <i className="fa fa-3x fa-quote-left text-primary mb-4" />
                     <p>
-                      Sed et elitr ipsum labore dolor diam, ipsum duo vero sed
-                      sit est est ipsum eos clita est ipsum. Est nonumy tempor
-                      at kasd. Sed at dolor duo ut dolor, et justo erat dolor
-                      magna sed stet amet elitr duo lorem
+                      SkillSwap completely changed how I learn. Instead of watching dull tutorials, I now get 
+                      live feedback from mentors who actually care. I went from knowing zero React to building 
+                      full-stack apps in just 3 months!
                     </p>
                     <div className="d-flex flex-shrink-0 align-items-center mt-4">
                       <img
@@ -694,18 +676,17 @@ function Home() {
                         alt=""
                       />
                       <div>
-                        <h5>Student Name</h5>
-                        <span>Web Design</span>
+                        <h5>Ananya Gupta</h5>
+                        <span>Web Development Learner</span>
                       </div>
                     </div>
                   </div>
                   <div className="bg-white p-5">
                     <i className="fa fa-3x fa-quote-left text-primary mb-4" />
                     <p>
-                      Sed et elitr ipsum labore dolor diam, ipsum duo vero sed
-                      sit est est ipsum eos clita est ipsum. Est nonumy tempor
-                      at kasd. Sed at dolor duo ut dolor, et justo erat dolor
-                      magna sed stet amet elitr duo lorem
+                      As a mentor, SkillSwap gave me a platform to share my guitar knowledge with passionate 
+                      learners. It's incredibly rewarding to see my students strum their first song. The 
+                      community is supportive and the platform is easy to use.
                     </p>
                     <div className="d-flex flex-shrink-0 align-items-center mt-4">
                       <img
@@ -714,8 +695,8 @@ function Home() {
                         alt=""
                       />
                       <div>
-                        <h5>Student Name</h5>
-                        <span>Web Design</span>
+                        <h5>Arjun Kapoor</h5>
+                        <span>Guitar Mentor</span>
                       </div>
                     </div>
                   </div>
@@ -740,7 +721,7 @@ function Home() {
                     </div>
                     <div className="mt-n1">
                       <h4>Our Location</h4>
-                      <p className="m-0">123 Street, New York, USA</p>
+                      <p className="m-0">Bangalore, India</p>
                     </div>
                   </div>
                   <div className="d-flex align-items-center mb-5">
@@ -749,7 +730,7 @@ function Home() {
                     </div>
                     <div className="mt-n1">
                       <h4>Call Us</h4>
-                      <p className="m-0">+012 345 6789</p>
+                      <p className="m-0">+91 98765 43210</p>
                     </div>
                   </div>
                   <div className="d-flex align-items-center">
@@ -758,7 +739,7 @@ function Home() {
                     </div>
                     <div className="mt-n1">
                       <h4>Email Us</h4>
-                      <p className="m-0">info@example.com</p>
+                      <p className="m-0">hello@skillswap.com</p>
                     </div>
                   </div>
                 </div>
@@ -766,7 +747,7 @@ function Home() {
               <div className="col-lg-7">
                 <div className="section-title position-relative mb-4">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    Need Help?
+                    Get In Touch
                   </h6>
                   <h1 className="display-4">Send Us A Message</h1>
                 </div>

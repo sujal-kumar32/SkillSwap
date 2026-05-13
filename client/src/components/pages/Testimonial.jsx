@@ -57,7 +57,7 @@ function Testimonial() {
           style={{ marginBottom: 90 }}
         >
           <div className="container text-center py-5">
-            <h1 className="text-white display-1">Testimonial</h1>
+            <h1 className="text-white display-1">Testimonials</h1>
             <div className="d-inline-flex text-white mb-5">
               <p className="m-0 text-uppercase">
                 <a className="text-white" href="">
@@ -65,7 +65,7 @@ function Testimonial() {
                 </a>
               </p>
               <i className="fa fa-angle-double-right pt-1 px-3" />
-              <p className="m-0 text-uppercase">Testimonial</p>
+              <p className="m-0 text-uppercase">Testimonials</p>
             </div>
             <div
               className="mx-auto mb-5"
@@ -80,17 +80,17 @@ function Testimonial() {
                     aria-haspopup="true"
                     aria-expanded="false"
                   >
-                    Courses
+                    Skills
                   </button>
                   <div className="dropdown-menu">
                     <a className="dropdown-item" href="#">
-                      Courses 1
+                      Development
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 2
+                      Creative Arts
                     </a>
                     <a className="dropdown-item" href="#">
-                      Courses 3
+                      Sports & Music
                     </a>
                   </div>
                 </div>
@@ -98,7 +98,7 @@ function Testimonial() {
                   type="text"
                   className="form-control border-light"
                   style={{ padding: "30px 25px" }}
-                  placeholder="Keyword"
+                  placeholder="Search skills, mentors, sessions..."
                 />
                 <div className="input-group-append">
                   <button className="btn btn-secondary px-4 px-lg-5">
@@ -111,22 +111,19 @@ function Testimonial() {
         </div>
         {/* Header End */}
         {/* Testimonial Start */}
-        <div className="container-fluid py-5">
+        <div className="container-fluid bg-image py-5">
           <div className="container py-5">
             <div className="row align-items-center">
               <div className="col-lg-5 mb-5 mb-lg-0">
                 <div className="section-title position-relative mb-4">
                   <h6 className="d-inline-block position-relative text-secondary text-uppercase pb-2">
-                    Testimonial
+                    Testimonials
                   </h6>
-                  <h1 className="display-4">What Say Our Students</h1>
+                  <h1 className="display-4">What Our Community Says</h1>
                 </div>
                 <p className="m-0">
-                  Dolor est dolores et nonumy sit labore dolores est sed rebum
-                  amet, justo duo ipsum sanctus dolore magna rebum sit et. Diam
-                  lorem ea sea at. Nonumy et at at sed justo est nonumy tempor.
-                  Vero sea ea eirmod, elitr ea amet diam ipsum at amet. Erat sed
-                  stet eos ipsum diam
+                  Real stories from real learners and mentors who found value in the SkillSwap experience. 
+                  From career transformations to personal growth, hear how peer-to-peer learning changes lives.
                 </p>
               </div>
               <div className="col-lg-7">
@@ -134,10 +131,9 @@ function Testimonial() {
                   <div className="bg-light p-5">
                     <i className="fa fa-3x fa-quote-left text-primary mb-4" />
                     <p>
-                      Sed et elitr ipsum labore dolor diam, ipsum duo vero sed
-                      sit est est ipsum eos clita est ipsum. Est nonumy tempor
-                      at kasd. Sed at dolor duo ut dolor, et justo erat dolor
-                      magna sed stet amet elitr duo lorem
+                      I joined SkillSwap as a complete beginner in web development. Within two months, 
+                      I built my first portfolio website with guidance from my mentor. The live sessions 
+                      are far more effective than any pre-recorded course I've tried.
                     </p>
                     <div className="d-flex flex-shrink-0 align-items-center mt-4">
                       <img
@@ -146,18 +142,17 @@ function Testimonial() {
                         alt=""
                       />
                       <div>
-                        <h5>Student Name</h5>
-                        <span>Web Design</span>
+                        <h5>Ananya Gupta</h5>
+                        <span>Web Development Learner</span>
                       </div>
                     </div>
                   </div>
                   <div className="bg-light p-5">
                     <i className="fa fa-3x fa-quote-left text-primary mb-4" />
                     <p>
-                      Sed et elitr ipsum labore dolor diam, ipsum duo vero sed
-                      sit est est ipsum eos clita est ipsum. Est nonumy tempor
-                      at kasd. Sed at dolor duo ut dolor, et justo erat dolor
-                      magna sed stet amet elitr duo lorem
+                      As a mentor on SkillSwap, I've been able to share my 8 years of design experience 
+                      with eager learners from all over India. The platform makes it effortless to schedule 
+                      sessions, share resources, and track progress. Truly rewarding!
                     </p>
                     <div className="d-flex flex-shrink-0 align-items-center mt-4">
                       <img
@@ -166,8 +161,27 @@ function Testimonial() {
                         alt=""
                       />
                       <div>
-                        <h5>Student Name</h5>
-                        <span>Web Design</span>
+                        <h5>Neha Patel</h5>
+                        <span>UI/UX Design Mentor</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-light p-5">
+                    <i className="fa fa-3x fa-quote-left text-primary mb-4" />
+                    <p>
+                      I was struggling with DSA interview preparation until I found Vikram on SkillSwap. 
+                      His structured approach and real-world examples made complex topics click. Landed my 
+                      dream job at a top tech company thanks to this platform!
+                    </p>
+                    <div className="d-flex flex-shrink-0 align-items-center mt-4">
+                      <img
+                        className="img-fluid mr-4"
+                        src="img/testimonial-2.jpg"
+                        alt=""
+                      />
+                      <div>
+                        <h5>Rohit Mehta</h5>
+                        <span>DSA Interview Prep Learner</span>
                       </div>
                     </div>
                   </div>

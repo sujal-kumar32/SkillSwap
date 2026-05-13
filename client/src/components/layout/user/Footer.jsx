@@ -18,9 +18,9 @@ function Footer() {
                 </h1>
               </a>
               <p className="m-0">
-                Accusam nonumy clita sed rebum kasd eirmod elitr. Ipsum ea lorem
-                at et diam est, tempor rebum ipsum sit ea tempor stet et
-                consetetur dolores. Justo stet diam ipsum lorem vero clita diam
+                SkillSwap is a peer-to-peer mentorship platform where learners connect with skilled 
+                mentors for live, interactive sessions. Learn anything, teach what you know, and 
+                grow together with our community.
               </p>
             </div>
             <div className="col-md-6 mb-5">
@@ -34,7 +34,7 @@ function Footer() {
                     placeholder="Your Email Address"
                   />
                   <div className="input-group-append">
-                    <button className="btn btn-primary px-4">Sign Up</button>
+                    <button className="btn btn-primary px-4">Subscribe</button>
                   </div>
                 </div>
               </div>
@@ -45,15 +45,15 @@ function Footer() {
               <h3 className="text-white mb-4">Get In Touch</h3>
               <p>
                 <i className="fa fa-map-marker-alt mr-2" />
-                123 Street, New York, USA
+                Bangalore, India
               </p>
               <p>
                 <i className="fa fa-phone-alt mr-2" />
-                +012 345 67890
+                +91 98765 43210
               </p>
               <p>
                 <i className="fa fa-envelope mr-2" />
-                info@example.com
+                hello@skillswap.com
               </p>
               <div className="d-flex justify-content-start mt-4">
                 <a className="text-white mr-4" href="#">
@@ -71,27 +71,27 @@ function Footer() {
               </div>
             </div>
             <div className="col-md-4 mb-5">
-              <h3 className="text-white mb-4">Our Courses</h3>
+              <h3 className="text-white mb-4">Popular Skills</h3>
               <div className="d-flex flex-column justify-content-start">
                 <a className="text-white-50 mb-2" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  Web Design
+                  Web Development
                 </a>
                 <a className="text-white-50 mb-2" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  Apps Design
+                  UI/UX Design
                 </a>
                 <a className="text-white-50 mb-2" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  Marketing
+                  Music & Guitar
                 </a>
                 <a className="text-white-50 mb-2" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  Research
+                  Public Speaking
                 </a>
                 <a className="text-white-50" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  SEO
+                  DSA & Interview Prep
                 </a>
               </div>
             </div>
@@ -100,23 +100,23 @@ function Footer() {
               <div className="d-flex flex-column justify-content-start">
                 <a className="text-white-50 mb-2" href="#">
                   <i className="fa fa-angle-right mr-2" />
+                  About Us
+                </a>
+                <a className="text-white-50 mb-2" href="#">
+                  <i className="fa fa-angle-right mr-2" />
+                  Become a Mentor
+                </a>
+                <a className="text-white-50 mb-2" href="#">
+                  <i className="fa fa-angle-right mr-2" />
                   Privacy Policy
                 </a>
                 <a className="text-white-50 mb-2" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  Terms &amp; Condition
-                </a>
-                <a className="text-white-50 mb-2" href="#">
-                  <i className="fa fa-angle-right mr-2" />
-                  Regular FAQs
-                </a>
-                <a className="text-white-50 mb-2" href="#">
-                  <i className="fa fa-angle-right mr-2" />
-                  Help &amp; Support
+                  Terms & Conditions
                 </a>
                 <a className="text-white-50" href="#">
                   <i className="fa fa-angle-right mr-2" />
-                  Contact
+                  Help & Support
                 </a>
               </div>
             </div>
@@ -131,23 +131,16 @@ function Footer() {
           <div className="row">
             <div className="col-md-6 text-center text-md-left mb-3 mb-md-0">
               <p className="m-0">
-                Copyright ©{" "}
+                Copyright &copy;{" "}
                 <a className="text-white" href="#">
-                  Your Site Name
+                  SkillSwap
                 </a>
                 . All Rights Reserved.
               </p>
             </div>
             <div className="col-md-6 text-center text-md-right">
               <p className="m-0">
-                Designed by{" "}
-                <a className="text-white" href="https://htmlcodex.com">
-                  HTML Codex
-                </a>{" "}
-                Distributed by{" "}
-                <a href="https://themewagon.com" target="_blank">
-                  ThemeWagon
-                </a>
+                Built with care for the learning community.
               </p>
             </div>
           </div>

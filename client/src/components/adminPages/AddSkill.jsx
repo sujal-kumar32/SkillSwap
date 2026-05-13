@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { toast } from "react-toastify";
+import React, { useState } from "react";
+import { showToast } from "../../utils/toastUtils";
+import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 
 const AddSkill = () => {
@@ -8,154 +9,92 @@ const AddSkill = () => {
   const [img, setimg] = useState();
   const [categoryId, setcategoryId] = useState("");
   const [categories, setcategories] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     Apiservices.getCategories()
-      .then((res) => {
-        setcategories(res.data.data);
-      })
+      .then((res) => setcategories(res.data.data))
       .catch((err) => {
         console.log(err);
-        toast.error("Failed to load categories");
+        showToast.error("Failed to load categories");
       });
   }, []);
 
-  const handleForm = (e) => {
+  const handleForm = async (e) => {
     e.preventDefault();
-
     const data = new FormData();
     data.append("name", name);
     data.append("description", description);
-    data.append("thumbnail", img);
+    if (img) data.append("thumbnail", img);
     data.append("categoryId", categoryId);
 
-    Apiservices.AddSkill(data)
-      .then((res) => {
-        console.log(res.data);
-        if (res.data.success) {
-          toast.success(res.data.message);
-          setname("");
-          setdescription("");
-          setimg(null);
-          setcategoryId("");
-        } else {
-          toast.warning(res.data.message || "Skill already exists");
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        const message = err?.response?.data?.message;
-        toast.error(message || "Failed to add skill");
-      });
+    setSubmitting(true);
+    try {
+      const res = await Apiservices.AddSkill(data);
+      if (res.data.success) {
+        showToast.success(res.data.message);
+        setname("");
+        setdescription("");
+        setimg(null);
+        setcategoryId("");
+      } else {
+        showToast.warning(res.data.message || "Skill already exists");
+      }
+    } catch (err) {
+      console.log(err);
+      const message = err?.response?.data?.message;
+      showToast.error(message || "Failed to add skill");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-xl-10">
-          <div className="card shadow-sm border-0">
-            <div className="card-header bg-white border-bottom-0 px-4 py-4">
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-                <div>
-                  <h2 className="mb-1">Add Skill</h2>
-                  <p className="text-muted mb-0">
-                    Add a new skill listing to your marketplace with a category,
-                    description, and thumbnail.
-                  </p>
-                </div>
+    <div>
+      <div className="mb-4">
+        <h1 className="fw-bold mb-1" style={{ color: "#1e293b" }}>Add Skill</h1>
+        <p className="text-muted mb-0">Add a new skill to the marketplace.</p>
+      </div>
+
+      <div className="admin-card" style={{ maxWidth: 640 }}>
+        <div className="p-4">
+          <form onSubmit={handleForm}>
+            <div className="mb-3">
+              <label className="form-label fw-semibold mb-1" style={{ color: "#1e293b" }}>Skill Name</label>
+              <input type="text" className="form-control" value={name} onChange={(e) => setname(e.target.value)} required placeholder="e.g. React Development"
+                style={{ borderRadius: 10, border: "1px solid #e2e8f0", padding: "10px 14px" }} />
+            </div>
+
+            <div className="row mb-3">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <label className="form-label fw-semibold mb-1" style={{ color: "#1e293b" }}>Category</label>
+                <select className="form-select" value={categoryId} onChange={(e) => setcategoryId(e.target.value)} required
+                  style={{ borderRadius: 10, border: "1px solid #e2e8f0", padding: "10px 14px" }}>
+                  <option value="">Select a category</option>
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-semibold mb-1" style={{ color: "#1e293b" }}>Thumbnail</label>
+                <input type="file" className="form-control" onChange={(e) => setimg(e.target.files[0])}
+                  style={{ borderRadius: 10, border: "1px solid #e2e8f0", padding: "10px 14px" }} />
+                {img && <small className="text-muted mt-1 d-block">Selected: {img.name}</small>}
               </div>
             </div>
-            <div className="card-body px-4 pb-4">
-              <form onSubmit={handleForm} className="row gx-4 gy-4">
-                <div className="col-12">
-                  <label htmlFor="name" className="form-label fw-semibold">
-                    Skill Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="form-control shadow-sm"
-                    value={name}
-                    onChange={(e) => setname(e.target.value)}
-                    required
-                    placeholder="Enter skill title"
-                  />
-                </div>
 
-                <div className="col-md-6">
-                  <label
-                    htmlFor="categoryId"
-                    className="form-label fw-semibold"
-                  >
-                    Category
-                  </label>
-                  <select
-                    id="categoryId"
-                    name="categoryId"
-                    className="form-control shadow-sm"
-                    value={categoryId}
-                    onChange={(e) => setcategoryId(e.target.value)}
-                    required
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((cat) => (
-                      <option key={cat._id} value={cat._id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-md-6">
-                  <label htmlFor="thumbnail" className="form-label fw-semibold">
-                    Thumbnail
-                  </label>
-                  <div className="input-group shadow-sm">
-                    <input
-                      type="file"
-                      id="thumbnail"
-                      name="thumbnail"
-                      className="form-control"
-                      onChange={(e) => setimg(e.target.files[0])}
-                    />
-                  </div>
-                  {img && (
-                    <small className="text-muted d-block mt-2">
-                      Selected file: {img.name}
-                    </small>
-                  )}
-                </div>
-
-                <div className="col-12">
-                  <label
-                    htmlFor="description"
-                    className="form-label fw-semibold"
-                  >
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    className="form-control shadow-sm"
-                    rows="5"
-                    value={description}
-                    onChange={(e) => setdescription(e.target.value)}
-                    placeholder="Add a short description for the skill"
-                  />
-                </div>
-
-                <div className="col-12 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
-                  <button type="submit" className="btn btn-primary px-4">
-                    Add Skill
-                  </button>
-                  <small className="text-muted mb-0">
-                    Make sure all fields are complete before submitting.
-                  </small>
-                </div>
-              </form>
+            <div className="mb-3">
+              <label className="form-label fw-semibold mb-1" style={{ color: "#1e293b" }}>Description</label>
+              <textarea className="form-control" rows="3" value={description} onChange={(e) => setdescription(e.target.value)} placeholder="Describe what this skill covers..."
+                style={{ borderRadius: 10, border: "1px solid #e2e8f0", padding: "10px 14px", resize: "vertical" }} />
             </div>
-          </div>
+
+            <LoadingButton loading={submitting} type="submit" className="btn btn-primary rounded-pill px-4 fw-semibold"
+              style={{ padding: "10px 28px" }}>
+              <i className="fa fa-plus-circle me-2" />Add Skill
+            </LoadingButton>
+          </form>
         </div>
       </div>
     </div>

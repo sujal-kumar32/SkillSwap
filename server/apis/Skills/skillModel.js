@@ -21,6 +21,11 @@ const skillSchema = new mongoose.Schema(
 
     thumbnail: String,
 
+    thumbnailPublicId: {
+      type: String,
+      default: "",
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -1,28 +1,16 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { deleteConfirmAlert } from "../../utils/alertUtils";
+import { showToast } from "../../utils/toastUtils";
+import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
-
-const badgeClass = (status) => {
-  switch (status) {
-    case "active":
-      return "badge-success";
-    case "completed":
-      return "badge-primary";
-    case "cancelled":
-      return "badge-danger";
-    case "blocked":
-      return "badge-dark";
-    default:
-      return "badge-secondary";
-  }
-};
 
 const ManagePaidSessions = () => {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [paidFilter, setPaidFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
@@ -52,214 +40,161 @@ const ManagePaidSessions = () => {
   const filteredSessions = useMemo(() => {
     return sessions.filter((s) => {
       const q = search.toLowerCase();
-
-      const matchSearch =
-        s.title?.toLowerCase().includes(q) ||
-        s.mentor?.toLowerCase().includes(q);
-
-      const matchFilter =
-        filter === "All" || s.status?.toLowerCase() === filter.toLowerCase();
-
-      return matchSearch && matchFilter;
+      const matchSearch = s.title?.toLowerCase().includes(q) || s.mentorId?.name?.toLowerCase().includes(q);
+      const matchStatus = statusFilter === "All" || s.status?.toLowerCase() === statusFilter.toLowerCase();
+      const matchPaid = paidFilter === "All" || (paidFilter === "Paid" ? s.isPaid : !s.isPaid);
+      return matchSearch && matchStatus && matchPaid;
     });
-  }, [sessions, search, filter]);
+  }, [sessions, search, statusFilter, paidFilter]);
+
+  const totalRevenue = useMemo(
+    () => sessions.reduce((acc, s) => acc + (s.price ?? 0) * (s.bookings ?? 0), 0),
+    [sessions],
+  );
+
+  const StatCard = ({ label, value, icon, color }) => (
+    <div className="col-md-4 mb-3">
+      <div className="admin-card p-4 h-100">
+        <div className="d-flex align-items-center gap-3">
+          <div className="admin-stat-icon" style={{ background: `${color}15`, color }}>
+            <i className={`fa ${icon}`} />
+          </div>
+          <div>
+            <p className="text-muted mb-0 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>{label}</p>
+            <h3 className="fw-bold mb-0">{value}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="container py-5">
-      {/* HEADER */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1>Manage Paid Sessions</h1>
-          <p className="text-muted">
-            Monitor, edit and control all paid sessions.
-          </p>
-        </div>
-
-        <div className="btn-group">
-          <button className="btn btn-outline-primary">Export</button>
-          <button className="btn btn-outline-secondary" onClick={fetchSessions}>
-            Refresh
-          </button>
+    <div>
+      <div className="admin-page-header mb-4">
+        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <h1 className="fw-bold mb-1">Manage Sessions</h1>
+            <p className="text-muted mb-0">Monitor, edit and control all sessions — paid and free.</p>
+          </div>
+          <div className="d-flex gap-2">
+            <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }}>Export</button>
+            <button className="btn btn-outline-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={fetchSessions}>
+              <i className="fa fa-refresh me-1" /> Refresh
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* STATS */}
       {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
       ) : (
         <>
-          {error && (
-            <div className="alert alert-danger" role="alert">
-              {error}
-            </div>
-          )}
+          {error && <div className="alert alert-danger rounded-4">{error}</div>}
 
-          <div className="row mb-4">
-            <div className="col-md-4">
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <h6>Total Sessions</h6>
-                  <h3>{sessions.length}</h3>
+          <div className="row g-4 mb-4">
+            <StatCard label="Total Sessions" value={sessions.length} icon="fa-video" color="#0d6efd" />
+            <StatCard label="Active" value={sessions.filter((s) => s.status === "active").length} icon="fa-play" color="#198754" />
+            <StatCard label="Paid" value={sessions.filter((s) => s.isPaid).length} icon="fa-indian-rupee-sign" color="#d97706" />
+            <StatCard label="Free" value={sessions.filter((s) => !s.isPaid).length} icon="fa-gift" color="#6c2bd9" />
+          </div>
+
+          <div className="admin-card">
+            <div className="p-4">
+              <div className="d-flex flex-column gap-4 mb-4">
+                <div>
+                  <label className="small text-muted fw-semibold mb-2 d-block">Search</label>
+                  <input type="search" className="form-control rounded-pill" placeholder="Search by session or mentor"
+                    value={search} onChange={(e) => setSearch(e.target.value)}
+                    style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px", maxWidth: 420 }} />
+                </div>
+                <div>
+                  <span className="small text-muted fw-semibold d-block mb-2">Type</span>
+                  <div className="d-flex flex-wrap gap-3">
+                    {["All", "Paid", "Free"].map((p) => (
+                      <button key={p} className={`btn btn-sm rounded-pill fw-semibold px-3 ${paidFilter === p ? "btn-primary" : "btn-outline-secondary"}`}
+                        style={{ fontSize: "0.85rem" }} onClick={() => setPaidFilter(p)}>
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <span className="small text-muted fw-semibold d-block mb-2">Status</span>
+                  <div className="d-flex flex-wrap gap-3">
+                    {["All", "active", "completed", "cancelled"].map((s) => (
+                      <button key={s} className={`btn btn-sm rounded-pill fw-semibold px-3 ${statusFilter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                        style={{ fontSize: "0.85rem" }} onClick={() => setStatusFilter(s)}>
+                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="col-md-4">
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <h6>Active</h6>
-                  <h3>
-                    {sessions.filter((s) => s.status === "active").length}
-                  </h3>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <h6>Total Revenue</h6>
-                  <h3>
-                    ₹
-                    {sessions.reduce(
-                      (acc, s) => acc + (s.price ?? 0) * (s.bookings ?? 0),
-                      0,
+              <div className="table-responsive">
+                <table className="table align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Session</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Mentor</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Price</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Bookings</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Status</th>
+                      <th className="text-end fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredSessions.length ? (
+                      filteredSessions.map((s) => (
+                        <tr key={s._id}>
+                          <td className="fw-semibold" style={{ color: "#1e293b" }}>{s.title}</td>
+                          <td style={{ color: "#64748b" }}>{s.mentorId?.name || "Unknown"}</td>
+                          <td className="fw-semibold">₹{s.price ?? 0}</td>
+                          <td>{s.bookings ?? 0}</td>
+                          <td>
+                            <span className={`badge rounded-pill fw-medium ${s.status === "active" ? "bg-success" : s.status === "completed" ? "bg-primary" : "bg-danger"}`}
+                              style={{ fontSize: "0.75rem" }}>{s.status}</span>
+                          </td>
+                          <td className="text-end">
+                            <LoadingButton className="btn btn-sm btn-outline-primary rounded-pill me-1 fw-semibold"
+                              style={{ fontSize: "0.8rem" }}
+                              onClick={() => navigate(`/admin/session/${s._id}`)}>View</LoadingButton>
+                            <LoadingButton className="btn btn-sm btn-outline-warning rounded-pill me-1 fw-semibold"
+                              style={{ fontSize: "0.8rem" }}
+                              onClick={() => navigate(`/admin/session/${s._id}/edit`)}>Edit</LoadingButton>
+                            <LoadingButton loading={actionLoading === s._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
+                              style={{ fontSize: "0.8rem" }}
+                              onClick={async () => {
+                                const confirmed = await deleteConfirmAlert("this session");
+                                if (!confirmed) return;
+                                setActionLoading(s._id);
+                                try {
+                                  const response = await Apiservices.deleteSession(s._id);
+                                  if (response.data.success) {
+                                    setSessions((prev) => prev.filter((item) => item._id !== s._id));
+                                    showToast.success("Session deleted");
+                                  } else {
+                                    showToast.error(response.data.message || "Failed to delete session");
+                                  }
+                                } catch (err) {
+                                  console.log(err);
+                                  showToast.error("Failed to delete session");
+                                } finally {
+                                  setActionLoading(null);
+                                }
+                              }}>Delete</LoadingButton>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr><td colSpan="6" className="text-center py-4 text-muted">No sessions found</td></tr>
                     )}
-                  </h3>
-                </div>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </>
-      )}
-
-      {/* TABLE CARD */}
-      {!loading && (
-        <div className="card shadow-sm">
-          <div className="card-body">
-            {/* SEARCH + FILTER */}
-            <div className="row mb-4">
-              <div className="col-md-6">
-                <input
-                  type="search"
-                  className="form-control"
-                  placeholder="Search by session or mentor"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-
-              <div className="col-md-6 text-md-end mt-2 mt-md-0">
-                {["All", "active", "completed", "cancelled"].map((s) => (
-                  <button
-                    key={s}
-                    className={`btn btn-sm mx-1 ${
-                      filter === s ? "btn-primary" : "btn-outline-secondary"
-                    }`}
-                    onClick={() => setFilter(s)}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* TABLE */}
-            <div className="table-responsive">
-              <table className="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Session</th>
-                    <th>Mentor</th>
-                    <th>Skill</th>
-                    <th>Price</th>
-                    <th>Bookings</th>
-                    <th>Status</th>
-                    <th className="text-end">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {filteredSessions.length ? (
-                    filteredSessions.map((s) => (
-                      <tr key={s._id}>
-                        <td>{s.title}</td>
-                        <td>{s.mentor || "Unknown"}</td>
-                        <td>{s.skillId?.name || s.skill || "-"}</td>
-                        <td>₹{s.price ?? 0}</td>
-                        <td>{s.bookings ?? 0}</td>
-
-                        <td>
-                          <span className={`badge ${badgeClass(s.status)}`}>
-                            {s.status}
-                          </span>
-                        </td>
-
-                        <td className="text-end">
-                          <button
-                            className="btn btn-info btn-sm me-2"
-                            onClick={() => navigate(`/admin/session/${s._id}`)}
-                          >
-                            View
-                          </button>
-
-                          <button
-                            className="btn btn-warning btn-sm me-2"
-                            onClick={() =>
-                              navigate(`/admin/session/${s._id}/edit`)
-                            }
-                          >
-                            Edit
-                          </button>
-
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={async () => {
-                              setActionLoading(s._id);
-                              try {
-                                const response =
-                                  await Apiservices.deleteSession(s._id);
-                                if (response.data.success) {
-                                  setSessions((prev) =>
-                                    prev.filter((item) => item._id !== s._id),
-                                  );
-                                  toast.success("Session deleted");
-                                } else {
-                                  toast.error(
-                                    response.data.message ||
-                                      "Failed to delete session",
-                                  );
-                                }
-                              } catch (err) {
-                                console.log(err);
-                                toast.error("Failed to delete session");
-                              } finally {
-                                setActionLoading(null);
-                              }
-                            }}
-                            disabled={actionLoading === s._id}
-                          >
-                            {actionLoading === s._id ? "Deleting..." : "Delete"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="7" className="text-center text-muted py-4">
-                        No sessions found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

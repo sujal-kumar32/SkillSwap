@@ -44,8 +44,24 @@ class Apiservices {
     return axios.get(baseUrl + "sessions", this.getAuthConfig());
   }
 
+  fetchSessions(params = {}) {
+    return axios.get(baseUrl + "sessions", this.getAuthConfig({ params }));
+  }
+
+  getMySessions() {
+    return axios.get(baseUrl + "sessions/mentor/me", this.getToken());
+  }
+
   getSession(sessionId) {
     return axios.get(baseUrl + `sessions/${sessionId}`, this.getAuthConfig());
+  }
+
+  fetchSessionDetails(sessionId) {
+    return axios.get(baseUrl + `sessions/${sessionId}`, this.getAuthConfig());
+  }
+
+  createSession(data) {
+    return axios.post(baseUrl + "sessions", data, this.getToken());
   }
 
   updateSession(sessionId, data) {
@@ -104,8 +120,72 @@ class Apiservices {
     return axios.get(baseUrl + "requests", this.getToken());
   }
 
+  bookSession(data) {
+    return axios.post(baseUrl + "requests/book", data, this.getToken());
+  }
+
+  fetchBookings() {
+    return axios.get(baseUrl + "requests/my-bookings", this.getToken());
+  }
+
+  fetchProgress() {
+    return axios.get(baseUrl + "progress", this.getToken());
+  }
+
+  getAllProgress() {
+    return axios.get(baseUrl + "progress/all", this.getToken());
+  }
+
+  fetchReviews() {
+    return axios.get(baseUrl + "reviews", this.getToken());
+  }
+
+  createReview(data) {
+    return axios.post(baseUrl + "reviews", data, this.getToken());
+  }
+
+  updateReview(reviewId, data) {
+    return axios.put(baseUrl + `reviews/${reviewId}`, data, this.getToken());
+  }
+
+  deleteReview(reviewId) {
+    return axios.delete(baseUrl + `reviews/${reviewId}`, this.getToken());
+  }
+
+  updateProfile(data) {
+    return axios.put(baseUrl + "profile", data, this.getToken());
+  }
+
+  getProfile() {
+    return axios.get(baseUrl + "profile", this.getToken());
+  }
+
+  fetchRecommendations() {
+    return axios.get(baseUrl + "ai/recommendations", this.getToken());
+  }
+
+  getMentorBookings() {
+    return axios.get(baseUrl + "requests/mentor/bookings", this.getToken());
+  }
+
+  getMentorLearners() {
+    return axios.get(baseUrl + "requests/mentor/learners", this.getToken());
+  }
+
   updateRequest(id, status) {
-    return axios.put(baseUrl + `requests/${id}`, { status }, this.getToken());
+    return axios.put(
+      baseUrl + `requests/${id}/status`,
+      { status },
+      this.getToken(),
+    );
+  }
+
+  createOrder(data) {
+    return axios.post(baseUrl + "payments/create-order", data, this.getToken());
+  }
+
+  verifyPayment(data) {
+    return axios.post(baseUrl + "payments/verify-payment", data, this.getToken());
   }
 }
 

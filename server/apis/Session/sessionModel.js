@@ -27,6 +27,10 @@ const sessionSchema = new mongoose.Schema(
     date: Date,
     time: String,
     duration: Number, 
+    maxLearners: {
+      type: Number,
+      default: 0,
+    },
 
     price: {
       type: Number,
@@ -46,7 +50,8 @@ const sessionSchema = new mongoose.Schema(
 
     meetLink: String,
 
-    thumbnail: String,
+    thumbnail: { type: String },
+    thumbnailPublicId: { type: String, default: "" },
 
     status: {
       type: String,

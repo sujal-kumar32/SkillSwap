@@ -1,13 +1,16 @@
 import React from 'react'
-import AdminNavbar from './AdminNavbar'
+import AdminSidebar from './AdminSidebar'
 import { Outlet } from 'react-router-dom'
+import './admin.css'
 
 const AdminMaster = () => {
   return (
-    <>
-        <AdminNavbar/>
-        <Outlet/>
-    </>
+    <div className="admin-shell">
+      <AdminSidebar />
+      <main className="admin-main bg-image">
+        <Outlet />
+      </main>
+    </div>
   )
 }
 
