@@ -1,10 +1,11 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import { showToast } from "../../../utils/toastUtils";
 
 const links = [
   { to: "/admin", label: "Dashboard", icon: "fa-gauge-high", end: true },
   { to: "/admin/manage-users", label: "Manage Users", icon: "fa-users-gear" },
-  { to: "/admin/add-skill", label: "Add Skill", icon: "fa-plus-circle" },
+  { to: "/admin/categories", label: "Categories", icon: "fa-tags" },
   { to: "/admin/skill-approval", label: "Skill Approval", icon: "fa-clipboard-check" },
   { to: "/admin/manage-paid-sessions", label: "Manage Sessions", icon: "fa-video" },
   { to: "/admin/view-requests", label: "View Requests", icon: "fa-envelope" },
@@ -22,6 +23,7 @@ const AdminSidebar = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("roles");
     window.dispatchEvent(new Event("authChange"));
+    showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
 

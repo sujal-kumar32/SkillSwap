@@ -35,8 +35,9 @@ class Apiservices {
     return axios.post(baseUrl + "skills", data, this.getToken());
   }
 
-  getSkills(includeDeleted = false) {
-    const config = includeDeleted ? { params: { includeDeleted: true } } : {};
+  getSkills(includeDeleted = false, extraParams = {}) {
+    const config = { params: { ...extraParams } };
+    if (includeDeleted) config.params.includeDeleted = true;
     return axios.get(baseUrl + "skills", this.getAuthConfig(config));
   }
 
@@ -88,8 +89,24 @@ class Apiservices {
     return axios.get(baseUrl + "categories");
   }
 
-  getUsers() {
-    return axios.get(baseUrl + "users", this.getToken());
+  addCategory(data) {
+    return axios.post(baseUrl + "categories", data, this.getToken());
+  }
+
+  updateCategory(id, data) {
+    return axios.put(baseUrl + `categories/${id}`, data, this.getToken());
+  }
+
+  deleteCategory(id) {
+    return axios.delete(baseUrl + `categories/${id}`, this.getToken());
+  }
+
+  toggleCategory(id) {
+    return axios.patch(baseUrl + `categories/toggle/${id}`, {}, this.getToken());
+  }
+
+  getUsers(config = {}) {
+    return axios.get(baseUrl + "users", this.getAuthConfig(config));
   }
 
   applyForMentor() {
@@ -190,6 +207,14 @@ class Apiservices {
 
   processRefund(data) {
     return axios.post(baseUrl + "payments/refund", data, this.getToken());
+  }
+
+  getSettings() {
+    return axios.get(baseUrl + "settings", this.getToken());
+  }
+
+  updateSettings(data) {
+    return axios.put(baseUrl + "settings", data, this.getToken());
   }
 }
 

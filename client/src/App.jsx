@@ -25,6 +25,7 @@ import AdminReviews from "./components/adminPages/AdminReviews";
 import AdminProgress from "./components/adminPages/AdminProgress";
 import AdminBookings from "./components/adminPages/AdminBookings";
 import AdminSettings from "./components/adminPages/AdminSettings";
+import AdminCategories from "./components/adminPages/AdminCategories";
 import MentorMaster from "./components/layout/user/mentor/MentorMaster";
 import MentorDashboard from "./components/pages/mentorPages/MentorDashboard";
 import CreateSession from "./components/pages/mentorPages/CreateSession";
@@ -32,7 +33,8 @@ import MySessions from "./components/pages/mentorPages/MySessions";
 import Bookings from "./components/pages/mentorPages/Bookings";
 import MyLearners from "./components/pages/mentorPages/MyLearners";
 import MentorReviews from "./components/pages/mentorPages/MentorReviews";
-import MentorProfile from "./components/pages/mentorPages/MentorProfile";
+import MentorCreateSkill from "./components/pages/mentorPages/MentorCreateSkill";
+import MentorMySkills from "./components/pages/mentorPages/MentorMySkills";
 import LearnerMaster from "./components/layout/user/learner/LearnerMaster";
 import LearnerDashboard from "./components/pages/learnerPages/LearnerDashboard";
 import ExploreSessions from "./components/pages/learnerPages/ExploreSessions";
@@ -41,7 +43,7 @@ import BookSession from "./components/pages/learnerPages/BookSession";
 import LearnerBookings from "./components/pages/learnerPages/MyBookings";
 import LearningProgress from "./components/pages/learnerPages/LearningProgress";
 import LearnerReviews from "./components/pages/learnerPages/LearnerReviews";
-import LearnerProfile from "./components/pages/learnerPages/LearnerProfile";
+import Profile from "./components/pages/Profile";
 import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
 
@@ -132,6 +134,15 @@ function App() {
           />
 
           <Route
+            path="/profile"
+            element={
+              <RequireUser>
+                <Profile />
+              </RequireUser>
+            }
+          />
+
+          <Route
             path="/admin"
             element={
               <RequireAdmin>
@@ -140,7 +151,7 @@ function App() {
             }
           >
             <Route index element={<AdminDashboard />} />
-            <Route path="/admin/add-skill" element={<AddSkill />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/manage-users" element={<ManageUsers />} />
             <Route path="/admin/skill-approval" element={<SkillApproval />} />
             <Route
@@ -170,7 +181,8 @@ function App() {
             <Route path="/mentor/bookings" element={<Bookings />} />
             <Route path="/mentor/learners" element={<MyLearners />} />
             <Route path="/mentor/reviews" element={<MentorReviews />} />
-            <Route path="/mentor/profile" element={<MentorProfile />} />
+            <Route path="/mentor/create-skill" element={<MentorCreateSkill />} />
+            <Route path="/mentor/my-skills" element={<MentorMySkills />} />
           </Route>
 
           <Route
@@ -188,7 +200,6 @@ function App() {
             <Route path="/learner/bookings" element={<LearnerBookings />} />
             <Route path="/learner/progress" element={<LearningProgress />} />
             <Route path="/learner/reviews" element={<LearnerReviews />} />
-            <Route path="/learner/profile" element={<LearnerProfile />} />
             <Route path="/learner/history" element={<BookingHistory />} />
             <Route path="/learner/ai" element={<AIRecommendations />} />
           </Route>

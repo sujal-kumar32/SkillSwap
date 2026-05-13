@@ -3,8 +3,10 @@ const Category = require("../Categories/categoryModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 
 // CREATE SKILL
-const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const isAdmin = (req) => req.user?.roles?.includes("admin");
+
+const normalizeName = (name) =>
+  name.toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
 
 exports.createSkill = async (req, res) => {
   try {
@@ -18,14 +20,17 @@ exports.createSkill = async (req, res) => {
     }
 
     const trimmedName = name.trim();
-    const existingSkill = await Skill.findOne({
-      name: { $regex: `^${escapeRegex(trimmedName)}$`, $options: "i" },
-    });
+    const normalized = normalizeName(trimmedName);
 
-    if (existingSkill) {
+    const allSkills = await Skill.find({ categoryId }).lean();
+    const duplicate = allSkills.find(
+      (s) => normalizeName(s.name) === normalized,
+    );
+
+    if (duplicate) {
       return res.status(409).json({
         success: false,
-        message: "A skill with this name already exists",
+        message: `"${name}" already exists in this category as "${duplicate.name}"`,
       });
     }
 
@@ -196,11 +201,21 @@ exports.updateSkill = async (req, res) => {
       });
     }
 
-    const { name, description, status } = req.body;
+    const isOwner = skill.createdBy?.toString() === req.user.id;
+    if (!isAdmin(req) && !isOwner) {
+      return res.status(403).json({ success: false, message: "Not authorized to update this skill" });
+    }
+
+    const { name, description, status, level, tags } = req.body;
 
     if (name) skill.name = name.trim();
     if (description !== undefined) skill.description = description.trim();
-    if (status) {
+    if (level && ["beginner", "intermediate", "advanced", "all"].includes(level)) skill.level = level;
+    if (tags !== undefined) {
+      const parsedTags = typeof tags === "string" ? tags.split(",").map((t) => t.trim()).filter(Boolean) : Array.isArray(tags) ? tags : [];
+      skill.tags = parsedTags;
+    }
+    if (status && isAdmin(req)) {
       const validStatuses = ["pending", "approved", "rejected"];
       if (!validStatuses.includes(status)) {
         return res.status(400).json({
@@ -246,6 +261,11 @@ exports.deleteSkill = async (req, res) => {
         success: false,
         message: "Skill not found",
       });
+    }
+
+    const isOwner = skill.createdBy?.toString() === req.user.id;
+    if (!isAdmin(req) && !isOwner) {
+      return res.status(403).json({ success: false, message: "Not authorized to delete this skill" });
     }
 
     if (skill.thumbnailPublicId) {

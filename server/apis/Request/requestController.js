@@ -88,8 +88,8 @@ exports.getRequests = async (req, res) => {
     const [requests, total] = await Promise.all([
       Request.find(filter).sort(sortObj).skip(skip).limit(limit)
         .populate("sessionId")
-        .populate("learnerId", "name email")
-        .populate("mentorId", "name email")
+        .populate("learnerId", "name email profileImage")
+        .populate("mentorId", "name email profileImage")
         .lean(),
       Request.countDocuments(filter),
     ]);
@@ -117,11 +117,11 @@ exports.getMyBookings = async (req, res) => {
         path: "sessionId",
         populate: [
           { path: "skillId", populate: { path: "categoryId", select: "name" } },
-          { path: "mentorId", select: "name email" },
+          { path: "mentorId", select: "name email profileImage" },
         ],
       })
-      .populate("learnerId", "name email")
-      .populate("mentorId", "name email")
+      .populate("learnerId", "name email profileImage")
+      .populate("mentorId", "name email profileImage")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -146,8 +146,8 @@ exports.getMentorBookings = async (req, res) => {
         path: "sessionId",
         populate: { path: "skillId", select: "name categoryId" },
       })
-      .populate("learnerId", "name email")
-      .populate("mentorId", "name email")
+      .populate("learnerId", "name email profileImage")
+      .populate("mentorId", "name email profileImage")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -176,7 +176,7 @@ exports.getMentorLearners = async (req, res) => {
         select: "title skillId",
         populate: { path: "skillId", select: "name" },
       })
-      .populate("learnerId", "name email")
+      .populate("learnerId", "name email profileImage")
       .sort({ updatedAt: -1 })
       .lean();
 
@@ -191,6 +191,7 @@ exports.getMentorLearners = async (req, res) => {
             _id: learnerId,
             name: learner.name,
             email: learner.email,
+            profileImage: learner.profileImage || "",
             sessions: 0,
             skills: new Set(),
             lastSession: null,

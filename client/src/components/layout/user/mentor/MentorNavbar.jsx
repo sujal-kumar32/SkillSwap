@@ -23,6 +23,7 @@ function MentorNavbar() {
     localStorage.removeItem("role");
     setIsLoggedIn(false);
     window.dispatchEvent(new Event("authChange"));
+    showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../../src/utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
@@ -17,6 +18,7 @@ function WorkspaceHub() {
     mentorSessions: 0,
     totalReviews: 0
   });
+  const [profileImage, setProfileImage] = useState("");
   const [loadingStats, setLoadingStats] = useState(true);
   const [recentActivities, setRecentActivities] = useState([]);
 
@@ -28,6 +30,11 @@ function WorkspaceHub() {
     const fetchDashboardData = async () => {
       try {
         setLoadingStats(true);
+
+        const profileRes = await Apiservices.getProfile().catch(() => ({ data: { data: {} } }));
+        const userData = profileRes.data.data || {};
+        if (userData.profileImage) setProfileImage(userData.profileImage);
+
         const bookingsRes = await Apiservices.fetchBookings().catch(() => ({ data: { data: [] } }));
         const bookings = bookingsRes.data.data || [];
 
@@ -150,7 +157,9 @@ function WorkspaceHub() {
   };
 
   return (
-    <div className="workspace-hub-wrapper bg-image">
+    <>
+      <TopBar />
+      <div className="workspace-hub-wrapper bg-image">
       <div className="bg-grid"></div>
       <div className="orb orb-1"></div>
       <div className="orb orb-2"></div>
@@ -164,9 +173,10 @@ function WorkspaceHub() {
           <div className="d-flex align-items-center gap-4">
             <div className="avatar-wrapper">
               <img
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0d6efd&color=fff&size=100`}
+                src={profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0d6efd&color=fff&size=100`}
                 alt="Profile"
                 className="rounded-circle shadow-lg"
+                style={{ objectFit: "cover", width: 100, height: 100 }}
               />
               <span className="status-dot"></span>
             </div>
@@ -784,6 +794,7 @@ function WorkspaceHub() {
         .bg-info { background: #06b6d4 !important; }
       `}</style>
     </div>
+    </>
   );
 }
 

@@ -1,14 +1,16 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import { showToast } from "../../../../utils/toastUtils";
 
 const links = [
   { to: "/mentor", label: "Dashboard", icon: "fa-gauge-high", end: true },
+  { to: "/mentor/create-skill", label: "Create Skill", icon: "fa-lightbulb" },
+  { to: "/mentor/my-skills", label: "My Skills", icon: "fa-code" },
   { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
   { to: "/mentor/my-sessions", label: "My Sessions", icon: "fa-chalkboard-teacher" },
   { to: "/mentor/bookings", label: "Bookings", icon: "fa-calendar-check" },
   { to: "/mentor/learners", label: "Learners", icon: "fa-users" },
   { to: "/mentor/reviews", label: "Reviews", icon: "fa-star" },
-  { to: "/mentor/profile", label: "Profile", icon: "fa-user" },
 ];
 
 const MentorSidebar = () => {
@@ -19,6 +21,7 @@ const MentorSidebar = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("roles");
     window.dispatchEvent(new Event("authChange"));
+    showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
 

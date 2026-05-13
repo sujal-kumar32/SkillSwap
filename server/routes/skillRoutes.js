@@ -5,7 +5,7 @@ const { skill } = require("../validations");
 
 const upload = require("../middleware/upload");
 const protect = require("../middleware/authMiddleware");
-const { requireAdmin } = require("../middleware/roleMiddleware");
+const { requireMentorOrAdmin } = require("../middleware/roleMiddleware");
 
 const {
   createSkill,
@@ -15,10 +15,10 @@ const {
   deleteSkill,
 } = require("../apis/Skills/skillController");
 
-router.post("/", protect, upload.single("thumbnail"), validate(skill.create), createSkill);
+router.post("/", protect, requireMentorOrAdmin, upload.single("thumbnail"), validate(skill.create), createSkill);
 router.get("/", protect.optional, getSkills);
 router.get("/:id", protect.optional, getSkill);
-router.put("/:id", protect, requireAdmin, upload.single("thumbnail"), validate(skill.update), updateSkill);
-router.delete("/:id", protect, requireAdmin, deleteSkill);
+router.put("/:id", protect, upload.single("thumbnail"), validate(skill.update), updateSkill);
+router.delete("/:id", protect, deleteSkill);
 
 module.exports = router;

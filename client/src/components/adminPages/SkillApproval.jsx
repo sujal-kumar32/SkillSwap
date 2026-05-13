@@ -10,17 +10,20 @@ const SkillApproval = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchSkills(filter === "deleted");
-  }, [filter]);
+  }, [filter, page]);
 
   const fetchSkills = async (includeDeleted = false) => {
     try {
       setLoading(true);
-      const response = await Apiservices.getSkills(includeDeleted);
+      const response = await Apiservices.getSkills(includeDeleted, { page, limit: 10 });
       if (response.data.success) {
         setSkills(response.data.data);
+        setTotalPages(response.data.pages || 1);
       } else {
         showToast.error("Failed to load skills");
       }
@@ -217,8 +220,22 @@ const SkillApproval = () => {
           </div>
         </div>
       )}
+      {renderPagination()}
     </div>
   );
 };
+
+const renderPagination = () => totalPages > 1 ? (
+  <div className="d-flex justify-content-center mt-4">
+    <div className="btn-group">
+      <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+      {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => (
+        <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+      ))}
+      {totalPages > 10 && <button className="btn btn-sm btn-outline-primary" disabled>...</button>}
+      <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+    </div>
+  </div>
+) : null;
 
 export default SkillApproval;

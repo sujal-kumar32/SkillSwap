@@ -4,8 +4,8 @@ import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader } from "../../learner/LearnerUI";
 
-const avatarFor = (name = "Learner") =>
-  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
+const avatarFor = (name = "Learner", image) =>
+  image || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
 
 const Learners = () => {
   const [learners, setLearners] = useState([]);
@@ -129,7 +129,7 @@ const Learners = () => {
                   <div className="card-body text-center p-4">
                     {/* IMAGE */}
                     <img
-                      src={avatarFor(learner.name)}
+                      src={avatarFor(learner.name, learner.profileImage)}
                       alt={learner.name}
                       className="learner-image mb-3"
                     />

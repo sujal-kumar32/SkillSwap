@@ -22,7 +22,7 @@ exports.getRecommendations = async (req, res) => {
         path: "skillId",
         populate: { path: "categoryId", select: "name" },
       })
-      .populate("mentorId", "name email")
+      .populate("mentorId", "name email profileImage")
       .sort({ createdAt: -1 })
       .limit(12)
       .lean();

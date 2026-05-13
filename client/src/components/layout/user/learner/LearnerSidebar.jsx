@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import { showToast } from "../../../../utils/toastUtils";
 
 const links = [
   { to: "/learner", label: "Dashboard", icon: "fa-gauge-high", end: true },
@@ -7,7 +8,6 @@ const links = [
   { to: "/learner/bookings", label: "My Bookings", icon: "fa-calendar-check" },
   { to: "/learner/progress", label: "Learning Progress", icon: "fa-chart-line" },
   { to: "/learner/reviews", label: "Reviews", icon: "fa-star" },
-  { to: "/learner/profile", label: "Profile", icon: "fa-user" },
   { to: "/learner/history", label: "Booking History", icon: "fa-clock-rotate-left" },
   { to: "/learner/ai", label: "AI Recommendations", icon: "fa-wand-magic-sparkles" },
 ];
@@ -20,6 +20,7 @@ const LearnerSidebar = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("roles");
     window.dispatchEvent(new Event("authChange"));
+    showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
 

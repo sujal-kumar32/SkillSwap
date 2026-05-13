@@ -7,8 +7,8 @@ import Apiservices from "../../../../Apiservices";
 import { PageHeader } from "../../learner/LearnerUI";
 
 
-const avatarFor = (name = "Learner") =>
-  `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
+const avatarFor = (name = "Learner", image) =>
+  image || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
 
 const formatDate = (date) => {
   if (!date) return "Not scheduled";
@@ -149,20 +149,19 @@ const Bookings = () => {
               </div>
             ) : bookings.length ? (
               bookings.map((booking) => {
-                const learnerName = booking.learnerId?.name || "Learner";
-                const status = booking.requestStatus || "pending";
-
-                return (
-              <div className="col-lg-4 col-md-6" key={booking._id}>
-                <div className="card border-0 shadow-sm booking-card h-100">
-                  <div className="card-body p-4">
-                    {/* USER */}
-                    <div className="d-flex align-items-center mb-4">
-                      <img
-                        src={avatarFor(learnerName)}
-                        alt={learnerName}
-                        className="learner-image"
-                      />
+                    const learnerName = booking.learnerId?.name || "Learner";
+                    const learnerImage = booking.learnerId?.profileImage;
+                    return (
+                <div className="col-lg-4 col-md-6" key={booking._id}>
+                  <div className="card border-0 shadow-sm booking-card h-100">
+                    <div className="card-body p-4">
+                      {/* USER */}
+                      <div className="d-flex align-items-center mb-4">
+                        <img
+                          src={avatarFor(learnerName, learnerImage)}
+                          alt={learnerName}
+                          className="learner-image"
+                        />
 
                       <div className="ms-3">
                         <h5 className="fw-bold mb-1">{learnerName}</h5>

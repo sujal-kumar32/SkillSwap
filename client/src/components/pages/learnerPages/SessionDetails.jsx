@@ -107,7 +107,7 @@ const SessionDetails = () => {
           <div className="learner-card p-4 mb-4">
             <h5 className="fw-bold">Mentor</h5>
             <div className="d-flex align-items-center gap-3 my-3">
-              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" className="rounded-circle" width="56" height="56" />
+              <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" className="rounded-circle" width="56" height="56" style={{ objectFit: "cover" }} />
               <div>
                 <h6 className="fw-bold mb-0">{session.mentorId?.name || "SkillSwap Mentor"}</h6>
                 <small className="text-muted">{session.mentorId?.email || "mentor@skillswap.com"}</small>

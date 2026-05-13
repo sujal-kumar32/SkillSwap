@@ -19,6 +19,7 @@ const userRoutes = require("./routes/userRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const progressRoutes = require("./routes/progressRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 
 app.use(helmet());
@@ -59,6 +60,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/progress", progressRoutes);
+app.use("/api/settings", settingsRoutes);
 app.use("/api/ai", aiRoutes);
 
 app.listen(PORT, (err) => {

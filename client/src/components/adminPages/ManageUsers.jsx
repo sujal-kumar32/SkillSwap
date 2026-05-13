@@ -4,6 +4,8 @@ import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 
+const PAGE_SIZE = 10;
+
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("All");
@@ -11,18 +13,24 @@ const ManageUsers = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, filter]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await Apiservices.getUsers();
+      const params = { page, limit: PAGE_SIZE };
+      if (filter !== "All") params.status = filter.toLowerCase();
+      if (search.trim()) params.search = search.trim();
+      const response = await Apiservices.getUsers({ params });
       if (response.data.success) {
         setUsers(response.data.data);
+        setTotalPages(response.data.pages || 1);
       } else {
         setError("Failed to load users");
         showToast.error("Failed to load users");
@@ -30,24 +38,10 @@ const ManageUsers = () => {
     } catch (err) {
       setError(err.message || "Error fetching users");
       showToast.error("Error fetching users");
-      console.log(err);
     } finally {
       setLoading(false);
     }
   };
-
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const query = search.trim().toLowerCase();
-      const matchesSearch =
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query) ||
-        (user.roles && user.roles[0]?.toLowerCase().includes(query));
-      const matchesFilter =
-        filter === "All" || user.status?.toLowerCase() === filter.toLowerCase();
-      return matchesSearch && matchesFilter;
-    });
-  }, [filter, search, users]);
 
   const updateStatus = async (userId, newStatus) => {
     try {
@@ -65,7 +59,6 @@ const ManageUsers = () => {
       }
     } catch (err) {
       showToast.error("Failed to update user status");
-      console.log(err);
     } finally {
       setActionLoading(null);
     }
@@ -80,6 +73,11 @@ const ManageUsers = () => {
     const confirmed = await confirmAlert("Unblock this user? They will regain access.");
     if (!confirmed) return;
     updateStatus(userId, "active");
+  };
+
+  const handleSearch = (val) => {
+    setSearch(val);
+    setPage(1);
   };
 
   const StatCard = ({ label, value, icon, color }) => (
@@ -98,6 +96,18 @@ const ManageUsers = () => {
     </div>
   );
 
+  const Pagination = () => totalPages > 1 ? (
+    <div className="d-flex justify-content-center mt-4">
+      <div className="btn-group">
+        <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+        ))}
+        <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div>
       <div className="admin-page-header mb-4">
@@ -105,12 +115,6 @@ const ManageUsers = () => {
           <div>
             <h1 className="fw-bold mb-1">Manage Users</h1>
             <p className="text-muted mb-0">Review and control user access. Block or unblock users instantly.</p>
-          </div>
-          <div className="d-flex gap-2">
-            <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }}>Export</button>
-            <button className="btn btn-outline-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={fetchUsers} disabled={loading}>
-              <i className="fa fa-refresh me-1" /> Refresh
-            </button>
           </div>
         </div>
       </div>
@@ -122,89 +126,85 @@ const ManageUsers = () => {
         </div>
       )}
 
-      {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status" />
-        </div>
-      ) : (
-        <>
-          <div className="row g-4 mb-4">
-            <StatCard label="Total Users" value={users.length} icon="fa-users" color="#0d6efd" />
-            <StatCard label="Blocked" value={users.filter((u) => u.status === "blocked").length} icon="fa-ban" color="#dc3545" />
+      <div className="row g-4 mb-4">
+        <StatCard label="All Users" value="-" icon="fa-users" color="#0d6efd" />
+      </div>
+
+      <div className="admin-card">
+        <div className="p-4">
+          <div className="row align-items-center g-3 mb-4">
+            <div className="col-md-6">
+              <input type="search" className="form-control rounded-pill" placeholder="Search by name, email, or role"
+                value={search} onChange={(e) => handleSearch(e.target.value)}
+                style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
+            </div>
+            <div className="col-md-6 text-md-end">
+              {["All", "active", "blocked"].map((s) => (
+                <button key={s} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                  style={{ fontSize: "0.8rem" }} onClick={() => { setFilter(s); setPage(1); }}>
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="admin-card">
-            <div className="p-4">
-              <div className="row align-items-center g-3 mb-4">
-                <div className="col-md-6">
-                  <div className="input-group">
-                    <input type="search" className="form-control rounded-start-pill" placeholder="Search by name, email or role" value={search} onChange={(e) => setSearch(e.target.value)}
-                      style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
-                    <span className="input-group-text bg-white rounded-end-pill" style={{ border: "1px solid #eef2f7" }}>
-                      <i className="fa fa-search text-muted" />
-                    </span>
-                  </div>
-                </div>
-                <div className="col-md-6 text-md-end">
-                  {["All", "active", "blocked"].map((s) => (
-                    <button key={s} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
-                      style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
-                      {s.charAt(0).toUpperCase() + s.slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
+          {loading ? (
+            <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
+          ) : users.length ? (
+            <>
               <div className="table-responsive">
                 <table className="table align-middle mb-0">
                   <thead>
                     <tr>
-                      <th className="fw-semibold" style={{ color: "#64748b", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Name</th>
-                      <th className="fw-semibold" style={{ color: "#64748b", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Email</th>
-                      <th className="fw-semibold" style={{ color: "#64748b", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Role</th>
-                      <th className="fw-semibold" style={{ color: "#64748b", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Status</th>
-                      <th className="text-end fw-semibold" style={{ color: "#64748b", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.3px", borderBottom: "2px solid #eef2f7" }}>Actions</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>User</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Role</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Status</th>
+                      <th className="text-end fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredUsers.length ? (
-                      filteredUsers.map((user) => (
-                        <tr key={user._id}>
-                          <td className="fw-semibold" style={{ color: "#1e293b" }}>{user.name}</td>
-                          <td style={{ color: "#64748b" }}>{user.email}</td>
-                          <td><span className="badge rounded-pill" style={{ background: "#f1f5f9", color: "#475569", fontWeight: 500 }}>{user.roles?.[0]?.charAt(0).toUpperCase() + user.roles?.[0]?.slice(1) || "User"}</span></td>
-                          <td><span className={`badge rounded-pill fw-medium ${user.status === "active" ? "bg-success" : "bg-danger"}`} style={{ fontSize: "0.75rem" }}>{user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span></td>
-                          <td className="text-end">
-                            {user.status !== "blocked" ? (
-                              <LoadingButton loading={actionLoading === user._id} className="btn btn-sm rounded-pill fw-semibold"
-                                style={{ background: "#fef2f2", color: "#ef4444", border: "1px solid #fee2e2", fontSize: "0.8rem" }}
-                                onClick={() => handleBlock(user._id)} disabled={actionLoading === user._id}
-                                onMouseEnter={(e) => { e.target.style.background = "#fee2e2"; }} onMouseLeave={(e) => { e.target.style.background = "#fef2f2"; }}>
-                                Block
-                              </LoadingButton>
-                            ) : (
-                              <LoadingButton loading={actionLoading === user._id} className="btn btn-sm rounded-pill fw-semibold"
-                                style={{ background: "#f0fdf4", color: "#16a34a", border: "1px solid #dcfce7", fontSize: "0.8rem" }}
-                                onClick={() => handleUnblock(user._id)} disabled={actionLoading === user._id}
-                                onMouseEnter={(e) => { e.target.style.background = "#dcfce7"; }} onMouseLeave={(e) => { e.target.style.background = "#f0fdf4"; }}>
-                                Unblock
-                              </LoadingButton>
-                            )}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-muted">No users match the current search or filter.</td>
+                    {users.map((user) => (
+                      <tr key={user._id}>
+                        <td>
+                          <div className="d-flex align-items-center gap-2">
+                            <img src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0d6efd&color=fff`}
+                              alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
+                            <div>
+                              <div className="fw-semibold" style={{ color: "#1e293b" }}>{user.name}</div>
+                              <small style={{ color: "#64748b" }}>{user.email}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{(user.roles || []).join(", ")}</td>
+                        <td>
+                          <span className={`badge rounded-pill fw-medium ${user.status === "active" ? "bg-success" : "bg-danger"}`}
+                            style={{ fontSize: "0.75rem" }}>{user.status}</span>
+                        </td>
+                        <td className="text-end">
+                          {user.status === "active" ? (
+                            <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
+                              style={{ fontSize: "0.8rem" }} onClick={() => handleBlock(user._id)}>
+                              <i className="fa fa-ban me-1" /> Block
+                            </LoadingButton>
+                          ) : (
+                            <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-success rounded-pill fw-semibold"
+                              style={{ fontSize: "0.8rem" }} onClick={() => handleUnblock(user._id)}>
+                              <i className="fa fa-check me-1" /> Unblock
+                            </LoadingButton>
+                          )}
+                        </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        </>
-      )}
+              <Pagination />
+            </>
+          ) : (
+            <div className="text-center py-4 text-muted">No users found</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

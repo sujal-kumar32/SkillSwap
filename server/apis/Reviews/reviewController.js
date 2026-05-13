@@ -32,8 +32,8 @@ exports.getReviews = async (req, res) => {
     const [reviews, total] = await Promise.all([
       Review.find(filter).sort(sortObj).skip(skip).limit(limit)
         .populate("sessionId", "title")
-        .populate("mentorId", "name email")
-        .populate("learnerId", "name email")
+        .populate("mentorId", "name email profileImage")
+        .populate("learnerId", "name email profileImage")
         .lean(),
       Review.countDocuments(filter),
     ]);
@@ -79,7 +79,7 @@ exports.createReview = async (req, res) => {
         requestStatus: { $in: ["accepted", "completed"] },
       })
         .populate("sessionId", "title mentorId")
-        .populate("mentorId", "name")
+        .populate("mentorId", "name profileImage")
         .lean();
 
       if (!booking) {

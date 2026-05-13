@@ -92,7 +92,7 @@ exports.getMySessions = async (req, res) => {
         path: "skillId",
         populate: { path: "categoryId", select: "name" },
       })
-      .populate("mentorId", "name email")
+      .populate("mentorId", "name email profileImage")
       .lean();
 
     const sessionIds = sessions.map((session) => session._id);
@@ -161,7 +161,7 @@ exports.getSessions = async (req, res) => {
           path: "skillId",
           populate: { path: "categoryId", select: "name" },
         })
-        .populate("mentorId", "name email")
+        .populate("mentorId", "name email profileImage")
         .lean(),
       Session.countDocuments(filter),
     ]);
@@ -189,7 +189,7 @@ exports.getSession = async (req, res) => {
   try {
     const session = await Session.findById(req.params.id)
       .populate("skillId")
-      .populate("mentorId", "name email")
+      .populate("mentorId", "name email profileImage")
       .lean();
 
     if (!session) {
