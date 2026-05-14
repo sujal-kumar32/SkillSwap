@@ -8,9 +8,11 @@ const upload = require("../middleware/upload");
 const {
   getProfile,
   updateProfile,
+  getProfileStats,
 } = require("../apis/Profile/profileController");
 
 router.get("/", protect, getProfile);
 router.put("/", protect, upload.single("profileImage"), validate(profile.update), updateProfile);
+router.get("/stats", protect, getProfileStats);
 
 module.exports = router;

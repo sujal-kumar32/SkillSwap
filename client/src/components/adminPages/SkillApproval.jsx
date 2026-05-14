@@ -220,22 +220,20 @@ const SkillApproval = () => {
           </div>
         </div>
       )}
-      {renderPagination()}
+      {totalPages > 1 && (
+        <div className="d-flex justify-content-center mt-4">
+          <div className="btn-group">
+            <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => (
+              <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+            ))}
+            {totalPages > 10 && <button className="btn btn-sm btn-outline-primary" disabled>...</button>}
+            <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-const renderPagination = () => totalPages > 1 ? (
-  <div className="d-flex justify-content-center mt-4">
-    <div className="btn-group">
-      <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
-      {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => (
-        <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
-      ))}
-      {totalPages > 10 && <button className="btn btn-sm btn-outline-primary" disabled>...</button>}
-      <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
-    </div>
-  </div>
-) : null;
 
 export default SkillApproval;

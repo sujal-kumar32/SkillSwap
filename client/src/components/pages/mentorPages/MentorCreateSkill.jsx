@@ -13,12 +13,50 @@ const MentorCreateSkill = () => {
   const [level, setLevel] = useState("all");
   const [tagsInput, setTagsInput] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [aiLoading, setAiLoading] = useState({ description: false, tags: false });
 
   React.useEffect(() => {
     Apiservices.getCategories()
       .then((res) => setCategories(res.data.data))
       .catch(() => showToast.error("Failed to load categories"));
   }, []);
+
+  const generateAIDescription = async () => {
+    if (!name.trim()) {
+      showToast.warning("Enter a skill name first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, description: true }));
+    try {
+      const res = await Apiservices.generateDescription({
+        skill: name,
+        sessionType: "online",
+      });
+      setDescription(res.data.data.description);
+      showToast.success("AI description generated");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to generate description");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, description: false }));
+    }
+  };
+
+  const generateAITags = async () => {
+    if (!name.trim()) {
+      showToast.warning("Enter a skill name first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, tags: true }));
+    try {
+      const res = await Apiservices.generateTags({ skill: name });
+      setTagsInput(res.data.data.tags);
+      showToast.success("AI tags generated");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to generate tags");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, tags: false }));
+    }
+  };
 
   const handleForm = async (e) => {
     e.preventDefault();
@@ -139,7 +177,6 @@ const MentorCreateSkill = () => {
           padding: 35px;
           box-shadow: 0 15px 40px rgba(0,0,0,0.06);
         }
-
       `}</style>
 
       <PageHeader title="Create Skill" subtitle="Submit a new skill for admin approval." />
@@ -185,12 +222,41 @@ const MentorCreateSkill = () => {
 
                 <div className="col-12">
                   <label className="form-label fw-bold">Description</label>
-                  <textarea className="skill-textarea" rows="4" value={description} onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe what this skill covers..." style={{ resize: "vertical" }} />
+                  <div className="d-flex gap-2">
+                    <textarea className="skill-textarea flex-grow-1" rows="4" value={description} onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe what this skill covers..." style={{ resize: "vertical" }} />
+                    <button
+                      type="button"
+                      className="btn btn-outline-primary rounded-pill px-3 fw-semibold align-self-start"
+                      onClick={generateAIDescription}
+                      disabled={aiLoading.description}
+                      style={{ whiteSpace: "nowrap", minWidth: 110 }}
+                    >
+                      {aiLoading.description ? (
+                        <><span className="spinner-border spinner-border-sm me-1" /> Gen</>
+                      ) : (
+                        <><i className="fa fa-wand-magic-sparkles me-1" /> AI</>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-bold">Tags <small className="text-muted fw-normal">(comma-separated)</small></label>
+                  <label className="form-label fw-bold">
+                    Tags <small className="text-muted fw-normal">(comma-separated)</small>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-primary rounded-pill ms-2 px-3"
+                      onClick={generateAITags}
+                      disabled={aiLoading.tags}
+                    >
+                      {aiLoading.tags ? (
+                        <><span className="spinner-border spinner-border-sm me-1" /></>
+                      ) : (
+                        <><i className="fa fa-wand-magic-sparkles me-1" /></>
+                      )} Suggest
+                    </button>
+                  </label>
                   <input type="text" className="skill-control" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)}
                     placeholder="e.g. react, hooks, redux" />
                   {tagsInput.trim() && (
@@ -238,7 +304,7 @@ const MentorCreateSkill = () => {
               <div className="tip-icon" style={{ background: "linear-gradient(135deg, #0d6efd, #6610f2)" }}>
                 <i className="fa fa-lightbulb"></i>
               </div>
-              <h5 className="fw-bold mb-0">Tips</h5>
+              <h5 className="fw-bold mb-0">AI Tips</h5>
             </div>
             <div className="tip-row">
               <div className="tip-icon" style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}>

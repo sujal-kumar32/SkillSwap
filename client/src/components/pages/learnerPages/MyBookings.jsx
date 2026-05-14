@@ -11,6 +11,7 @@ const MyBookings = () => {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -40,6 +41,12 @@ const MyBookings = () => {
       }),
     [bookings, query, filter],
   );
+
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => { setPage(1); }, [query, filter]);
 
   return (
     <>
@@ -83,7 +90,7 @@ const MyBookings = () => {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((booking) => (
+                {paginated.map((booking) => (
                   <tr key={booking._id}>
                     <td>
                       <div className="d-flex align-items-center gap-3">
@@ -100,7 +107,12 @@ const MyBookings = () => {
                     <td className="text-end">
                       <div className="btn-group">
                         <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-outline-primary btn-sm">Details</Link>
-                        <button className="btn btn-primary btn-sm" disabled={booking.requestStatus !== "accepted"}>Join</button>
+                        <button className="btn btn-primary btn-sm" disabled={booking.requestStatus !== "accepted"}
+                          onClick={() => {
+                            const link = booking.sessionId?.meetLink;
+                            if (link) window.open(link, "_blank");
+                            else showToast.info("Meeting link not available");
+                          }}>Join</button>
                         <button
                           className="btn btn-outline-danger btn-sm"
                           disabled={!["pending", "accepted"].includes(booking.requestStatus)}
@@ -132,6 +144,18 @@ const MyBookings = () => {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+              <small className="text-muted">Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} of {filtered.length}</small>
+              <div className="btn-group">
+                <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button key={p} className={`btn btn-sm ${p === page ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(p)}>{p}</button>
+                ))}
+                <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <EmptyState title="No bookings found" text="Book sessions to start your learning journey." actionLabel="Explore Sessions" actionTo="/learner/explore" />

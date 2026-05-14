@@ -10,6 +10,7 @@ const links = [
   { to: "/learner/reviews", label: "Reviews", icon: "fa-star" },
   { to: "/learner/history", label: "Booking History", icon: "fa-clock-rotate-left" },
   { to: "/learner/ai", label: "AI Recommendations", icon: "fa-wand-magic-sparkles" },
+  { to: "/learner/ai-roadmap", label: "Learning Roadmap", icon: "fa-road" },
 ];
 
 const LearnerSidebar = () => {

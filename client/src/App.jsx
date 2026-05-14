@@ -26,6 +26,7 @@ import AdminProgress from "./components/adminPages/AdminProgress";
 import AdminBookings from "./components/adminPages/AdminBookings";
 import AdminSettings from "./components/adminPages/AdminSettings";
 import AdminCategories from "./components/adminPages/AdminCategories";
+import MentorRequests from "./components/adminPages/MentorRequests";
 import MentorMaster from "./components/layout/user/mentor/MentorMaster";
 import MentorDashboard from "./components/pages/mentorPages/MentorDashboard";
 import CreateSession from "./components/pages/mentorPages/CreateSession";
@@ -46,6 +47,7 @@ import LearnerReviews from "./components/pages/learnerPages/LearnerReviews";
 import Profile from "./components/pages/Profile";
 import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
+import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
 
 
 const isAdminLoggedIn = () =>
@@ -164,6 +166,7 @@ function App() {
             <Route path="/admin/bookings" element={<AdminBookings />} />
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/progress" element={<AdminProgress />} />
+            <Route path="/admin/mentor-requests" element={<MentorRequests />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
           </Route>
 
@@ -202,6 +205,7 @@ function App() {
             <Route path="/learner/reviews" element={<LearnerReviews />} />
             <Route path="/learner/history" element={<BookingHistory />} />
             <Route path="/learner/ai" element={<AIRecommendations />} />
+            <Route path="/learner/ai-roadmap" element={<LearningRoadmap />} />
           </Route>
         </Routes>
 

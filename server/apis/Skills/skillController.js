@@ -92,7 +92,7 @@ exports.getSkills = async (req, res) => {
       filter.$or = [{ isDeleted: false }, { isDeleted: { $exists: false } }];
     }
 
-    if (!adminUser && !req.user) {
+    if (!adminUser) {
       filter.status = "approved";
     }
 

@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function About() {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [catSearch, setCatSearch] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/categories").then(r=>r.json()).then(res => setCategories(res.data || [])).catch(()=>{});
+  }, []);
+
   useEffect(() => {
     const timer = setTimeout(() => {
 
@@ -43,36 +51,18 @@ function About() {
               style={{ width: "100%", maxWidth: 600 }}
             >
               <div className="input-group">
-                <div className="input-group-prepend">
-                  <button
-                    className="btn btn-outline-light bg-white text-body px-4 dropdown-toggle"
-                    type="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Skills
-                  </button>
-                  <div className="dropdown-menu">
-                    <a className="dropdown-item" href="#">
-                      Development
-                    </a>
-                    <a className="dropdown-item" href="#">
-                      Creative Arts
-                    </a>
-                    <a className="dropdown-item" href="#">
-                      Sports & Music
-                    </a>
-                  </div>
-                </div>
-                <input
-                  type="text"
-                  className="form-control border-light"
-                  style={{ padding: "30px 25px" }}
-                  placeholder="Search skills, mentors, sessions..."
-                />
+                <select style={{ width: 140, padding: "10px", border: "1px solid #dee2e6", borderRadius: "0", background: "#fff" }}
+                  value={catSearch} onChange={(e) => setCatSearch(e.target.value)}>
+                  <option value="">All Skills</option>
+                  {categories.filter((c) => c.status !== "inactive").map((c) => (
+                    <option key={c._id} value={c._id}>{c.name}</option>
+                  ))}
+                </select>
+                <input id="ab-search" type="text" className="form-control border-light"
+                  style={{ padding: "30px 25px" }} placeholder="Search skills, mentors, sessions..."
+                  onKeyDown={(e) => { if (e.key === "Enter") navigate(`/courses?q=${encodeURIComponent(document.getElementById("ab-search")?.value || '')}&cat=${catSearch}`); }} />
                 <div className="input-group-append">
-                  <button className="btn btn-secondary px-4 px-lg-5">
+                  <button className="btn btn-secondary px-4 px-lg-5" onClick={() => navigate(`/courses?q=${encodeURIComponent(document.getElementById("ab-search")?.value || '')}&cat=${catSearch}`)}>
                     Search
                   </button>
                 </div>
@@ -236,3 +226,7 @@ function About() {
 }
 
 export default About;
+
+
+
+

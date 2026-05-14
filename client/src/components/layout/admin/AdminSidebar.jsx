@@ -12,6 +12,7 @@ const links = [
   { to: "/admin/bookings", label: "All Bookings", icon: "fa-calendar" },
   { to: "/admin/reviews", label: "Reviews & Ratings", icon: "fa-star" },
   { to: "/admin/progress", label: "Learner Progress", icon: "fa-chart-line" },
+  { to: "/admin/mentor-requests", label: "Mentors", icon: "fa-handshake" },
   { to: "/admin/settings", label: "Settings", icon: "fa-gear" },
 ];
 

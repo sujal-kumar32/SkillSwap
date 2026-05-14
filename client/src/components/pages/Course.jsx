@@ -1,17 +1,33 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import Apiservices from "../../../Apiservices";
 
-const sessions = [
-  { title: "React.js – Build Modern Web Apps", mentor: "Priya Sharma", rating: "4.8", reviews: "320", img: "img/courses-1.jpg" },
-  { title: "Guitar Basics – Strum Your First Song", mentor: "Arjun Kapoor", rating: "4.9", reviews: "180", img: "img/courses-2.jpg" },
-  { title: "UI/UX Design – Figma for Beginners", mentor: "Neha Patel", rating: "4.7", reviews: "210", img: "img/courses-3.jpg" },
-  { title: "Public Speaking – Speak with Confidence", mentor: "Rahul Verma", rating: "4.6", reviews: "150", img: "img/courses-4.jpg" },
-  { title: "DSA Interview Prep – Crack the Code", mentor: "Vikram Singh", rating: "4.9", reviews: "420", img: "img/courses-5.jpg" },
-  { title: "Cricket Coaching – Batting Techniques", mentor: "Rohit Yadav", rating: "4.8", reviews: "290", img: "img/courses-6.jpg" },
-];
+const fallbackImgs = ["img/courses-1.jpg","img/courses-2.jpg","img/courses-3.jpg","img/courses-4.jpg","img/courses-5.jpg","img/courses-6.jpg"];
 
 function Course() {
+  const [sessions, setSessions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(params.get("q") || "");
+  const [category, setCategory] = useState(params.get("cat") || "");
+
+  const filtered = sessions.filter((s) => {
+    const q = search.toLowerCase();
+    const catMatch = !category || (s.skillId?.categoryId?._id || s.categoryId) === category;
+    const textMatch = !q || (s.title || "").toLowerCase().includes(q)
+      || (s.mentorId?.name || "").toLowerCase().includes(q)
+      || (s.skillId?.name || "").toLowerCase().includes(q);
+    return catMatch && textMatch;
+  });
+
+  useEffect(() => {
+    Apiservices.fetchSessions({ limit: 20 }).then((res) => {
+      setSessions(res.data.data || []);
+    }).catch(() => {});
+    Apiservices.getCategories().then((res) => {
+      setCategories(res.data.data || []);
+    }).catch(() => {});
+  }, []);
   useEffect(() => {
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
@@ -138,36 +154,26 @@ function Course() {
             >
               <div className="input-group">
                 <div className="input-group-prepend">
-                  <button
-                    className="btn btn-outline-light bg-white text-body px-4 dropdown-toggle"
-                    type="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Skills
-                  </button>
-                  <div className="dropdown-menu">
-                    <a className="dropdown-item" href="#">
-                      Development
-                    </a>
-                    <a className="dropdown-item" href="#">
-                      Creative Arts
-                    </a>
-                    <a className="dropdown-item" href="#">
-                      Sports & Music
-                    </a>
-                  </div>
+                  <select className="btn btn-outline-light bg-white text-body px-4"
+                    value={category} onChange={(e) => setCategory(e.target.value)}
+                    style={{ height: "100%", border: "1px solid #dee2e6", borderRadius: "0.25rem 0 0 0.25rem" }}>
+                    <option value="">All Skills</option>
+                    {categories.filter((c) => c.status !== "inactive").map((c) => (
+                      <option key={c._id} value={c._id}>{c.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <input
                   type="text"
                   className="form-control border-light"
                   style={{ padding: "30px 25px" }}
                   placeholder="Search skills, mentors, sessions..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
                 <div className="input-group-append">
-                  <button className="btn btn-secondary px-4 px-lg-5">
-                    Search
+                  <button className="btn btn-secondary px-4 px-lg-5" onClick={() => setSearch("")}>
+                    {search ? "Clear" : "Search"}
                   </button>
                 </div>
               </div>
@@ -191,27 +197,27 @@ function Course() {
               </div>
             </div>
             <div className="row">
-              {sessions.map((session, index) => (
-                <div className="col-lg-4 col-md-6 pb-4" key={index}>
+              {(filtered.length > 0 ? filtered : []).slice(0, 6).map((s, i) => (
+                <div className="col-lg-4 col-md-6 pb-4" key={s._id}>
                   <Link
                     className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                    to="/detail"
+                    to={`/learner/sessions/${s._id}`}
                   >
-                    <img className="img-fluid" src={session.img} alt="" />
+                    <img className="img-fluid" src={fallbackImgs[i % 6]} alt={s.title} />
                     <div className="courses-text">
                       <h4 className="text-center text-white px-3">
-                        {session.title}
+                        {s.title}
                       </h4>
                       <div className="border-top w-100 mt-3">
                         <div className="d-flex justify-content-between p-4">
                           <span className="text-white">
                             <i className="fa fa-user mr-2" />
-                            {session.mentor}
+                            {s.mentorId?.name || "Mentor"}
                           </span>
                           <span className="text-white">
                             <i className="fa fa-star mr-2" />
-                            {session.rating}
-                            <small>({session.reviews})</small>
+                            {s.rating || "4.8"}
+                            <small>(—)</small>
                           </span>
                         </div>
                       </div>

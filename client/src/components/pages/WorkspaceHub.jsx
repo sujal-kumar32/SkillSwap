@@ -10,6 +10,8 @@ function WorkspaceHub() {
   const userName = localStorage.getItem("userName") || "User";
 
   const [isMentor, setIsMentor] = useState(false);
+  const [appStatus, setAppStatus] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [applying, setApplying] = useState(false);
 
   const [stats, setStats] = useState({
@@ -21,11 +23,18 @@ function WorkspaceHub() {
   const [profileImage, setProfileImage] = useState("");
   const [loadingStats, setLoadingStats] = useState(true);
   const [recentActivities, setRecentActivities] = useState([]);
+  const [mentorForm, setMentorForm] = useState({ skills: "", experience: "", bio: "", category: "", portfolioLink: "" });
 
   useEffect(() => {
     const roles = JSON.parse(localStorage.getItem("roles") || "[]");
     const mentorStatus = roles.includes("mentor") || localStorage.getItem("role") === "admin";
     setIsMentor(mentorStatus);
+
+    if (!mentorStatus) {
+      Apiservices.getMyApplication().then((r) => {
+        if (r.data?.data) setAppStatus(r.data.data.status);
+      }).catch(() => {});
+    }
 
     const fetchDashboardData = async () => {
       try {
@@ -118,39 +127,47 @@ function WorkspaceHub() {
     fetchDashboardData();
   }, []);
 
-  const handleMentorEntry = async () => {
+  const handleMentorEntry = () => {
     if (isMentor) {
       navigate("/mentor");
       return;
     }
+    if (appStatus === "pending") {
+      showToast.info("Your application is pending admin approval");
+      return;
+    }
+    if (appStatus === "rejected") {
+      showToast.info("Your previous application was rejected. You can apply again.");
+    }
+    if (appStatus === "blocked") {
+      showToast.error("Your mentor access has been blocked by admin");
+      return;
+    }
+    setShowForm(true);
+  };
 
+  const submitApplication = async (e) => {
+    e.preventDefault();
+    if (!mentorForm.skills.trim() || !mentorForm.experience.trim()) {
+      showToast.warning("Skills and experience are required");
+      return;
+    }
     try {
       setApplying(true);
-      const res = await Apiservices.applyForMentor();
-
+      const res = await Apiservices.applyForMentor(mentorForm);
       if (res.data.success) {
-        if (res.data.token) {
-          localStorage.setItem("token", res.data.token);
-        }
+        if (res.data.token) localStorage.setItem("token", res.data.token);
         localStorage.setItem("role", "mentor");
-        localStorage.setItem(
-          "roles",
-          JSON.stringify(res.data.data?.roles || ["learner", "mentor"]),
-        );
+        localStorage.setItem("roles", JSON.stringify(res.data.data?.roles || ["learner", "mentor"]));
         setIsMentor(true);
+        setShowForm(false);
         showToast.success("You are now a mentor!");
         navigate("/mentor");
-      } else if (res.data.message === "Already a mentor") {
-        localStorage.setItem("role", "mentor");
-        setIsMentor(true);
-        showToast.info("You are already a mentor");
-        navigate("/mentor");
       } else {
-        showToast.error(res.data.message);
+        showToast.warning(res.data.message);
       }
     } catch (err) {
-      console.log(err);
-      showToast.error(err?.response?.data?.message || "Error applying for mentor");
+      showToast.error(err?.response?.data?.message || "Error submitting application");
     } finally {
       setApplying(false);
     }
@@ -315,7 +332,7 @@ function WorkspaceHub() {
                       loading={applying}
                       className="btn btn-light rounded-pill px-4 py-2 fw-bold w-100 workspace-btn"
                     >
-                      {applying ? "Setting up workspace..." : (isMentor ? "Enter Mentor Workspace" : "Become a Mentor")}
+                      {isMentor ? "Enter Mentor Workspace" : appStatus === "pending" ? "Application Pending" : appStatus === "blocked" ? "Access Blocked" : appStatus === "rejected" ? "Reapply as Mentor" : "Become a Mentor"}
                     </LoadingButton>
                   </div>
                 </div>
@@ -356,6 +373,53 @@ function WorkspaceHub() {
           </div>
         </div>
       </div>
+
+      {showForm && (
+        <>
+          <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 1040 }} onClick={() => setShowForm(false)} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1050, width: "100%", maxWidth: 540, maxHeight: "90vh", overflowY: "auto" }}>
+            <div className="learner-card p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                  <h5 className="fw-bold mb-1">Become a Mentor</h5>
+                  <small className="text-muted">Submit your application for admin review</small>
+                </div>
+                <button type="button" className="btn-close" onClick={() => setShowForm(false)} />
+              </div>
+              <form onSubmit={submitApplication}>
+                <div className="row g-3">
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">Skills / Expertise *</label>
+                    <input className="form-control rounded-pill" placeholder="e.g. React, Node.js, Python" value={mentorForm.skills} onChange={(e) => setMentorForm({ ...mentorForm, skills: e.target.value })} required />
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">Experience *</label>
+                    <textarea className="form-control rounded-4" rows="3" placeholder="Describe your teaching/professional experience" value={mentorForm.experience} onChange={(e) => setMentorForm({ ...mentorForm, experience: e.target.value })} required />
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">Bio</label>
+                    <textarea className="form-control rounded-4" rows="2" placeholder="Short bio about yourself" value={mentorForm.bio} onChange={(e) => setMentorForm({ ...mentorForm, bio: e.target.value })} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">Category</label>
+                    <input className="form-control rounded-pill" placeholder="e.g. Web Development" value={mentorForm.category} onChange={(e) => setMentorForm({ ...mentorForm, category: e.target.value })} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-semibold">Portfolio Link</label>
+                    <input className="form-control rounded-pill" placeholder="https://..." value={mentorForm.portfolioLink} onChange={(e) => setMentorForm({ ...mentorForm, portfolioLink: e.target.value })} />
+                  </div>
+                </div>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowForm(false)}>Cancel</button>
+                  <LoadingButton loading={applying} type="submit" className="btn btn-success rounded-pill px-4 fw-semibold">
+                    {applying ? "Submitting..." : "Submit Application"}
+                  </LoadingButton>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
 
       <style>{`
         .workspace-hub-wrapper {

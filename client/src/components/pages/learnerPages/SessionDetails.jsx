@@ -10,6 +10,7 @@ const SessionDetails = () => {
   const [session, setSession] = useState(null);
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -18,11 +19,13 @@ const SessionDetails = () => {
       try {
         setLoading(true);
         setError("");
-        const [detailRes, relatedRes] = await Promise.all([
+        const [detailRes, relatedRes, bookingRes] = await Promise.all([
           Apiservices.fetchSessionDetails(id),
           Apiservices.fetchSessions(),
+          Apiservices.fetchBookings().catch(() => ({ data: { data: [] } })),
         ]);
         setSession(detailRes.data.data);
+        setBookings(bookingRes.data.data || []);
         setRelated((relatedRes.data.data || []).filter((item) => item._id !== id));
         const reviewRes = await Apiservices.fetchReviews().catch(() => ({
           data: { data: [] },
@@ -45,6 +48,11 @@ const SessionDetails = () => {
 
     loadSession();
   }, [id]);
+
+  const existingBooking = bookings.find((b) => {
+    const sId = b.sessionId?._id || b.sessionId;
+    return sId === id && ["pending", "accepted", "completed"].includes(b.requestStatus);
+  });
 
   if (loading) return <LoadingState label="Loading session details..." />;
   if (!session) {
@@ -69,7 +77,11 @@ const SessionDetails = () => {
       <PageHeader
         title={session.title}
         subtitle={`${session.skillId?.name || "Skill"} • ${session.sessionType || "online"} session`}
-        action={<button className="btn btn-primary rounded-pill px-4" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>}
+        action={existingBooking ? (
+          <span className="badge bg-success rounded-pill px-4 py-2 fs-6 fw-semibold"><i className="fa fa-check me-1" />Already Booked</span>
+        ) : (
+          <button className="btn btn-primary rounded-pill px-4" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
+        )}
       />
 
       <div className="row g-4">
@@ -120,7 +132,11 @@ const SessionDetails = () => {
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
             </div>
             <div className="d-grid gap-2">
-              <button className="btn btn-primary rounded-pill" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
+              {existingBooking ? (
+                <button className="btn btn-success rounded-pill" disabled><i className="fa fa-check me-1" />Already Booked</button>
+              ) : (
+                <button className="btn btn-primary rounded-pill" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
+              )}
               <button className="btn btn-outline-secondary rounded-pill" onClick={() => showToast.info("Session saved")}>Save / Wishlist</button>
               <button className="btn btn-outline-primary rounded-pill" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share</button>
             </div>

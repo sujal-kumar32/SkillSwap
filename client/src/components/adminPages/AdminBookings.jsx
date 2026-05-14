@@ -2,10 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 
+const PAGE_SIZE = 10;
+
 const AdminBookings = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetch = async () => {
@@ -22,9 +25,14 @@ const AdminBookings = () => {
     fetch();
   }, []);
 
+  useEffect(() => { setPage(1); }, [filter]);
+
   const filtered = useMemo(() => {
     return requests.filter((r) => filter === "All" || r.requestStatus === filter);
   }, [requests, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const statusLabels = {
     pending: "Awaiting Approval",
@@ -92,18 +100,32 @@ const AdminBookings = () => {
       ) : (
         <div className="admin-card">
           <div className="p-4">
-            <div className="mb-4 d-flex gap-2 flex-wrap">
-              {["All", ...Object.keys(statusLabels)].map((s) => (
-                <button key={s} className={`btn btn-sm rounded-pill fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
-                  style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
-                  {s === "All" ? "All" : statusLabels[s]}
-                </button>
-              ))}
+            <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
+              <div className="d-flex gap-2 flex-wrap">
+                {["All", ...Object.keys(statusLabels)].map((s) => (
+                  <button key={s} className={`btn btn-sm rounded-pill fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                    style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
+                    {s === "All" ? "All" : statusLabels[s]}
+                  </button>
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className="d-flex align-items-center gap-2">
+                  <small className="text-muted">{filtered.length} bookings</small>
+                  <div className="btn-group">
+                    <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => (
+                      <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+                    ))}
+                    <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="row g-3">
-              {filtered.length ? (
-                filtered.map((r) => (
+              {paginated.length ? (
+                paginated.map((r) => (
                   <div className="col-lg-6" key={r._id}>
                     <div className="d-flex align-items-center gap-3 p-3 rounded-4" style={{ background: "#f8faff", border: "1px solid #eef2f7" }}>
                       <CalendarIcon date={r.date || r.createdAt} />

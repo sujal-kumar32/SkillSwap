@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
+import { showToast } from "../../../utils/toastUtils";
 import { EmptyState, LoadingState, PageHeader, SessionCard } from "../../learner/LearnerUI";
 
 const ExploreSessions = () => {
@@ -15,6 +16,9 @@ const ExploreSessions = () => {
   const [sort, setSort] = useState("latest");
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
+  const [aiSearch, setAiSearch] = useState(false);
+  const [aiKeywords, setAiKeywords] = useState("");
+  const [aiSearching, setAiSearching] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -40,19 +44,43 @@ const ExploreSessions = () => {
   const filtered = useMemo(() => {
     const result = sessions.filter((session) => {
       const text = `${session.title} ${session.description} ${session.skillId?.name}`.toLowerCase();
-      const matchSearch = text.includes(query.toLowerCase());
+      const searchText = aiKeywords ? aiKeywords : query;
+      const matchSearch = !searchText || searchText.split(",").some((kw) => text.includes(kw.trim().toLowerCase()));
       const catMatch = category === "all" || session.categoryId?._id === category || session.categoryId === category || session.skillId?.categoryId?._id === category;
-      const matchCategory = catMatch;
       const matchPrice = price === "all" || (price === "free" ? !session.price : session.price > 0);
       const matchType = type === "all" || session.sessionType === type;
-      return matchSearch && matchCategory && matchPrice && matchType;
+      return matchSearch && catMatch && matchPrice && matchType;
     });
 
     if (sort === "price-low") return result.sort((a, b) => (a.price || 0) - (b.price || 0));
     if (sort === "price-high") return result.sort((a, b) => (b.price || 0) - (a.price || 0));
     if (sort === "rating") return result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     return result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [sessions, query, category, price, type, sort]);
+  }, [sessions, query, category, price, type, sort, aiKeywords]);
+
+  const doAISearch = async () => {
+    if (!query.trim()) {
+      showToast.warning("Enter a search query first");
+      return;
+    }
+    setAiSearching(true);
+    try {
+      const res = await Apiservices.searchSessions({ query: query.trim() });
+      const kws = res.data.data.keywords + ", " + res.data.data.skills;
+      setAiKeywords(kws);
+      setAiSearch(true);
+      showToast.success("AI search complete");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "AI search failed");
+    } finally {
+      setAiSearching(false);
+    }
+  };
+
+  const clearAISearch = () => {
+    setAiKeywords("");
+    setAiSearch(false);
+  };
 
   const pageSize = 6;
   const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -65,8 +93,28 @@ const ExploreSessions = () => {
 
       <div className="learner-card p-4 mb-4">
         <div className="row g-3">
-          <div className="col-lg-3">
-            <input className="form-control rounded-pill" placeholder="Search skills, mentors, sessions..." value={query} onChange={(e) => setQuery(e.target.value)} />
+          <div className="col-lg-4">
+            <div className="d-flex gap-2">
+              <div className="position-relative flex-grow-1">
+                <input className="form-control rounded-pill" placeholder="Search skills, mentors, sessions..." value={query} onChange={(e) => { setQuery(e.target.value); if (aiSearch) clearAISearch(); }} />
+              </div>
+              <button className="btn btn-outline-primary rounded-pill px-3 fw-semibold" onClick={doAISearch} disabled={aiSearching || !query.trim()}
+                title="AI-powered search" style={{ minWidth: 44 }}>
+                {aiSearching ? <span className="spinner-border spinner-border-sm" /> : <i className="fa fa-magic" />}
+              </button>
+              <button className="btn btn-primary rounded-pill px-3 fw-semibold" onClick={() => { setQuery(""); clearAISearch(); }} disabled={!query && !aiKeywords}
+                style={{ minWidth: 44 }}>
+                <i className="fa fa-search" />
+              </button>
+            </div>
+            {aiKeywords && (
+              <div className="mt-2 d-flex align-items-center gap-2">
+                <span className="badge bg-info text-dark rounded-pill px-3 py-2">
+                  <i className="fa fa-magic me-1" />AI: {aiKeywords}
+                </span>
+                <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={clearAISearch}>Clear</button>
+              </div>
+            )}
           </div>
           <div className="col-sm-6 col-lg-2">
             <select className="form-select rounded-pill" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
@@ -90,7 +138,7 @@ const ExploreSessions = () => {
               <option value="offline">Offline</option>
             </select>
           </div>
-          <div className="col-sm-6 col-lg-3">
+          <div className="col-sm-6 col-lg-2">
             <select className="form-select rounded-pill" value={sort} onChange={(e) => setSort(e.target.value)}>
               <option value="latest">Latest</option>
               <option value="price-low">Price: Low to High</option>
@@ -105,7 +153,11 @@ const ExploreSessions = () => {
           <div className="row g-4">
             {paginated.map((session) => (
               <div className="col-md-6 col-xl-4" key={session._id}>
-                <SessionCard session={session} onBook={() => navigate(`/learner/book/${session._id}`)} />
+                {aiSearch ? (
+                  <SessionCard session={{ ...session, isAiRecommended: true }} onBook={() => navigate(`/learner/book/${session._id}`)} />
+                ) : (
+                  <SessionCard session={session} onBook={() => navigate(`/learner/book/${session._id}`)} />
+                )}
               </div>
             ))}
           </div>

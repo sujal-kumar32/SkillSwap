@@ -12,9 +12,14 @@ exports.getReviews = async (req, res) => {
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
     const skip = (page - 1) * limit;
 
-    let filter = req.user.roles?.includes("admin")
-      ? {}
-      : { learnerId: req.user.id };
+    let filter = {};
+    if (req.user.roles?.includes("admin")) {
+      filter = {};
+    } else if (req.user.roles?.includes("mentor")) {
+      filter = { mentorId: req.user.id };
+    } else {
+      filter = { learnerId: req.user.id };
+    }
 
     if (search) {
       filter.$or = [

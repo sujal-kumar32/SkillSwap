@@ -7,7 +7,6 @@ const {
   approveUser,
   blockUser,
   unblockUser,
-  applyForMentor,
 } = require("../apis/Users/userController");
 
 const protect = require("../middleware/authMiddleware");
@@ -22,7 +21,5 @@ router.put("/:userId/approve", protect, requireAdmin, approveUser);
 router.put("/:userId/block", protect, requireAdmin, blockUser);
 
 router.put("/:userId/unblock", protect, requireAdmin, unblockUser);
-
-router.post("/apply-mentor", protect, applyForMentor);
 
 module.exports = router;

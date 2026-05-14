@@ -177,8 +177,44 @@ class Apiservices {
     return axios.get(baseUrl + "profile", this.getToken());
   }
 
+  getProfileStats() {
+    return axios.get(baseUrl + "profile/stats", this.getToken());
+  }
+
   fetchRecommendations() {
     return axios.get(baseUrl + "ai/recommendations", this.getToken());
+  }
+
+  generateTitle(data) {
+    return axios.post(baseUrl + "ai/generate-title", data, this.getToken());
+  }
+
+  generateDescription(data) {
+    return axios.post(baseUrl + "ai/generate-description", data, this.getToken());
+  }
+
+  generateOutcomes(data) {
+    return axios.post(baseUrl + "ai/generate-outcomes", data, this.getToken());
+  }
+
+  generateTags(data) {
+    return axios.post(baseUrl + "ai/generate-tags", data, this.getToken());
+  }
+
+  generateRoadmap(data) {
+    return axios.post(baseUrl + "ai/generate-roadmap", data, this.getToken());
+  }
+
+  mentorAssistant(data) {
+    return axios.post(baseUrl + "ai/mentor-assistant", data, this.getToken());
+  }
+
+  chatAI(data) {
+    return axios.post(baseUrl + "ai/chat", data, this.getToken());
+  }
+
+  searchSessions(data) {
+    return axios.post(baseUrl + "ai/search", data, this.getToken());
   }
 
   getMentorBookings() {
@@ -215,6 +251,38 @@ class Apiservices {
 
   updateSettings(data) {
     return axios.put(baseUrl + "settings", data, this.getToken());
+  }
+
+  applyForMentor(data) {
+    return axios.post(baseUrl + "mentor-applications/apply", data, this.getToken());
+  }
+
+  getMyApplication() {
+    return axios.get(baseUrl + "mentor-applications/my-application", this.getToken());
+  }
+
+  getAllMentorApplications(params = {}) {
+    return axios.get(baseUrl + "mentor-applications/all", this.getAuthConfig({ params }));
+  }
+
+  approveMentorApplication(id, data = {}) {
+    return axios.put(baseUrl + `mentor-applications/${id}/approve`, data, this.getToken());
+  }
+
+  rejectMentorApplication(id, data = {}) {
+    return axios.put(baseUrl + `mentor-applications/${id}/reject`, data, this.getToken());
+  }
+
+  removeMentor(id) {
+    return axios.put(baseUrl + `mentor-applications/${id}/remove-mentor`, {}, this.getToken());
+  }
+
+  unblockMentor(id) {
+    return axios.put(baseUrl + `mentor-applications/${id}/unblock`, {}, this.getToken());
+  }
+
+  deleteMentorApplication(id) {
+    return axios.delete(baseUrl + `mentor-applications/${id}`, this.getToken());
   }
 }
 

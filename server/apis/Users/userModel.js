@@ -33,31 +33,28 @@ const userSchema = new mongoose.Schema(
     },
 
     profileImage: String,
+    coverImage: { type: String, default: "" },
+    profilePublicId: { type: String, default: "" },
 
-    profilePublicId: {
-      type: String,
-      default: "",
-    },
+    bio: { type: String, default: "" },
 
-    bio: {
-      type: String,
-      default: "",
-    },
+    interests: { type: [String], default: [] },
+    learningGoals: { type: String, default: "" },
 
-    interests: {
-      type: [String],
-      default: [],
-    },
+    skills: [{
+      name: { type: String, required: true },
+      level: { type: String, enum: ["beginner", "intermediate", "advanced"], default: "beginner" },
+    }],
 
-    learningGoals: {
-      type: String,
-      default: "",
-    },
+    phone: { type: String, default: "" },
+    timezone: { type: String, default: "UTC" },
 
     socialLinks: {
       linkedin: String,
       github: String,
       portfolio: String,
+      youtube: String,
+      twitter: String,
     },
   },
   { timestamps: true },

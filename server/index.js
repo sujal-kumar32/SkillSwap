@@ -21,6 +21,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const progressRoutes = require("./routes/progressRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const mentorApplicationRoutes = require("./routes/mentorApplicationRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -62,11 +63,16 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/mentor-applications", mentorApplicationRoutes);
+
+process.on("uncaughtException", (err) => {
+  console.error("FATAL:", err.message);
+});
 
 app.listen(PORT, (err) => {
   if (err) {
     console.log("Server Error", err);
   } else {
-    console.log("Server is Listening on ", PORT);
+    console.log("Server is Listening on", PORT);
   }
 });

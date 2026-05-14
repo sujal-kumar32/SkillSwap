@@ -1,9 +1,16 @@
-import React from "react";
-
+import React, { useState } from "react";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function Detail() {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [catSearch, setCatSearch] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/categories").then(r=>r.json()).then(res => setCategories(res.data || [])).catch(()=>{});
+  }, []);
+
   useEffect(() => {
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
@@ -103,14 +110,11 @@ function Detail() {
                     </a>
                   </div>
                 </div>
-                <input
-                  type="text"
-                  className="form-control border-light"
-                  style={{ padding: "30px 25px" }}
-                  placeholder="Keyword"
-                />
+                <input id="dt-search" type="text" className="form-control border-light"
+                  style={{ padding: "30px 25px" }} placeholder="Search skills, mentors, sessions..."
+                  onKeyDown={(e) => { if (e.key === "Enter") navigate(`/courses?q=${encodeURIComponent(document.getElementById("dt-search")?.value || "")}&cat=${catSearch}`); }} />
                 <div className="input-group-append">
-                  <button className="btn btn-secondary px-4 px-lg-5">
+                  <button className="btn btn-secondary px-4 px-lg-5" onClick={() => navigate(`/courses?q=${encodeURIComponent(document.getElementById("dt-search")?.value || "")}&cat=${catSearch}`)}>
                     Search
                   </button>
                 </div>
@@ -431,3 +435,5 @@ function Detail() {
 }
 
 export default Detail;
+
+

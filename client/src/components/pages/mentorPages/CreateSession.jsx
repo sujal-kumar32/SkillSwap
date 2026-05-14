@@ -28,6 +28,8 @@ const CreateSession = () => {
     thumbnail: "",
   });
 
+  const [aiLoading, setAiLoading] = useState({ title: false, description: false, outcomes: false, tags: false, mentor: false });
+
   useEffect(() => {
     const fetchSkills = async () => {
       try {
@@ -41,7 +43,6 @@ const CreateSession = () => {
         setLoadingSkills(false);
       }
     };
-
     fetchSkills();
   }, []);
 
@@ -72,6 +73,114 @@ const CreateSession = () => {
     setThumbnailPreview(null);
     setForm((prev) => ({ ...prev, thumbnail: "" }));
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const getSkillName = () => {
+    const skill = skills.find((s) => s._id === form.skillId);
+    return skill?.name || "";
+  };
+
+  const generateAITitle = async () => {
+    const skill = getSkillName();
+    if (!skill && !form.title.trim()) {
+      showToast.warning("Select a skill or type a topic first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, title: true }));
+    try {
+      const res = await Apiservices.generateTitle({
+        skill: skill || form.title,
+        topic: form.title || skill,
+        level: "all",
+      });
+      setForm((prev) => ({ ...prev, title: res.data.data.title }));
+      showToast.success("AI title generated");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to generate title");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, title: false }));
+    }
+  };
+
+  const generateAIDescription = async () => {
+    const skill = getSkillName();
+    if (!skill && !form.title.trim()) {
+      showToast.warning("Enter a session title or select a skill first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, description: true }));
+    try {
+      const res = await Apiservices.generateDescription({
+        skill: skill || form.title,
+        sessionType: form.sessionType,
+      });
+      setForm((prev) => ({ ...prev, description: res.data.data.description }));
+      showToast.success("AI description generated");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to generate description");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, description: false }));
+    }
+  };
+
+  const generateAIOutcomes = async () => {
+    const skill = getSkillName();
+    if (!skill && !form.title.trim()) {
+      showToast.warning("Enter a session title or select a skill first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, outcomes: true }));
+    try {
+      const res = await Apiservices.generateOutcomes({
+        skill: skill || form.title,
+        level: "all",
+      });
+      const outcomes = res.data.data.outcomes;
+      setForm((prev) => ({ ...prev, description: prev.description + "\n\n" + outcomes }));
+      showToast.success("AI learning outcomes added to description");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to generate outcomes");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, outcomes: false }));
+    }
+  };
+
+  const generateAITags = async () => {
+    const skill = getSkillName();
+    if (!skill && !form.title.trim()) {
+      showToast.warning("Enter a session title or select a skill first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, tags: true }));
+    try {
+      const res = await Apiservices.generateTags({
+        skill: skill || form.title,
+      });
+      showToast.success(`AI suggested tags: ${res.data.data.tags}`);
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to generate tags");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, tags: false }));
+    }
+  };
+
+  const getMentorFeedback = async () => {
+    if (!form.title.trim() && !form.description.trim()) {
+      showToast.warning("Add a title or description first");
+      return;
+    }
+    setAiLoading((prev) => ({ ...prev, mentor: true }));
+    try {
+      const res = await Apiservices.mentorAssistant({
+        title: form.title,
+        description: form.description,
+      });
+      showToast.info(res.data.data.feedback, { autoClose: 8000 });
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to get feedback");
+    } finally {
+      setAiLoading((prev) => ({ ...prev, mentor: false }));
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -128,12 +237,10 @@ const CreateSession = () => {
                 <div className="session-card-header">
                   <div>
                     <h2 className="fw-bold mb-2">Session Setup</h2>
-
                     <p className="mb-0 text-light opacity-75">
                       Fill in all details to publish your session successfully.
                     </p>
                   </div>
-
                   <div className="header-icon">
                     <i className="fa fa-graduation-cap"></i>
                   </div>
@@ -146,19 +253,32 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Session Title
                         </label>
-
-                        <div className="modern-input-group">
-                          <span>
-                            <i className="fa fa-heading"></i>
-                          </span>
-
-                          <input
-                            type="text"
-                            name="title"
-                            placeholder="Mastering React Hooks"
-                            value={form.title}
-                            onChange={handleChange}
-                          />
+                        <div className="d-flex gap-2">
+                          <div className="modern-input-group flex-grow-1">
+                            <span>
+                              <i className="fa fa-heading"></i>
+                            </span>
+                            <input
+                              type="text"
+                              name="title"
+                              placeholder="Mastering React Hooks"
+                              value={form.title}
+                              onChange={handleChange}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary rounded-pill px-3 fw-semibold"
+                            onClick={generateAITitle}
+                            disabled={aiLoading.title}
+                            style={{ whiteSpace: "nowrap", minWidth: 130 }}
+                          >
+                            {aiLoading.title ? (
+                              <><span className="spinner-border spinner-border-sm me-1" /> Generating</>
+                            ) : (
+                              <><i className="fa fa-wand-magic-sparkles me-1" /> Generate</>
+                            )}
+                          </button>
                         </div>
                       </div>
 
@@ -166,7 +286,6 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Select Skill
                         </label>
-
                         <select
                           className="modern-select"
                           name="skillId"
@@ -189,7 +308,6 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Session Type
                         </label>
-
                         <select
                           className="modern-select"
                           name="sessionType"
@@ -205,22 +323,35 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Session Description
                         </label>
-
-                        <textarea
-                          rows="5"
-                          name="description"
-                          className="modern-textarea"
-                          placeholder="Describe what learners will learn..."
-                          value={form.description}
-                          onChange={handleChange}
-                        ></textarea>
+                        <div className="d-flex gap-2">
+                          <textarea
+                            rows="5"
+                            name="description"
+                            className="modern-textarea flex-grow-1"
+                            placeholder="Describe what learners will learn..."
+                            value={form.description}
+                            onChange={handleChange}
+                          ></textarea>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary rounded-pill px-3 fw-semibold align-self-start"
+                            onClick={generateAIDescription}
+                            disabled={aiLoading.description}
+                            style={{ whiteSpace: "nowrap", minWidth: 130 }}
+                          >
+                            {aiLoading.description ? (
+                              <><span className="spinner-border spinner-border-sm me-1" /> Generating</>
+                            ) : (
+                              <><i className="fa fa-wand-magic-sparkles me-1" /> Generate</>
+                            )}
+                          </button>
+                        </div>
                       </div>
 
                       <div className="col-md-4">
                         <label className="form-label fw-bold">
                           Session Date
                         </label>
-
                         <input
                           type="date"
                           name="date"
@@ -234,7 +365,6 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Session Time
                         </label>
-
                         <input
                           type="time"
                           name="time"
@@ -246,7 +376,6 @@ const CreateSession = () => {
 
                       <div className="col-md-4">
                         <label className="form-label fw-bold">Duration</label>
-
                         <div className="modern-input-group">
                           <input
                             type="number"
@@ -256,7 +385,6 @@ const CreateSession = () => {
                             value={form.duration}
                             onChange={handleChange}
                           />
-
                           <span>Min</span>
                         </div>
                       </div>
@@ -265,7 +393,6 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Session Price
                         </label>
-
                         <div className="d-flex gap-2 mb-3">
                           <button type="button"
                             className={`px-4 py-2 fw-semibold rounded-pill border-0 ${!form.price || Number(form.price) === 0 ? "btn btn-success" : "btn btn-outline-secondary"}`}
@@ -280,7 +407,6 @@ const CreateSession = () => {
                             <i className="fa fa-credit-card me-2"></i>Paid
                           </button>
                         </div>
-
                         {Number(form.price) > 0 && (
                           <div className="modern-input-group">
                             <span>₹</span>
@@ -300,7 +426,6 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Max Learners
                         </label>
-
                         <input
                           type="number"
                           name="maxLearners"
@@ -316,12 +441,10 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Meeting Link
                         </label>
-
                         <div className="modern-input-group">
                           <span>
                             <i className="fa fa-link"></i>
                           </span>
-
                           <input
                             type="text"
                             name="meetLink"
@@ -336,7 +459,6 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Thumbnail
                         </label>
-
                         <div
                           className="upload-box"
                           onClick={() => fileInputRef.current?.click()}
@@ -353,7 +475,6 @@ const CreateSession = () => {
                             style={{ display: "none" }}
                             onChange={handleFileChange}
                           />
-
                           {thumbnailPreview ? (
                             <div className="position-relative d-inline-block">
                               <img
@@ -400,7 +521,6 @@ const CreateSession = () => {
                             </>
                           )}
                         </div>
-
                         <div className="mt-2">
                           <small className="text-muted">Or paste a URL:</small>
                           <input
@@ -424,7 +544,6 @@ const CreateSession = () => {
                             <i className="fa fa-rocket me-2"></i>
                             {submitting ? "Publishing..." : "Publish Session"}
                           </LoadingButton>
-
                           <button
                             type="button"
                             className="draft-btn"
@@ -445,58 +564,100 @@ const CreateSession = () => {
                 <span className="badge bg-light text-primary px-3 py-2 rounded-pill mb-3">
                   AI Powered
                 </span>
-
                 <h3 className="fw-bold mb-3">Smart Session Generator</h3>
-
                 <p className="text-light opacity-75 mb-4">
                   Generate better titles, descriptions, and session ideas using
                   SkillSwap AI.
                 </p>
-
-                <button className="btn btn-light rounded-pill px-4 fw-semibold">
-                  Generate with AI
-                </button>
+                <div className="d-flex flex-column gap-2">
+                  <button
+                    className="btn btn-light rounded-pill px-4 fw-semibold"
+                    onClick={generateAITitle}
+                    disabled={aiLoading.title}
+                  >
+                    {aiLoading.title ? (
+                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                    ) : (
+                      <><i className="fa fa-heading me-2" />Generate Title</>
+                    )}
+                  </button>
+                  <button
+                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    onClick={generateAIDescription}
+                    disabled={aiLoading.description}
+                  >
+                    {aiLoading.description ? (
+                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                    ) : (
+                      <><i className="fa fa-file-lines me-2" />Generate Description</>
+                    )}
+                  </button>
+                  <button
+                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    onClick={generateAIOutcomes}
+                    disabled={aiLoading.outcomes}
+                  >
+                    {aiLoading.outcomes ? (
+                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                    ) : (
+                      <><i className="fa fa-bullseye me-2" />Generate Outcomes</>
+                    )}
+                  </button>
+                  <button
+                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    onClick={generateAITags}
+                    disabled={aiLoading.tags}
+                  >
+                    {aiLoading.tags ? (
+                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                    ) : (
+                      <><i className="fa fa-tags me-2" />Suggest Tags</>
+                    )}
+                  </button>
+                  <button
+                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    onClick={getMentorFeedback}
+                    disabled={aiLoading.mentor}
+                  >
+                    {aiLoading.mentor ? (
+                      <><span className="spinner-border spinner-border-sm me-2" />Analyzing...</>
+                    ) : (
+                      <><i className="fa fa-wand-magic-sparkles me-2" />Improve Content</>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="tips-card">
                 <h4 className="fw-bold mb-4">Mentor Tips</h4>
-
                 <div className="tip-row">
                   <div className="tip-icon bg-primary">
                     <i className="fa fa-lightbulb"></i>
                   </div>
-
                   <div>
                     <h6 className="fw-bold">Clear Descriptions</h6>
-
                     <small className="text-muted">
                       Mention outcomes and learning goals.
                     </small>
                   </div>
                 </div>
-
                 <div className="tip-row">
                   <div className="tip-icon bg-success">
                     <i className="fa fa-users"></i>
                   </div>
-
                   <div>
                     <h6 className="fw-bold">Interactive Sessions</h6>
-
                     <small className="text-muted">
                       Encourage learner participation.
                     </small>
                   </div>
                 </div>
-
                 <div className="tip-row mb-0">
                   <div className="tip-icon bg-warning">
                     <i className="fa fa-clock"></i>
                   </div>
-
                   <div>
                     <h6 className="fw-bold">Proper Scheduling</h6>
-
                     <small className="text-muted">
                       Pick suitable timing for learners.
                     </small>
@@ -518,7 +679,6 @@ const CreateSession = () => {
               linear-gradient(to bottom, #f8fbff, #f5f7ff);
             overflow: hidden;
           }
-
           .main-session-wrapper::before {
             content: "";
             position: absolute;
@@ -530,7 +690,6 @@ const CreateSession = () => {
             left: -120px;
             filter: blur(40px);
           }
-
           .main-session-wrapper::after {
             content: "";
             position: absolute;
@@ -542,60 +701,6 @@ const CreateSession = () => {
             right: -100px;
             filter: blur(40px);
           }
-
-          .mentor-hero-section {
-            background:
-              linear-gradient(135deg, rgba(13,110,253,0.95), rgba(102,16,242,0.92)),
-              url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1600&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            border-radius: 0 0 50px 50px;
-          }
-
-          .hero-badge {
-            background: rgba(255,255,255,0.18);
-            padding: 12px 24px;
-            border-radius: 50px;
-            color: white;
-            font-weight: 600;
-          }
-
-          .hero-title {
-            font-size: 4rem;
-            font-weight: 800;
-            color: white;
-          }
-
-          .hero-subtitle {
-            color: rgba(255,255,255,0.8);
-            font-size: 1.1rem;
-          }
-
-          .hero-stat h4 {
-            color: white;
-            margin-bottom: 0;
-          }
-
-          .hero-stat span {
-            color: rgba(255,255,255,0.75);
-          }
-
-          .hero-image-card {
-            position: relative;
-          }
-
-          .floating-card {
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            padding: 14px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-          }
-
           .session-form-card {
             background: rgba(255,255,255,0.85);
             backdrop-filter: blur(10px);
@@ -603,7 +708,6 @@ const CreateSession = () => {
             overflow: hidden;
             box-shadow: 0 20px 50px rgba(0,0,0,0.08);
           }
-
           .session-card-header {
             background: linear-gradient(135deg, #0d6efd, #6610f2);
             padding: 35px;
@@ -612,7 +716,6 @@ const CreateSession = () => {
             justify-content: space-between;
             align-items: center;
           }
-
           .header-icon {
             width: 70px;
             height: 70px;
@@ -623,7 +726,6 @@ const CreateSession = () => {
             justify-content: center;
             font-size: 28px;
           }
-
           .modern-control,
           .modern-select,
           .modern-textarea {
@@ -633,7 +735,6 @@ const CreateSession = () => {
             padding: 16px;
             transition: 0.3s;
           }
-
           .modern-input-group {
             display: flex;
             align-items: center;
@@ -642,19 +743,16 @@ const CreateSession = () => {
             overflow: hidden;
             background: white;
           }
-
           .modern-input-group span {
             padding: 16px;
             background: #f8fafc;
           }
-
           .modern-input-group input {
             border: none;
             width: 100%;
             padding: 16px;
             outline: none;
           }
-
           .modern-control:focus,
           .modern-select:focus,
           .modern-textarea:focus,
@@ -662,7 +760,6 @@ const CreateSession = () => {
             border-color: #0d6efd;
             box-shadow: 0 0 0 4px rgba(13,110,253,0.12);
           }
-
           .upload-box {
             border: 2px dashed #cbd5e1;
             border-radius: 24px;
@@ -671,12 +768,10 @@ const CreateSession = () => {
             background: #f8fafc;
             transition: 0.3s;
           }
-
           .upload-box:hover {
             border-color: #0d6efd;
             background: #f1f5ff;
           }
-
           .publish-btn {
             background: linear-gradient(135deg, #0d6efd, #6610f2);
             border: none;
@@ -685,7 +780,6 @@ const CreateSession = () => {
             border-radius: 50px;
             font-weight: 700;
           }
-
           .draft-btn {
             border: 1px solid #d1d5db;
             background: white;
@@ -693,14 +787,12 @@ const CreateSession = () => {
             border-radius: 50px;
             font-weight: 600;
           }
-
           .ai-card {
             background: linear-gradient(135deg, #111827, #1e3a8a);
             padding: 35px;
             border-radius: 30px;
             color: white;
           }
-
           .tips-card {
             background: rgba(255,255,255,0.9);
             backdrop-filter: blur(10px);
@@ -708,13 +800,11 @@ const CreateSession = () => {
             padding: 35px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.06);
           }
-
           .tip-row {
             display: flex;
             gap: 16px;
             margin-bottom: 28px;
           }
-
           .tip-icon {
             width: 55px;
             height: 55px;
@@ -724,12 +814,7 @@ const CreateSession = () => {
             align-items: center;
             justify-content: center;
           }
-
           @media(max-width: 768px) {
-            .hero-title {
-              font-size: 2.5rem;
-            }
-
             .session-card-header {
               flex-direction: column;
               gap: 20px;

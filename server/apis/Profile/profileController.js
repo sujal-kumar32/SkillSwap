@@ -1,5 +1,9 @@
 const bcrypt = require("bcryptjs");
 const User = require("../Users/userModel");
+const Session = require("../Session/sessionModel");
+const Request = require("../Request/requestModel");
+const Review = require("../Reviews/reviewModel");
+const Skill = require("../Skills/skillModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 
 const toArray = (value) => {
@@ -59,12 +63,18 @@ exports.updateProfile = async (req, res) => {
       bio,
       image,
       profileImage,
+      coverImage,
       interests,
       goals,
       learningGoals,
+      skills,
+      phone,
+      timezone,
       linkedin,
       github,
       portfolio,
+      youtube,
+      twitter,
       oldPassword,
       newPassword,
     } = req.body;
@@ -90,12 +100,21 @@ exports.updateProfile = async (req, res) => {
     if (goals !== undefined || learningGoals !== undefined) {
       user.learningGoals = goals || learningGoals || "";
     }
+    if (skills !== undefined) {
+      const parsed = typeof skills === "string" ? JSON.parse(skills) : skills;
+      user.skills = Array.isArray(parsed) ? parsed : [];
+    }
+    if (coverImage !== undefined) user.coverImage = coverImage;
+    if (phone !== undefined) user.phone = phone.trim();
+    if (timezone !== undefined) user.timezone = timezone.trim();
 
     user.socialLinks = {
       ...(user.socialLinks || {}),
       ...(linkedin !== undefined ? { linkedin } : {}),
       ...(github !== undefined ? { github } : {}),
       ...(portfolio !== undefined ? { portfolio } : {}),
+      ...(youtube !== undefined ? { youtube } : {}),
+      ...(twitter !== undefined ? { twitter } : {}),
     };
 
     if (newPassword) {
@@ -124,17 +143,40 @@ exports.updateProfile = async (req, res) => {
       message: "Profile updated",
       data: withoutPassword(user),
     });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(409).json({
+    } catch (err) {
+      if (err.code === 11000) {
+        return res.status(409).json({
+          success: false,
+          message: "Email already exists",
+        });
+      }
+
+      res.status(500).json({
         success: false,
-        message: "Email already exists",
+        message: err.message,
       });
     }
+  };
 
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+exports.getProfileStats = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).lean();
+    const isMentor = user.roles.includes("mentor");
+
+    let sessions, reviews, skills;
+
+    if (isMentor) {
+      sessions = await Session.countDocuments({ mentorId: req.user.id });
+      reviews = await Review.countDocuments({ mentorId: req.user.id });
+      skills = await Skill.countDocuments({ createdBy: req.user.id, isDeleted: { $ne: true } });
+    } else {
+      sessions = await Request.countDocuments({ learnerId: req.user.id });
+      reviews = await Review.countDocuments({ learnerId: req.user.id });
+      skills = user.interests?.length || 0;
+    }
+
+    res.json({ success: true, data: { sessions, reviews, skills } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

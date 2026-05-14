@@ -85,13 +85,13 @@ export const SessionCard = ({ session, onBook }) => {
 
   return (
     <div className="card learner-session-card h-100 border-0 shadow-sm">
-      <div className="position-relative overflow-hidden">
+      <div className="card-img-wrapper">
         <img
-          src={session.thumbnail}
+          src={session.thumbnail || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop"}
           alt={session.title}
           className="card-img-top learner-session-img"
         />
-        <div className="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap">
+        <div className="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap" style={{ zIndex: 2 }}>
           <span className="badge rounded-pill" style={{ background: "rgba(255,255,255,0.9)", color: "#0d6efd", fontWeight: 600, backdropFilter: "blur(8px)" }}>
             {category}
           </span>
@@ -104,8 +104,8 @@ export const SessionCard = ({ session, onBook }) => {
         </div>
       </div>
       <div className="card-body p-4">
-        <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
-          <h5 className="fw-bold mb-0" style={{ fontSize: "1.05rem" }}>{session.title}</h5>
+        <div className="d-flex justify-content-between align-items-start gap-2 mb-2">
+          <h5 className="card-title mb-0">{session.title}</h5>
           <StatusBadge status={session.status} />
         </div>
         <p className="text-muted small mb-3">
@@ -113,23 +113,21 @@ export const SessionCard = ({ session, onBook }) => {
           {mentor}
         </p>
         <div className="d-flex flex-wrap gap-3 small text-muted mb-3">
-          <span>
-            <i className="fa fa-star text-warning me-1" />
-            {session.rating || "4.8"}
-          </span>
-          <span>
-            <i className="fa fa-users text-success me-1" />
-            {session.learners || 0} learners
-          </span>
-          <span>
-            <i className="fa fa-clock text-primary me-1" />
-            {session.duration || 60} min
-          </span>
+          {session.rating && <span>
+            <i className="fa fa-star text-warning me-2" />
+            {session.rating}
+          </span>}
+          {session.learners > 0 && <span>
+            <i className="fa fa-users text-success me-2" />
+            {session.learners} learners
+          </span>}
+          {session.duration && <span>
+            <i className="fa fa-clock text-primary me-2" />
+            {session.duration} min
+          </span>}
         </div>
-        <p className="small text-muted mb-4" style={{ lineHeight: 1.6 }}>
-          {session.description?.length > 100
-            ? session.description.slice(0, 100) + "..."
-            : session.description}
+        <p className="card-desc text-muted mb-4">
+          {session.description || "A practical learning session led by an experienced mentor."}
         </p>
         <div className="d-flex align-items-center justify-content-between gap-2">
           <strong style={{ fontSize: "1.1rem", color: "#1e293b" }}>

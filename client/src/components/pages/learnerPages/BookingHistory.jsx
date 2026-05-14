@@ -6,6 +6,7 @@ const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -30,6 +31,10 @@ const BookingHistory = () => {
     [bookings],
   );
 
+  const pageSize = 10;
+  const totalPages = Math.max(1, Math.ceil(history.length / pageSize));
+  const paginated = history.slice((page - 1) * pageSize, page * pageSize);
+
   return (
     <>
       <PageHeader title="Booking History" subtitle="Review previous bookings, payment history, invoices, and session timelines." />
@@ -48,7 +53,7 @@ const BookingHistory = () => {
                 </tr>
               </thead>
               <tbody>
-                {history.map((booking) => (
+                {paginated.map((booking) => (
                   <tr key={booking._id}>
                     <td>
                       <h6 className="fw-bold mb-1">{booking.sessionId?.title}</h6>
@@ -72,6 +77,18 @@ const BookingHistory = () => {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+              <small className="text-muted">Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, history.length)} of {history.length}</small>
+              <div className="btn-group">
+                <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button key={p} className={`btn btn-sm ${p === page ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(p)}>{p}</button>
+                ))}
+                <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <EmptyState title="No historical bookings" text="Completed and cancelled bookings will appear here." />

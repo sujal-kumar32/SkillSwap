@@ -2,11 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 
+const PAGE_SIZE = 10;
+
 const ViewRequests = () => {
   const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -24,6 +27,8 @@ const ViewRequests = () => {
     fetchRequests();
   }, []);
 
+  useEffect(() => { setPage(1); }, [search, filter]);
+
   const filteredRequests = useMemo(() => {
     return requests.filter((r) => {
       const q = search.toLowerCase();
@@ -32,6 +37,9 @@ const ViewRequests = () => {
       return matchSearch && matchFilter;
     });
   }, [requests, search, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / PAGE_SIZE));
+  const paginated = filteredRequests.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const pendingCount = useMemo(() => requests.filter((r) => r.requestStatus === "pending").length, [requests]);
 
@@ -87,8 +95,8 @@ const ViewRequests = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredRequests.length ? (
-                    filteredRequests.map((r) => (
+                  {paginated.length ? (
+                    paginated.map((r) => (
                       <tr key={r._id}>
                         <td className="fw-semibold" style={{ color: "#1e293b" }}>{r.learnerId?.name}</td>
                         <td style={{ color: "#64748b" }}>{r.sessionId?.title}</td>
@@ -109,6 +117,19 @@ const ViewRequests = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="d-flex justify-content-between align-items-center mt-4">
+              <small className="text-muted">Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filteredRequests.length)} of {filteredRequests.length}</small>
+              <div className="btn-group">
+                <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
+                {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => (
+                  <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+                ))}
+                <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+              </div>
             </div>
           )}
         </div>

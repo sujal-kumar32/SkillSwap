@@ -47,6 +47,7 @@ exports.createRequest = async (req, res) => {
       learnerId: req.user.id,
       mentorId: session.mentorId,
       note,
+      paymentStatus: session.price ? "pending" : "paid",
     });
 
     res.status(201).json({
