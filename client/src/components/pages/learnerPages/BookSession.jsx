@@ -53,16 +53,33 @@ const BookSession = () => {
       const bookRes = await Apiservices.bookSession(payload);
       const requestId = bookRes.data.data?._id;
 
+      const cancelRequest = async () => {
+        try { await Apiservices.updateRequest(requestId, "cancelled"); } catch {}
+      };
+
       if (session.price && session.price > 0) {
         const ready = await loadRazorpayScript();
         if (!ready) {
           showToast.error("Payment system unavailable");
+          await cancelRequest();
           setSubmitting(false);
           return;
         }
 
-        const orderRes = await Apiservices.createOrder({ requestId });
+        let orderRes;
+        try {
+          orderRes = await Apiservices.createOrder({ requestId });
+        } catch {
+          showToast.error("Failed to initiate payment. Booking cancelled.");
+          await cancelRequest();
+          setSubmitting(false);
+          return;
+        }
         const { orderId, amount, currency, keyId } = orderRes.data.data;
+
+        const cancelRequest = async () => {
+          try { await Apiservices.updateRequest(requestId, "cancelled"); } catch {}
+        };
 
         const options = {
           key: keyId,
@@ -84,24 +101,48 @@ const BookSession = () => {
               setSuccess(true);
             } catch {
               showToast.error("Payment verification failed. Contact support.");
+              await cancelRequest();
+              setSubmitting(false);
             }
           },
           modal: {
-            ondismiss: () => {
-              showToast.warning("Payment cancelled");
+            ondismiss: async () => {
+              await cancelRequest();
+              showToast.warning("Booking cancelled — payment was not completed.");
               setSubmitting(false);
             },
           },
           prefill: {
             name: localStorage.getItem("userName") || "",
-            email: "",
+            email: localStorage.getItem("userEmail") || "",
+            contact: localStorage.getItem("userPhone") || "",
+          },
+          notes: {
+            requestId: requestId,
+            sessionTitle: session.title,
           },
           theme: { color: "#2878eb" },
+          config: {
+            display: {
+              sequence: ["block.banks", "block.cards", "block.upi", "block.wallet"],
+              preferences: { show_default_blocks: true },
+            },
+            payments: { method: { upi: true, card: true, netbanking: true, wallet: true } },
+          },
         };
 
         const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", (response) => {
-          showToast.error(response.error.description || "Payment failed");
+        rzp.on("payment.failed", async (response) => {
+          const code = response.error?.code || "";
+          const desc = response.error?.description || "Payment failed";
+          await cancelRequest();
+          if (code === "BAD_REQUEST_ERROR" && desc.includes("UPI")) {
+            showToast.error("UPI is unavailable in test mode. Try using a test card or netbanking.");
+          } else if (code === "CANCELLED") {
+            showToast.warning("Payment cancelled");
+          } else {
+            showToast.error(desc);
+          }
           setSubmitting(false);
         });
         rzp.open();
@@ -110,7 +151,6 @@ const BookSession = () => {
         setSuccess(true);
       }
     } catch (error) {
-      console.log(error);
       showToast.error(error.response?.data?.message || "Failed to book session");
       setSubmitting(false);
     }

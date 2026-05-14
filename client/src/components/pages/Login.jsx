@@ -49,6 +49,7 @@ function Login() {
       localStorage.setItem("role", role);
       localStorage.setItem("roles", JSON.stringify(roles));
       localStorage.setItem("userName", data.data?.name || "User");
+      localStorage.setItem("userEmail", data.data?.email || "");
       window.dispatchEvent(new Event("authChange"));
 
       return data; // return full user data

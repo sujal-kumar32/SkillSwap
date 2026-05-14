@@ -151,6 +151,7 @@ const Bookings = () => {
               bookings.map((booking) => {
                     const learnerName = booking.learnerId?.name || "Learner";
                     const learnerImage = booking.learnerId?.profileImage;
+                    const status = booking.requestStatus;
                     return (
                 <div className="col-lg-4 col-md-6" key={booking._id}>
                   <div className="card border-0 shadow-sm booking-card h-100">

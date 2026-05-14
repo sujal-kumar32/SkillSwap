@@ -53,6 +53,7 @@ exports.createOrder = async (req, res) => {
       amount: amountInPaisa,
       currency: "INR",
       receipt: `rcpt_${requestId}_${Date.now()}`.slice(0, 40),
+      notes: { requestId: String(requestId) },
     };
 
     let order;
