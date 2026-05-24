@@ -1,8 +1,9 @@
-const Request = require("../Request/requestModel");
+﻿const Request = require("../Request/requestModel");
 const User = require("../Users/userModel");
+const asyncHandler = require("../../utilities/asyncHandler");
 
-exports.getProgress = async (req, res) => {
-  try {
+exports.getProgress = asyncHandler(async (req, res) => {
+
     const bookings = await Request.find({ learnerId: req.user.id })
       .populate({
         path: "sessionId",
@@ -58,16 +59,11 @@ exports.getProgress = async (req, res) => {
       },
       data,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.getAllProgress = async (req, res) => {
-  try {
+});
+
+exports.getAllProgress = asyncHandler(async (req, res) => {
+
     const learners = await User.find({ roles: "learner" }).select("name email profileImage").lean();
 
     const data = await Promise.all(
@@ -94,7 +90,5 @@ exports.getAllProgress = async (req, res) => {
     );
 
     res.json({ success: true, total: data.length, data });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+
+});

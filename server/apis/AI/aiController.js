@@ -3,15 +3,7 @@ const Session = require("../Session/sessionModel");
 const Request = require("../Request/requestModel");
 const ai = require("../../utilities/aiHelper");
 
-const asyncHandler = (fn) => (req, res, next) =>
-  Promise.resolve(fn(req, res, next)).catch((err) => {
-    console.error("AI Controller Error:", err?.message || err || "Unknown error");
-    const statusCode = err?.statusCode || 500;
-    res.status(statusCode).json({
-      success: false,
-      message: err?.expose ? err.message : "AI service temporarily unavailable. Please try again.",
-    });
-  });
+const asyncHandler = require("../../utilities/asyncHandler");
 
 exports.getRecommendations = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).lean();

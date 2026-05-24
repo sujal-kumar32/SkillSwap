@@ -1,12 +1,13 @@
-const MentorApplication = require("./mentorApplicationModel");
+﻿const MentorApplication = require("./mentorApplicationModel");
 const User = require("../Users/userModel");
 const jwt = require("jsonwebtoken");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-exports.applyForMentor = async (req, res) => {
-  try {
+exports.applyForMentor = asyncHandler(async (req, res) => {
+
     const user = await User.findById(req.user.id);
 
     if (user.roles.includes("mentor")) {
@@ -62,13 +63,11 @@ exports.applyForMentor = async (req, res) => {
       token,
       data: { id: user._id, roles: user.roles, status: "approved" },
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.getMyApplication = async (req, res) => {
-  try {
+});
+
+exports.getMyApplication = asyncHandler(async (req, res) => {
+
     const application = await MentorApplication.findOne({
       userId: req.user.id,
     }).sort({ createdAt: -1 });
@@ -78,13 +77,11 @@ exports.getMyApplication = async (req, res) => {
     }
 
     res.json({ success: true, data: application });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.getAllApplications = async (req, res) => {
-  try {
+});
+
+exports.getAllApplications = asyncHandler(async (req, res) => {
+
     const { status, userId } = req.query;
     let filter = {};
     if (status && ["pending", "approved", "rejected", "blocked"].includes(status)) {
@@ -101,13 +98,11 @@ exports.getAllApplications = async (req, res) => {
       .lean();
 
     res.json({ success: true, total: applications.length, data: applications });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.approveApplication = async (req, res) => {
-  try {
+});
+
+exports.approveApplication = asyncHandler(async (req, res) => {
+
     const { id } = req.params;
     const { adminRemarks } = req.body;
 
@@ -141,13 +136,11 @@ exports.approveApplication = async (req, res) => {
       message: "Mentor application approved",
       data: { status: "approved" },
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.rejectApplication = async (req, res) => {
-  try {
+});
+
+exports.rejectApplication = asyncHandler(async (req, res) => {
+
     const { id } = req.params;
     const { adminRemarks } = req.body;
 
@@ -171,13 +164,11 @@ exports.rejectApplication = async (req, res) => {
       message: "Mentor application rejected",
       data: { status: "rejected" },
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.removeMentor = async (req, res) => {
-  try {
+});
+
+exports.removeMentor = asyncHandler(async (req, res) => {
+
     const { id } = req.params;
 
     const application = await MentorApplication.findById(id);
@@ -204,13 +195,11 @@ exports.removeMentor = async (req, res) => {
       message: "Mentor role removed and blocked",
       data: { status: "blocked" },
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.unblockMentor = async (req, res) => {
-  try {
+});
+
+exports.unblockMentor = asyncHandler(async (req, res) => {
+
     const { id } = req.params;
 
     const application = await MentorApplication.findById(id);
@@ -233,13 +222,11 @@ exports.unblockMentor = async (req, res) => {
       message: "User unblocked. They can now apply again.",
       data: { status: "rejected" },
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.deleteApplication = async (req, res) => {
-  try {
+});
+
+exports.deleteApplication = asyncHandler(async (req, res) => {
+
     const { id } = req.params;
 
     const application = await MentorApplication.findById(id);
@@ -253,7 +240,5 @@ exports.deleteApplication = async (req, res) => {
       success: true,
       message: "Application deleted",
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+
+});

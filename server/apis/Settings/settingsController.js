@@ -1,4 +1,5 @@
-const Setting = require("./settingsModel");
+﻿const Setting = require("./settingsModel");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const getDefaults = () => ({
   siteName: "SkillSwap",
@@ -12,20 +13,18 @@ const getDefaults = () => ({
   timezone: "Asia/Kolkata",
 });
 
-exports.getSettings = async (req, res) => {
-  try {
+exports.getSettings = asyncHandler(async (req, res) => {
+
     let settings = await Setting.findOne();
     if (!settings) {
       settings = await Setting.create(getDefaults());
     }
     res.json({ success: true, data: settings });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
 
-exports.updateSettings = async (req, res) => {
-  try {
+});
+
+exports.updateSettings = asyncHandler(async (req, res) => {
+
     const allowed = Object.keys(getDefaults());
     const updates = {};
     for (const key of allowed) {
@@ -41,7 +40,5 @@ exports.updateSettings = async (req, res) => {
       await settings.save();
     }
     res.json({ success: true, message: "Settings updated", data: settings });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+
+});

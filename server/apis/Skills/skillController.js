@@ -1,6 +1,7 @@
-const Skill = require("./skillModel");
+﻿const Skill = require("./skillModel");
 const Category = require("../Categories/categoryModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 // CREATE SKILL
 const isAdmin = (req) => req.user?.roles?.includes("admin");
@@ -8,8 +9,8 @@ const isAdmin = (req) => req.user?.roles?.includes("admin");
 const normalizeName = (name) =>
   name.toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
 
-exports.createSkill = async (req, res) => {
-  try {
+exports.createSkill = asyncHandler(async (req, res) => {
+
     const { name, categoryId, description, level, tags } = req.body;
 
     if (!name || !categoryId) {
@@ -68,17 +69,12 @@ exports.createSkill = async (req, res) => {
       message: "Skill created",
       data: skill,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET ALL SKILLS
-exports.getSkills = async (req, res) => {
-  try {
+exports.getSkills = asyncHandler(async (req, res) => {
+
     const { search, sort, category, includeDeleted, level, tag } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -146,17 +142,12 @@ exports.getSkills = async (req, res) => {
       pages: Math.ceil(total / limit),
       data: skills,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+
+});
 
 // GET SINGLE SKILL
-exports.getSkill = async (req, res) => {
-  try {
+exports.getSkill = asyncHandler(async (req, res) => {
     const skill = await Skill.findById(req.params.id)
       .populate("categoryId", "name")
       .lean();
@@ -181,17 +172,12 @@ exports.getSkill = async (req, res) => {
       success: true,
       data: skill,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // UPDATE SKILL
-exports.updateSkill = async (req, res) => {
-  try {
+exports.updateSkill = asyncHandler(async (req, res) => {
+
     const skill = await Skill.findById(req.params.id);
 
     if (!skill) {
@@ -244,17 +230,12 @@ exports.updateSkill = async (req, res) => {
       message: "Skill updated",
       data: skill,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // DELETE SKILL (soft delete)
-exports.deleteSkill = async (req, res) => {
-  try {
+exports.deleteSkill = asyncHandler(async (req, res) => {
+
     const skill = await Skill.findById(req.params.id);
     if (!skill) {
       return res.status(404).json({
@@ -280,10 +261,5 @@ exports.deleteSkill = async (req, res) => {
       success: true,
       message: "Skill deleted",
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});

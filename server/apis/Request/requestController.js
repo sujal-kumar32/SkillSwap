@@ -1,7 +1,8 @@
-const Request = require("./requestModel");
+﻿const Request = require("./requestModel");
 const Session = require("../Session/sessionModel");
 const Payment = require("../Payment/paymentModel");
 const razorpay = require("../../config/razorpay");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -9,8 +10,8 @@ const idsEqual = (left, right) => {
 };
 
 // CREATE REQUEST (BOOK SESSION)
-exports.createRequest = async (req, res) => {
-  try {
+exports.createRequest = asyncHandler(async (req, res) => {
+
     const { sessionId, note } = req.body;
 
     if (!sessionId) {
@@ -55,17 +56,12 @@ exports.createRequest = async (req, res) => {
       message: "Session booked successfully",
       data: request,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET ALL REQUESTS
-exports.getRequests = async (req, res) => {
-  try {
+exports.getRequests = asyncHandler(async (req, res) => {
+
     const { sort, status } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -102,17 +98,11 @@ exports.getRequests = async (req, res) => {
       pages: Math.ceil(total / limit),
       data: requests,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET CURRENT LEARNER BOOKINGS
-exports.getMyBookings = async (req, res) => {
-  try {
+exports.getMyBookings = asyncHandler(async (req, res) => {
     const requests = await Request.find({ learnerId: req.user.id })
       .populate({
         path: "sessionId",
@@ -131,17 +121,11 @@ exports.getMyBookings = async (req, res) => {
       total: requests.length,
       data: requests,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET BOOKINGS FOR THE CURRENT MENTOR
-exports.getMentorBookings = async (req, res) => {
-  try {
+exports.getMentorBookings = asyncHandler(async (req, res) => {
     const requests = await Request.find({ mentorId: req.user.id })
       .populate({
         path: "sessionId",
@@ -157,17 +141,11 @@ exports.getMentorBookings = async (req, res) => {
       total: requests.length,
       data: requests,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET UNIQUE LEARNERS FOR THE CURRENT MENTOR
-exports.getMentorLearners = async (req, res) => {
-  try {
+exports.getMentorLearners = asyncHandler(async (req, res) => {
     const requests = await Request.find({
       mentorId: req.user.id,
       requestStatus: { $in: ["accepted", "completed"] },
@@ -219,17 +197,12 @@ exports.getMentorLearners = async (req, res) => {
       total: learners.length,
       data: learners,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // UPDATE REQUEST STATUS (MENTOR APPROVE/REJECT, LEARNER CANCEL)
-exports.updateRequestStatus = async (req, res) => {
-  try {
+exports.updateRequestStatus = asyncHandler(async (req, res) => {
+
     const { status } = req.body;
     const validStatuses = ["pending", "accepted", "rejected", "completed", "cancelled"];
 
@@ -337,17 +310,11 @@ exports.updateRequestStatus = async (req, res) => {
       data: request,
       refund: refundInfo,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // DELETE REQUEST
-exports.deleteRequest = async (req, res) => {
-  try {
+exports.deleteRequest = asyncHandler(async (req, res) => {
     const request = await Request.findById(req.params.id);
 
     if (!request) {
@@ -374,10 +341,5 @@ exports.deleteRequest = async (req, res) => {
       success: true,
       message: "Request deleted",
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});

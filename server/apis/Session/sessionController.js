@@ -1,7 +1,8 @@
-const Session = require("./sessionModel");
+﻿const Session = require("./sessionModel");
 const Skill = require("../Skills/skillModel");
 const Request = require("../Request/requestModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -9,8 +10,8 @@ const idsEqual = (left, right) => {
 };
 
 // CREATE SESSION
-exports.createSession = async (req, res) => {
-  try {
+exports.createSession = asyncHandler(async (req, res) => {
+
     const {
       title,
       skillId,
@@ -76,17 +77,12 @@ exports.createSession = async (req, res) => {
       data: session,
     });
 
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET CURRENT MENTOR SESSIONS
-exports.getMySessions = async (req, res) => {
-  try {
+exports.getMySessions = asyncHandler(async (req, res) => {
+
     const sessions = await Session.find({ mentorId: req.user.id })
       .populate({
         path: "skillId",
@@ -114,19 +110,14 @@ exports.getMySessions = async (req, res) => {
         bookings: countMap[session._id.toString()] || 0,
       })),
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 
 
 // GET ALL SESSIONS
-exports.getSessions = async (req, res) => {
-  try {
+exports.getSessions = asyncHandler(async (req, res) => {
+
     const { search, sort, category, skill, price, sessionType } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -174,19 +165,14 @@ exports.getSessions = async (req, res) => {
       data: sessions,
     });
 
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 
 
 // GET SINGLE SESSION
-exports.getSession = async (req, res) => {
-  try {
+exports.getSession = asyncHandler(async (req, res) => {
+
     const session = await Session.findById(req.params.id)
       .populate("skillId")
       .populate("mentorId", "name email profileImage")
@@ -216,19 +202,14 @@ exports.getSession = async (req, res) => {
       data: session,
     });
 
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 
 
 // UPDATE SESSION
-exports.updateSession = async (req, res) => {
-  try {
+exports.updateSession = asyncHandler(async (req, res) => {
+
     const session = await Session.findById(req.params.id);
 
     if (!session) {
@@ -285,19 +266,14 @@ exports.updateSession = async (req, res) => {
       data: session,
     });
 
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 
 
 // DELETE SESSION
-exports.deleteSession = async (req, res) => {
-  try {
+exports.deleteSession = asyncHandler(async (req, res) => {
+
     const session = await Session.findById(req.params.id);
 
     if (!session) {
@@ -325,10 +301,5 @@ exports.deleteSession = async (req, res) => {
       message: "Session deleted",
     });
 
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});

@@ -1,6 +1,7 @@
-const User = require("../Users/userModel");
+﻿const User = require("../Users/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -10,8 +11,8 @@ if (!SECRET) {
 }
 
 // REGISTER
-exports.register = async (req, res) => {
-  try {
+exports.register = asyncHandler(async (req, res) => {
+
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
@@ -55,17 +56,12 @@ exports.register = async (req, res) => {
       token,
       data: userData,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // CHANGE PASSWORD
-exports.changePassword = async (req, res) => {
-  try {
+exports.changePassword = asyncHandler(async (req, res) => {
+
     const { oldPassword, newPassword } = req.body;
 
     const user = await User.findById(req.user.id);
@@ -98,18 +94,13 @@ exports.changePassword = async (req, res) => {
       success: true,
       message: "Password changed successfully",
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // LOGIN
 
-exports.login = async (req, res) => {
-  try {
+exports.login = asyncHandler(async (req, res) => {
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
@@ -154,10 +145,5 @@ exports.login = async (req, res) => {
       token,
       data: { ...payload, name: user.name },
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});

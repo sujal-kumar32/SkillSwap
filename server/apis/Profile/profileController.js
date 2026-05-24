@@ -1,10 +1,11 @@
-const bcrypt = require("bcryptjs");
+﻿const bcrypt = require("bcryptjs");
 const User = require("../Users/userModel");
 const Session = require("../Session/sessionModel");
 const Request = require("../Request/requestModel");
 const Review = require("../Reviews/reviewModel");
 const Skill = require("../Skills/skillModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const toArray = (value) => {
   if (Array.isArray(value)) return value.map((item) => item.trim()).filter(Boolean);
@@ -23,8 +24,8 @@ const withoutPassword = (user) => {
   return data;
 };
 
-exports.getProfile = async (req, res) => {
-  try {
+exports.getProfile = asyncHandler(async (req, res) => {
+
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -38,16 +39,11 @@ exports.getProfile = async (req, res) => {
       success: true,
       data: withoutPassword(user),
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.updateProfile = async (req, res) => {
-  try {
+});
+
+exports.updateProfile = asyncHandler(async (req, res) => {
+
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -143,23 +139,11 @@ exports.updateProfile = async (req, res) => {
       message: "Profile updated",
       data: withoutPassword(user),
     });
-    } catch (err) {
-      if (err.code === 11000) {
-        return res.status(409).json({
-          success: false,
-          message: "Email already exists",
-        });
-      }
 
-      res.status(500).json({
-        success: false,
-        message: err.message,
-      });
-    }
-  };
+  });
 
-exports.getProfileStats = async (req, res) => {
-  try {
+exports.getProfileStats = asyncHandler(async (req, res) => {
+
     const user = await User.findById(req.user.id).lean();
     const isMentor = user.roles.includes("mentor");
 
@@ -176,7 +160,5 @@ exports.getProfileStats = async (req, res) => {
     }
 
     res.json({ success: true, data: { sessions, reviews, skills } });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+
+});

@@ -65,6 +65,18 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/mentor-applications", mentorApplicationRoutes);
 
+app.use((err, req, res, next) => {
+  console.error("Unhandled Error:", err.message);
+  if (err.code === 11000) {
+    return res.status(409).json({ success: false, message: "A record with this value already exists" });
+  }
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.expose ? err.message : "Internal server error",
+  });
+});
+
 process.on("uncaughtException", (err) => {
   console.error("FATAL:", err.message);
 });

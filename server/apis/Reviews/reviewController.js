@@ -1,12 +1,13 @@
-const Review = require("./reviewModel");
+﻿const Review = require("./reviewModel");
 const Request = require("../Request/requestModel");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const idsEqual = (left, right) => {
   return left && right && left.toString() === right.toString();
 };
 
-exports.getReviews = async (req, res) => {
-  try {
+exports.getReviews = asyncHandler(async (req, res) => {
+
     const { search, sort } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -54,16 +55,11 @@ exports.getReviews = async (req, res) => {
         mentor: review.mentor || review.mentorId?.name,
       })),
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.createReview = async (req, res) => {
-  try {
+});
+
+exports.createReview = asyncHandler(async (req, res) => {
+
     const { sessionId, rating, comment, session, mentor } = req.body;
 
     if (!rating || rating < 1 || rating > 5) {
@@ -114,16 +110,11 @@ exports.createReview = async (req, res) => {
       message: "Review created",
       data: review,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.updateReview = async (req, res) => {
-  try {
+});
+
+exports.updateReview = asyncHandler(async (req, res) => {
+
     const review = await Review.findById(req.params.id);
 
     if (!review) {
@@ -152,16 +143,11 @@ exports.updateReview = async (req, res) => {
       message: "Review updated",
       data: review,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.deleteReview = async (req, res) => {
-  try {
+});
+
+exports.deleteReview = asyncHandler(async (req, res) => {
+
     const review = await Review.findById(req.params.id);
 
     if (!review) {
@@ -184,10 +170,5 @@ exports.deleteReview = async (req, res) => {
       success: true,
       message: "Review deleted",
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});

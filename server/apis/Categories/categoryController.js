@@ -1,12 +1,13 @@
-const Category = require("./categoryModel");
+﻿const Category = require("./categoryModel");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 // TEMP image upload (replace with Cloudinary later)
 const uploadImg = async (buffer) => {
   return "uploaded-image-placeholder";
 };
 
-exports.createCategory = async (req, res) => {
-  try {
+exports.createCategory = asyncHandler(async (req, res) => {
+
     const { name, description } = req.body;
 
     if (!name) {
@@ -39,23 +40,11 @@ exports.createCategory = async (req, res) => {
       message: "Category created successfully",
       data: category,
     });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Category already exists",
-      });
-    }
 
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+});
 
-exports.getAllCategories = async (req, res) => {
-  try {
+exports.getAllCategories = asyncHandler(async (req, res) => {
+
     const { search, sort, status } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -85,16 +74,11 @@ exports.getAllCategories = async (req, res) => {
       pages: Math.ceil(total / limit),
       data: categories,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.getCategory = async (req, res) => {
-  try {
+});
+
+exports.getCategory = asyncHandler(async (req, res) => {
+
     const category = await Category.findById(req.params.id).lean();
 
     if (!category) {
@@ -108,16 +92,11 @@ exports.getCategory = async (req, res) => {
       success: true,
       data: category,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.updateCategory = async (req, res) => {
-  try {
+});
+
+exports.updateCategory = asyncHandler(async (req, res) => {
+
     const category = await Category.findById(req.params.id);
 
     if (!category) {
@@ -167,23 +146,11 @@ exports.updateCategory = async (req, res) => {
       message: "Category updated successfully",
       data: category,
     });
-  } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "Duplicate category name",
-      });
-    }
 
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+});
 
-exports.deleteCategory = async (req, res) => {
-  try {
+exports.deleteCategory = asyncHandler(async (req, res) => {
+
     const category = await Category.findById(req.params.id);
 
     if (!category) {
@@ -199,16 +166,11 @@ exports.deleteCategory = async (req, res) => {
       success: true,
       message: "Category deleted successfully",
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
 
-exports.toggleStatus = async (req, res) => {
-  try {
+});
+
+exports.toggleStatus = asyncHandler(async (req, res) => {
+
     const category = await Category.findById(req.params.id);
 
     if (!category) {
@@ -229,10 +191,5 @@ exports.toggleStatus = async (req, res) => {
       } successfully`,
       data: category,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});

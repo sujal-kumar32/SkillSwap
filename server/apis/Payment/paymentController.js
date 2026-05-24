@@ -1,8 +1,9 @@
-const crypto = require("crypto");
+﻿const crypto = require("crypto");
 const Payment = require("./paymentModel");
 const Request = require("../Request/requestModel");
 const Session = require("../Session/sessionModel");
 const razorpay = require("../../config/razorpay");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -10,8 +11,8 @@ const idsEqual = (left, right) => {
 };
 
 // CREATE RAZORPAY ORDER
-exports.createOrder = async (req, res) => {
-  try {
+exports.createOrder = asyncHandler(async (req, res) => {
+
     const { requestId } = req.body;
 
     if (!requestId) {
@@ -93,15 +94,12 @@ exports.createOrder = async (req, res) => {
         paymentId: payment._id,
       },
     });
-  } catch (err) {
-    console.error("createOrder unexpected error:", err);
-    res.status(500).json({ success: false, message: err.message || "Failed to create payment order" });
-  }
-};
+
+});
 
 // VERIFY RAZORPAY PAYMENT
-exports.verifyPayment = async (req, res) => {
-  try {
+exports.verifyPayment = asyncHandler(async (req, res) => {
+
     const { requestId, orderId, razorpayPaymentId, razorpaySignature } = req.body;
 
     const generatedSignature = crypto
@@ -141,14 +139,12 @@ exports.verifyPayment = async (req, res) => {
       message: "Payment verified successfully",
       data: payment,
     });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+
+});
 
 // CREATE PAYMENT (legacy mock - keep for backward compatibility)
-exports.createPayment = async (req, res) => {
-  try {
+exports.createPayment = asyncHandler(async (req, res) => {
+
     const { requestId, paymentMethod } = req.body;
 
     if (!requestId) {
@@ -205,17 +201,12 @@ exports.createPayment = async (req, res) => {
       message: "Payment successful",
       data: payment,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // GET ALL PAYMENTS
-exports.getPayments = async (req, res) => {
-  try {
+exports.getPayments = asyncHandler(async (req, res) => {
+
     const { search, sort } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -252,17 +243,12 @@ exports.getPayments = async (req, res) => {
       pages: Math.ceil(total / limit),
       data: payments,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // PROCESS REFUND (called when mentor rejects a paid booking)
-exports.processRefund = async (req, res) => {
-  try {
+exports.processRefund = asyncHandler(async (req, res) => {
+
     const { requestId, reason } = req.body;
 
     if (!requestId) {
@@ -332,8 +318,5 @@ exports.processRefund = async (req, res) => {
       message: "Refund processed successfully",
       data: { refundId: refundResponse.id, refundStatus: "processed" },
     });
-  } catch (err) {
-    console.error("processRefund error:", err);
-    res.status(500).json({ success: false, message: err.message || "Refund processing failed" });
-  }
-};
+
+});

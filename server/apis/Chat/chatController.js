@@ -1,5 +1,6 @@
-const Chat = require("./chatModel");
+﻿const Chat = require("./chatModel");
 const Request = require("../Request/requestModel");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -15,8 +16,8 @@ const canAccessRequest = (request, req) => {
 };
 
 // SEND MESSAGE
-exports.sendMessage = async (req, res) => {
-  try {
+exports.sendMessage = asyncHandler(async (req, res) => {
+
     const { requestId, message } = req.body;
 
     if (!requestId || !message?.trim()) {
@@ -71,17 +72,13 @@ exports.sendMessage = async (req, res) => {
       message: "Message sent",
       data: chat,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+
+});
 
 // GET CHAT BY REQUEST
-exports.getChat = async (req, res) => {
-  try {
+exports.getChat = asyncHandler(async (req, res) => {
+
     const request = await Request.findById(req.params.requestId);
     if (!request) {
       return res.status(404).json({
@@ -112,10 +109,6 @@ exports.getChat = async (req, res) => {
       success: true,
       data: chat,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+
+});

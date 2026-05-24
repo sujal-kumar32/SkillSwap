@@ -1,12 +1,13 @@
-const User = require("./userModel");
+﻿const User = require("./userModel");
 const jwt = require("jsonwebtoken");
+const asyncHandler = require("../../utilities/asyncHandler");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 // GET ALL USERS (EXCEPT ADMIN)
-exports.getAllUsers = async (req, res) => {
-  try {
+exports.getAllUsers = asyncHandler(async (req, res) => {
+
     const { search, sort, status, role } = req.query;
     const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
     const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
@@ -47,17 +48,12 @@ exports.getAllUsers = async (req, res) => {
       pages: Math.ceil(total / limit),
       data: users,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // UPDATE USER STATUS
-exports.updateUserStatus = async (req, res) => {
-  try {
+exports.updateUserStatus = asyncHandler(async (req, res) => {
+
     const { userId } = req.params;
     const { status } = req.body;
 
@@ -87,17 +83,12 @@ exports.updateUserStatus = async (req, res) => {
       message: `User status updated to ${status}`,
       data: user,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // APPROVE USER
-exports.approveUser = async (req, res) => {
-  try {
+exports.approveUser = asyncHandler(async (req, res) => {
+
     const { userId } = req.params;
 
     const user = await User.findById(userId);
@@ -123,17 +114,12 @@ exports.approveUser = async (req, res) => {
       message: "Mentor approved successfully",
       data: approvedUser,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // BLOCK USER
-exports.blockUser = async (req, res) => {
-  try {
+exports.blockUser = asyncHandler(async (req, res) => {
+
     const { userId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -154,17 +140,12 @@ exports.blockUser = async (req, res) => {
       message: "User blocked successfully",
       data: user,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // UNBLOCK USER
-exports.unblockUser = async (req, res) => {
-  try {
+exports.unblockUser = asyncHandler(async (req, res) => {
+
     const { userId } = req.params;
 
     const user = await User.findByIdAndUpdate(
@@ -185,17 +166,12 @@ exports.unblockUser = async (req, res) => {
       message: "User unblocked successfully",
       data: user,
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
 
 // APPLY FOR MENTOR
-exports.applyForMentor = async (req, res) => {
-  try {
+exports.applyForMentor = asyncHandler(async (req, res) => {
+
     const user = await User.findById(req.user.id);
 
     if (user.roles.includes("mentor")) {
@@ -226,10 +202,5 @@ exports.applyForMentor = async (req, res) => {
         roles: user.roles,
       },
     });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
+
+});
