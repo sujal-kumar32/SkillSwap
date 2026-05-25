@@ -102,6 +102,42 @@ function mentorApplicationRejected(name, adminRemarks) {
   `;
 }
 
+function certificateCompleted(name, skillName, mentorName) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #1e293b, #334155); padding: 32px; border-radius: 16px 16px 0 0; text-align: center;">
+        <h1 style="color: #c9a848; margin: 0; font-size: 22px;">SKILLSWAP</h1>
+        <p style="color: #94a3b8; margin: 8px 0 0;">Certificate of Completion</p>
+      </div>
+      <div style="background: #fff; border: 1px solid #e5e7eb; border-top: none; padding: 32px; border-radius: 0 0 16px 16px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 48px; margin-bottom: 8px;">&#x1F3C6;</div>
+          <h2 style="color: #059669; margin: 0;">Congratulations, ${name}!</h2>
+        </div>
+        <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+          You've successfully completed all sessions for <strong style="color: #0d6efd;">${skillName}</strong>
+          with mentor <strong>${mentorName}</strong>. Your certificate is attached to this email.
+        </p>
+        <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0; font-size: 14px; color: #059669;">
+            <strong>Skill:</strong> ${skillName}<br/>
+            <strong>Mentor:</strong> ${mentorName}
+          </p>
+        </div>
+        <p style="color: #64748b; font-size: 14px;">Keep learning and growing with SkillSwap!</p>
+        <div style="text-align: center; margin-top: 24px;">
+          <a href="${process.env.CLIENT_URL || "http://localhost:5173"}/learner/progress"
+             style="background:#0d6efd;color:#fff;padding:12px 32px;border-radius:50px;text-decoration:none;display:inline-block;font-weight:600;">
+            View Your Progress
+          </a>
+        </div>
+      </div>
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <small style="color: #9ca3af; display: block; text-align: center;">SkillSwap — Learn. Teach. Grow.</small>
+    </div>
+  `;
+}
+
 function passwordResetEmail(name, resetLink) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
@@ -121,4 +157,4 @@ function passwordResetEmail(name, resetLink) {
   `;
 }
 
-module.exports = { welcomeEmail, bookingRequestMentorNotification, bookingStatusUpdateLearner, mentorApplicationApproved, mentorApplicationRejected, passwordResetEmail };
+module.exports = { welcomeEmail, bookingRequestMentorNotification, bookingStatusUpdateLearner, mentorApplicationApproved, mentorApplicationRejected, certificateCompleted, passwordResetEmail };

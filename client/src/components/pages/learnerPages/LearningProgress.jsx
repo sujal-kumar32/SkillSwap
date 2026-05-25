@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, ProgressBar, StatCard } from "../../learner/LearnerUI";
 
@@ -37,6 +38,33 @@ const LearningProgress = () => {
     () => items.reduce((sum, item) => sum + (item.sessions || 0), 0),
     [items],
   );
+
+  const completedSkills = useMemo(
+    () => items.filter((i) => i.completion === 100),
+    [items],
+  );
+
+  const [downloading, setDownloading] = useState(null);
+
+  const handleDownload = useCallback(async (skillName) => {
+    setDownloading(skillName);
+    try {
+      const response = await Apiservices.downloadCertificate(skillName);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `certificate-${skillName.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showToast.success("Certificate downloaded");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to download certificate");
+    } finally {
+      setDownloading(null);
+    }
+  }, []);
 
   if (loading) return <LoadingState label="Loading progress..." />;
 
@@ -88,24 +116,31 @@ const LearningProgress = () => {
           </div>
           <div className="learner-card p-4">
             <h5 className="fw-bold"><i className="fa fa-certificate text-warning me-2" />Certificates</h5>
-            {items.filter((i) => i.completion === 100).length > 0 ? (
+            {completedSkills.length > 0 ? (
               <div>
                 <p className="text-success small fw-semibold mb-2">
-                  <i className="fa fa-check-circle me-1" />{items.filter((i) => i.completion === 100).length} skill{items.filter((i) => i.completion === 100).length > 1 ? "s" : ""} completed!
+                  <i className="fa fa-check-circle me-1" />{completedSkills.length} skill{completedSkills.length > 1 ? "s" : ""} completed!
                 </p>
-                {items.filter((i) => i.completion === 100).slice(0, 3).map((item) => (
-                  <div key={item.skill} className="d-flex align-items-center gap-2 mb-2 p-2 rounded-3" style={{ background: "#f0fdf4" }}>
-                    <i className="fa fa-trophy text-success" />
-                    <small className="fw-semibold">{item.skill}</small>
+                {completedSkills.slice(0, 3).map((item) => (
+                  <div key={item.skill} className="d-flex align-items-center justify-content-between gap-2 mb-2 p-2 rounded-3" style={{ background: "#f0fdf4" }}>
+                    <div className="d-flex align-items-center gap-2">
+                      <i className="fa fa-trophy text-success" />
+                      <small className="fw-semibold">{item.skill}</small>
+                    </div>
+                    <button
+                      className="btn btn-sm btn-success rounded-pill px-3"
+                      disabled={downloading === item.skill}
+                      onClick={() => handleDownload(item.skill)}
+                    >
+                      {downloading === item.skill ? <span className="spinner-border spinner-border-sm" /> : "Download"}
+                    </button>
                   </div>
                 ))}
+                {completedSkills.length > 3 && <small className="text-muted">+{completedSkills.length - 3} more</small>}
               </div>
             ) : (
               <p className="text-muted small mb-3">Complete all sessions in a skill to earn a certificate.</p>
             )}
-            <button className="btn btn-outline-primary rounded-pill w-100 mt-2" disabled={!items.filter((i) => i.completion === 100).length}>
-              {items.filter((i) => i.completion === 100).length ? "Download Certificates" : "No Certificates Yet"}
-            </button>
           </div>
         </div>
       </div>

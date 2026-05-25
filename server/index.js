@@ -22,6 +22,7 @@ const progressRoutes = require("./routes/progressRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const mentorApplicationRoutes = require("./routes/mentorApplicationRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -64,6 +65,7 @@ app.use("/api/progress", progressRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/mentor-applications", mentorApplicationRoutes);
+app.use("/api/certificates", certificateRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err.message);

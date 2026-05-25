@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "nodemailer": "^8.0.8",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "pdfkit": "^0.18.0"
   },
   "name": "server",
   "version": "1.0.0",

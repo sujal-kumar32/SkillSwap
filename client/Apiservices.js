@@ -177,6 +177,13 @@ class Apiservices {
     return axios.delete(baseUrl + `reviews/${reviewId}`, this.getToken());
   }
 
+  downloadCertificate(skillName) {
+    return axios.get(baseUrl + `certificates/download/${encodeURIComponent(skillName)}`, {
+      ...this.getToken(),
+      responseType: "blob",
+    });
+  }
+
   updateProfile(data) {
     return axios.put(baseUrl + "profile", data, this.getToken());
   }
