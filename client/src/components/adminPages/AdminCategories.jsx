@@ -140,7 +140,7 @@ const AdminCategories = () => {
                 </div>
                 <div className="d-flex gap-3 pt-2">
                   <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-4 fw-semibold" style={{ padding: "10px 24px" }}>
-                    <i className={`fa ${editingId ? "fa-pen" : "fa-plus"} me-2`} />{editingId ? "Update" : "Create"}
+                    <i className={`fa ${editingId ? "fa-pen" : "fa-plus"}`} style={{ marginRight: 10 }} />{editingId ? "Update" : "Create"}
                   </LoadingButton>
                   {editingId && (
                     <button type="button" className="btn btn-outline-secondary rounded-pill px-4 fw-semibold" style={{ padding: "10px 24px" }}

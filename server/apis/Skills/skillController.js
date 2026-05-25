@@ -1,5 +1,6 @@
 ﻿const Skill = require("./skillModel");
 const Category = require("../Categories/categoryModel");
+const User = require("../Users/userModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
@@ -64,6 +65,14 @@ exports.createSkill = asyncHandler(async (req, res) => {
       thumbnailPublicId: thumbnail.publicId,
       createdBy: req.user.id,
     });
+
+    const normalizedNew = normalizeName(trimmedName);
+    const userDoc = await User.findById(req.user.id);
+    const existing = userDoc.skills.find((s) => normalizeName(s.name) === normalizedNew);
+    if (!existing) {
+      userDoc.skills.push({ name: trimmedName, level: "advanced" });
+      await userDoc.save();
+    }
 
     res.status(201).json({
       success: true,

@@ -175,13 +175,13 @@ const Bookings = () => {
 
                     {/* SESSION */}
                     <div className="booking-detail mb-2">
-                      <i className="fa fa-video text-primary me-2"></i>
+                      <i className="fa fa-video text-primary" style={{ marginRight: 10 }}></i>
 
                       <span>{booking.sessionId?.title || "Session"}</span>
                     </div>
 
                     <div className="booking-detail mb-4">
-                      <i className="fa fa-calendar text-success me-2"></i>
+                      <i className="fa fa-calendar text-success" style={{ marginRight: 10 }}></i>
 
                       <span>
                         {formatDate(booking.date || booking.sessionId?.date)}
@@ -212,7 +212,7 @@ const Bookings = () => {
                           className="btn btn-success flex-fill rounded-pill py-2"
                           onClick={() => handleStatus(booking._id, "accepted")}
                         >
-                          <i className="fa fa-check me-2"></i>
+                          <i className="fa fa-check" style={{ marginRight: 10 }}></i>
                           Approve
                         </LoadingButton>
 
@@ -224,7 +224,7 @@ const Bookings = () => {
                             if (confirmed) handleStatus(booking._id, "rejected");
                           }}
                         >
-                          <i className="fa fa-times me-2"></i>
+                          <i className="fa fa-times" style={{ marginRight: 10 }}></i>
                           Reject
                         </LoadingButton>
                       </div>

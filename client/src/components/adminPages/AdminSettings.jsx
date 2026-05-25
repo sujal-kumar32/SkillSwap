@@ -170,7 +170,7 @@ const AdminSettings = () => {
 
             <div className="pt-3">
               <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-5 py-3 fw-semibold" style={{ fontSize: "1rem" }}>
-                <i className="fa fa-save me-2" />Save Settings
+                <i className="fa fa-save" style={{ marginRight: 10 }} />Save Settings
               </LoadingButton>
             </div>
           </form>

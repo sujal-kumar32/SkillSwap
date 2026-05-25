@@ -177,14 +177,14 @@ function ForgotPassword() {
                 {loading ? (
                   <span><span className="spinner-border spinner-border-sm me-2" role="status" />Sending...</span>
                 ) : (
-                  <span><i className="fa fa-paper-plane me-2" />Send Reset Link</span>
+                  <span><i className="fa fa-paper-plane" style={{ marginRight: 10 }} />Send Reset Link</span>
                 )}
               </button>
               <div className="text-center mt-4">
                 <Link to="/login" style={{ color: "rgba(255,255,255,0.45)", fontWeight: 500, fontSize: "0.9rem", textDecoration: "none", transition: "color 0.2s" }}
                   onMouseEnter={(e) => e.target.style.color = "rgba(255,255,255,0.7)"}
                   onMouseLeave={(e) => e.target.style.color = "rgba(255,255,255,0.45)"}>
-                  <i className="fa fa-arrow-left me-2" />Back to Login
+                  <i className="fa fa-arrow-left" style={{ marginRight: 10 }} />Back to Login
                 </Link>
               </div>
             </form>

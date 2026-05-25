@@ -197,7 +197,7 @@ const AIRecommendations = () => {
             </p>
             {profile.interests.trim() && (
               <button
-                className="btn rounded-pill w-100 fw-semibold mb-4 border-0 d-flex align-items-center justify-content-center gap-3"
+                className="btn rounded-pill w-100 fw-semibold mb-4 border-0 d-flex align-items-center justify-content-center"
                 onClick={getInsights}
                 disabled={insightLoading}
                 style={{
@@ -208,6 +208,7 @@ const AIRecommendations = () => {
                   opacity: insightLoading ? 0.7 : 1,
                   transition: "all 0.3s",
                   boxShadow: insightLoading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                  gap: 10,
                 }}
               >
                 {insightLoading ? (
@@ -219,7 +220,7 @@ const AIRecommendations = () => {
             )}
             {!profile.interests.trim() && (
               <Link to="/profile" className="btn btn-outline-primary rounded-pill w-100 fw-semibold">
-                <i className="fa fa-pen me-2" />Add Interests in Profile
+                <i className="fa fa-pen" style={{ marginRight: 10 }} />Add Interests in Profile
               </Link>
             )}
             {insight && (

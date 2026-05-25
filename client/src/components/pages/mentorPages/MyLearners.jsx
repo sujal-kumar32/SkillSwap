@@ -144,12 +144,12 @@ const Learners = () => {
                     {/* DETAILS */}
                     <div className="small text-muted mb-3">
                       <div className="mb-2">
-                        <i className="fa fa-video text-primary me-2"></i>
+                        <i className="fa fa-video text-primary" style={{ marginRight: 10 }}></i>
                         {learner.sessions} Sessions Joined
                       </div>
 
                       <div>
-                        <i className="fa fa-chart-line text-success me-2"></i>
+                        <i className="fa fa-chart-line text-success" style={{ marginRight: 10 }}></i>
                         Progress: {learner.progress}%
                       </div>
                     </div>
@@ -165,12 +165,12 @@ const Learners = () => {
                     {/* BUTTONS */}
                     <div className="d-flex gap-3 mt-3">
                       <button className="btn btn-primary rounded-pill flex-fill py-2" disabled>
-                        <i className="fa fa-user me-2"></i>
+                        <i className="fa fa-user" style={{ marginRight: 10 }}></i>
                         Profile
                       </button>
 
                       <button className="btn btn-outline-dark rounded-pill flex-fill py-2" disabled>
-                        <i className="fa fa-envelope me-2"></i>
+                        <i className="fa fa-envelope" style={{ marginRight: 10 }}></i>
                         Message
                       </button>
                     </div>

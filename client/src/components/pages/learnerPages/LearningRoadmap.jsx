@@ -79,7 +79,7 @@ const LearningRoadmap = () => {
           </div>
           <div className="col-md-4 d-flex flex-column justify-content-end">
             <button
-              className="btn rounded-pill w-100 fw-bold border-0 d-flex align-items-center justify-content-center gap-3"
+              className="btn rounded-pill w-100 fw-bold border-0 d-flex align-items-center justify-content-center"
               onClick={generateRoadmap}
               disabled={loading || !targetSkill.trim()}
               style={{
@@ -90,6 +90,7 @@ const LearningRoadmap = () => {
                 opacity: loading ? 0.7 : 1,
                 transition: "all 0.3s",
                 boxShadow: loading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                gap: 10,
               }}
             >
               {loading ? (
@@ -112,7 +113,7 @@ const LearningRoadmap = () => {
 
       {roadmap && !loading && (
         <div className="learner-card p-4 p-lg-5">
-          <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+          <div className="d-flex align-items-center mb-4 pb-3 border-bottom" style={{ gap: 10 }}>
             <div className="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0"
               style={{ width: 52, height: 52 }}>
               <i className="fa fa-road text-success"></i>
@@ -131,10 +132,10 @@ const LearningRoadmap = () => {
 
           <div className="mt-4 d-flex gap-3">
             <button className="btn btn-success rounded-pill px-4 fw-semibold" onClick={generateRoadmap} disabled={loading}>
-              <i className="fa fa-refresh me-2" />Regenerate
+              <i className="fa fa-refresh" style={{ marginRight: 10 }} />Regenerate
             </button>
             <button className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={() => setRoadmap(null)}>
-              <i className="fa fa-times me-2" />Clear
+              <i className="fa fa-times" style={{ marginRight: 10 }} />Clear
             </button>
           </div>
         </div>

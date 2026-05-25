@@ -83,7 +83,7 @@ const MySessions = () => {
             to="/mentor/create-session"
             className="btn btn-primary rounded-pill px-4 py-2 fw-semibold"
           >
-            <i className="fa fa-plus-circle me-2"></i>
+            <i className="fa fa-plus-circle" style={{ marginRight: 10 }}></i>
             Create Session
           </Link>
         }
@@ -186,7 +186,7 @@ const MySessions = () => {
                     <h5 className="fw-bold mt-2 mb-3">{session.title}</h5>
 
                     <div className="session-detail mb-2">
-                      <i className="fa fa-calendar-alt text-primary me-2"></i>
+                      <i className="fa fa-calendar-alt text-primary" style={{ marginRight: 10 }}></i>
 
                       <span>
                         {formatDate(session.date)}
@@ -195,13 +195,13 @@ const MySessions = () => {
                     </div>
 
                     <div className="session-detail mb-2">
-                      <i className="fa fa-users text-success me-2"></i>
+                      <i className="fa fa-users text-success" style={{ marginRight: 10 }}></i>
 
                       <span>{session.bookings || 0} Bookings</span>
                     </div>
 
                     <div className="session-detail mb-4">
-                      <i className="fa fa-wallet text-warning me-2"></i>
+                      <i className="fa fa-wallet text-warning" style={{ marginRight: 10 }}></i>
 
                       <span>{session.price ? `₹${session.price}` : "Free"}</span>
                     </div>
@@ -209,7 +209,7 @@ const MySessions = () => {
                     {/* BUTTONS */}
                     <div className="d-flex gap-3 mt-3">
                       <button className="btn btn-primary flex-fill rounded-pill py-2" disabled>
-                        <i className="fa fa-edit me-2"></i>
+                        <i className="fa fa-edit" style={{ marginRight: 10 }}></i>
                         Edit
                       </button>
 

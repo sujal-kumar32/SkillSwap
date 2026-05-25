@@ -68,7 +68,7 @@ const AdminSidebar = () => {
           onMouseEnter={(e) => { e.target.style.background = "#fef2f2"; }}
           onMouseLeave={(e) => { e.target.style.background = "transparent"; }}
         >
-          <i className="fa fa-sign-out-alt me-2" />
+          <i className="fa fa-sign-out-alt" style={{ marginRight: 10 }} />
           Logout
         </button>
       </div>

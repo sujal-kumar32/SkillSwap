@@ -194,7 +194,7 @@ const AddSkill = () => {
             <div className="col-12 pt-2">
               <LoadingButton loading={submitting} type="submit" className="btn btn-primary rounded-pill px-5 py-3 fw-semibold"
                 style={{ fontSize: "1rem" }}>
-                <i className="fa fa-plus-circle me-2" />Add Skill
+                <i className="fa fa-plus-circle" style={{ marginRight: 10 }} />Add Skill
               </LoadingButton>
             </div>
           </form>

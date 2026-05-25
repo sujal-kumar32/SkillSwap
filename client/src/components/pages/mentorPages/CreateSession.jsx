@@ -254,7 +254,7 @@ const CreateSession = () => {
                           <label className="form-label fw-bold mb-0">Session Title</label>
                           <button
                             type="button"
-                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
+                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center"
                             onClick={generateAITitle}
                             disabled={aiLoading.title}
                             style={{
@@ -265,6 +265,7 @@ const CreateSession = () => {
                               opacity: aiLoading.title ? 0.7 : 1,
                               transition: "all 0.3s",
                               boxShadow: aiLoading.title ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                              gap: 10,
                             }}
                           >
                             {aiLoading.title ? (
@@ -328,7 +329,7 @@ const CreateSession = () => {
                           <label className="form-label fw-bold mb-0">Session Description</label>
                           <button
                             type="button"
-                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
+                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center"
                             onClick={generateAIDescription}
                             disabled={aiLoading.description}
                             style={{
@@ -339,6 +340,7 @@ const CreateSession = () => {
                               opacity: aiLoading.description ? 0.7 : 1,
                               transition: "all 0.3s",
                               boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                              gap: 10,
                             }}
                           >
                             {aiLoading.description ? (
@@ -408,13 +410,13 @@ const CreateSession = () => {
                             className={`px-4 py-2 fw-semibold rounded-pill border-0 ${!form.price || Number(form.price) === 0 ? "btn btn-success" : "btn btn-outline-secondary"}`}
                             style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
                             onClick={() => setForm((prev) => ({ ...prev, price: "0" }))}>
-                            <i className="fa fa-gift me-2"></i>Free
+                            <i className="fa fa-gift" style={{ marginRight: 10 }}></i>Free
                           </button>
                           <button type="button"
                             className={`px-4 py-2 fw-semibold rounded-pill border-0 ${Number(form.price) > 0 ? "btn btn-primary" : "btn btn-outline-secondary"}`}
                             style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
                             onClick={() => setForm((prev) => ({ ...prev, price: prev.price > 0 ? prev.price : "99" }))}>
-                            <i className="fa fa-credit-card me-2"></i>Paid
+                            <i className="fa fa-credit-card" style={{ marginRight: 10 }}></i>Paid
                           </button>
                         </div>
                         {Number(form.price) > 0 && (
@@ -551,7 +553,7 @@ const CreateSession = () => {
                             className="publish-btn"
                             loading={submitting}
                           >
-                            <i className="fa fa-rocket me-2"></i>
+                            <i className="fa fa-rocket" style={{ marginRight: 10 }}></i>
                             {submitting ? "Publishing..." : "Publish Session"}
                           </LoadingButton>
                           <button
@@ -571,9 +573,9 @@ const CreateSession = () => {
 
             <div className="col-lg-4 d-flex flex-column gap-4">
               <div className="ai-card">
-                <div className="d-flex align-items-center gap-3 mb-4">
+                <div className="d-flex align-items-center mb-4" style={{ gap: 10 }}>
                   <span className="ai-badge">
-                    <i className="fa fa-microchip me-2" />AI Powered
+                    <i className="fa fa-microchip" style={{ marginRight: 10 }} />AI Powered
                   </span>
                 </div>
 
@@ -584,46 +586,46 @@ const CreateSession = () => {
 
                 <div className="d-flex flex-column gap-3">
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
                     onClick={generateAITitle}
                     disabled={aiLoading.title}
-                    style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "white", padding: "14px 24px", opacity: aiLoading.title ? 0.7 : 1 }}
+                    style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "white", padding: "14px 24px", opacity: aiLoading.title ? 0.7 : 1, gap: 10 }}
                   >
                     {aiLoading.title ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-heading" />}
                     {aiLoading.title ? "Generating..." : "Generate Title"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
                     onClick={generateAIDescription}
                     disabled={aiLoading.description}
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #db2777)", color: "white", padding: "14px 24px", opacity: aiLoading.description ? 0.7 : 1 }}
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #db2777)", color: "white", padding: "14px 24px", opacity: aiLoading.description ? 0.7 : 1, gap: 10 }}
                   >
                     {aiLoading.description ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-file-lines" />}
                     {aiLoading.description ? "Generating..." : "Generate Description"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
                     onClick={generateAIOutcomes}
                     disabled={aiLoading.outcomes}
-                    style={{ background: "linear-gradient(135deg, #059669, #10b981)", color: "white", padding: "14px 24px", opacity: aiLoading.outcomes ? 0.7 : 1 }}
+                    style={{ background: "linear-gradient(135deg, #059669, #10b981)", color: "white", padding: "14px 24px", opacity: aiLoading.outcomes ? 0.7 : 1, gap: 10 }}
                   >
                     {aiLoading.outcomes ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-bullseye" />}
                     {aiLoading.outcomes ? "Generating..." : "Generate Outcomes"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
                     onClick={generateAITags}
                     disabled={aiLoading.tags}
-                    style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)", color: "white", padding: "14px 24px", opacity: aiLoading.tags ? 0.7 : 1 }}
+                    style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)", color: "white", padding: "14px 24px", opacity: aiLoading.tags ? 0.7 : 1, gap: 10 }}
                   >
                     {aiLoading.tags ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-tags" />}
                     {aiLoading.tags ? "Generating..." : "Suggest Tags"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
                     onClick={getMentorFeedback}
                     disabled={aiLoading.mentor}
-                    style={{ background: "linear-gradient(135deg, #dc2626, #f43f5e)", color: "white", padding: "14px 24px", opacity: aiLoading.mentor ? 0.7 : 1 }}
+                    style={{ background: "linear-gradient(135deg, #dc2626, #f43f5e)", color: "white", padding: "14px 24px", opacity: aiLoading.mentor ? 0.7 : 1, gap: 10 }}
                   >
                     {aiLoading.mentor ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-wand-magic-sparkles" />}
                     {aiLoading.mentor ? "Analyzing..." : "Improve Content"}
@@ -632,7 +634,7 @@ const CreateSession = () => {
               </div>
 
               <div className="tips-card">
-                <div className="d-flex align-items-center gap-3 mb-4">
+                <div className="d-flex align-items-center mb-4" style={{ gap: 10 }}>
                   <div className="tip-header-icon">
                     <i className="fa fa-lightbulb" />
                   </div>

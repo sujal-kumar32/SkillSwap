@@ -100,7 +100,7 @@ const ManageUsers = () => {
   const Pagination = () => totalPages > 1 ? (
     <div className="d-flex justify-content-center mt-5">
       <div className="d-flex gap-3">
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left me-2" />Prev</button>
+        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left" style={{ marginRight: 10 }} />Prev</button>
         {Array.from({ length: totalPages }, (_, i) => (
           <button key={i + 1} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${page === i + 1 ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
         ))}

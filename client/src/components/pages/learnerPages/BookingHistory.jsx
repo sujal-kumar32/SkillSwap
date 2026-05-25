@@ -81,7 +81,7 @@ const BookingHistory = () => {
             <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
               <small className="text-muted">Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, history.length)} of {history.length}</small>
               <div className="d-flex gap-3">
-                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}><i className="fa fa-chevron-left me-2" />Prev</button>
+                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}><i className="fa fa-chevron-left" style={{ marginRight: 10 }} />Prev</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                   <button key={p} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${p === page ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(p)}>{p}</button>
                 ))}

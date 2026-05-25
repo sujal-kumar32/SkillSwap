@@ -303,9 +303,9 @@ function WorkspaceHub() {
                     </div>
                     <h3 className="fw-bold text-white mb-3">Learner Workspace</h3>
                     <ul className="list-unstyled text-white-50 mb-4 workspace-features">
-                      <li><i className="fa fa-check-circle me-2"></i>Explore Sessions</li>
-                      <li><i className="fa fa-check-circle me-2"></i>Continue Learning</li>
-                      <li><i className="fa fa-check-circle me-2"></i>Track Progress</li>
+                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Explore Sessions</li>
+                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Continue Learning</li>
+                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Track Progress</li>
                     </ul>
                     <Link to="/learner" className="btn btn-light rounded-pill px-4 py-2 fw-bold w-100 workspace-btn">
                       Enter Learner Workspace
@@ -323,9 +323,9 @@ function WorkspaceHub() {
                     </div>
                     <h3 className="fw-bold text-white mb-3">Mentor Workspace</h3>
                     <ul className="list-unstyled text-white-50 mb-4 workspace-features">
-                      <li><i className="fa fa-check-circle me-2"></i>Create Sessions</li>
-                      <li><i className="fa fa-check-circle me-2"></i>Manage Learners</li>
-                      <li><i className="fa fa-check-circle me-2"></i>Track Bookings</li>
+                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Create Sessions</li>
+                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Manage Learners</li>
+                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Track Bookings</li>
                     </ul>
                     <LoadingButton
                       onClick={handleMentorEntry}

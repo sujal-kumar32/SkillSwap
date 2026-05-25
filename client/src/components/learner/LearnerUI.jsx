@@ -109,20 +109,20 @@ export const SessionCard = ({ session, onBook }) => {
           <StatusBadge status={session.status} />
         </div>
         <p className="text-muted small mb-3">
-          <i className="fa fa-user-tie me-2 text-primary" />
+          <i className="fa fa-user-tie text-primary" style={{ marginRight: 10 }} />
           {mentor}
         </p>
         <div className="d-flex flex-wrap gap-3 small text-muted mb-3">
           {session.rating && <span>
-            <i className="fa fa-star text-warning me-2" />
+            <i className="fa fa-star text-warning" style={{ marginRight: 10 }} />
             {session.rating}
           </span>}
           {session.learners > 0 && <span>
-            <i className="fa fa-users text-success me-2" />
+            <i className="fa fa-users text-success" style={{ marginRight: 10 }} />
             {session.learners} learners
           </span>}
           {session.duration && <span>
-            <i className="fa fa-clock text-primary me-2" />
+            <i className="fa fa-clock text-primary" style={{ marginRight: 10 }} />
             {session.duration} min
           </span>}
         </div>

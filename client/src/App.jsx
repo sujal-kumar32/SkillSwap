@@ -50,6 +50,7 @@ import AIRecommendations from "./components/pages/learnerPages/AIRecommendations
 import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
+import Settings from "./components/pages/Settings";
 
 
 const isAdminLoggedIn = () =>
@@ -144,6 +145,15 @@ function App() {
             element={
               <RequireUser>
                 <Profile />
+              </RequireUser>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <RequireUser>
+                <Settings />
               </RequireUser>
             }
           />

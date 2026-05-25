@@ -1,34 +1,26 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
-import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
 
-const initialForm = {
-  name: "", email: "", bio: "", image: "", coverImage: "",
-  interests: "", goals: "", skills: [],
-  phone: "", timezone: "UTC",
-  linkedin: "", github: "", portfolio: "", youtube: "", twitter: "",
-  oldPassword: "", newPassword: "",
+const badge = (status) => {
+  const m = { accepted: "success", pending: "warning", completed: "info", cancelled: "secondary", rejected: "danger", active: "success" };
+  return <span className={`badge bg-${m[status] || "secondary"} rounded-pill`}>{status}</span>;
 };
 
 const Profile = () => {
   const roles = JSON.parse(localStorage.getItem("roles") || "[]");
   const isMentor = roles.includes("mentor");
-  const [profile, setProfile] = useState(initialForm);
-  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState({ name: "", email: "", bio: "", interests: "", goals: "", skills: [], image: "", phone: "", timezone: "", linkedin: "", github: "", portfolio: "", youtube: "", twitter: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("about");
-  const [editModal, setEditModal] = useState(false);
-  const [editForm, setEditForm] = useState(initialForm);
-  const [profileFile, setProfileFile] = useState(null);
-  const [aiBioLoading, setAiBioLoading] = useState(false);
-  const [newSkill, setNewSkill] = useState("");
   const [stats, setStats] = useState({ sessions: 0, reviews: 0, skills: 0 });
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [mentorSessions, setMentorSessions] = useState([]);
+  const [learnerSessions, setLearnerSessions] = useState([]);
+  const [journeyLoading, setJourneyLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -47,7 +39,6 @@ const Profile = () => {
           linkedin: u.socialLinks?.linkedin || "", github: u.socialLinks?.github || "",
           portfolio: u.socialLinks?.portfolio || "", youtube: u.socialLinks?.youtube || "",
           twitter: u.socialLinks?.twitter || "",
-          oldPassword: "", newPassword: "",
         });
         if (sRes.data?.data) setStats(sRes.data.data);
       } catch (e) {
@@ -59,68 +50,34 @@ const Profile = () => {
     load();
   }, []);
 
-  const openEdit = () => {
-    setEditForm({ ...profile });
-    setProfileFile(null);
-    setEditModal(true);
-  };
-
-  const saveProfile = async (e) => {
-    e.preventDefault();
-    try {
-      setSaving(true);
-      const data = new FormData();
-      Object.entries(editForm).forEach(([k, v]) => {
-        if (k === "skills" || k === "oldPassword" || k === "newPassword" || k === "image" || k === "coverImage") return;
-        if (v) data.append(k, v);
-      });
-      data.append("skills", JSON.stringify(editForm.skills));
-      if (profileFile) data.append("profileImage", profileFile);
-      if (editForm.oldPassword || editForm.newPassword) {
-        data.append("oldPassword", editForm.oldPassword);
-        data.append("newPassword", editForm.newPassword);
+  useEffect(() => {
+    if (activeTab !== "journey") return;
+    const fetchJourneyData = async () => {
+      setJourneyLoading(true);
+      try {
+        const promises = [];
+        promises.push(
+          Apiservices.getMySessions({ page: 1, limit: 20 })
+            .then((res) => setMentorSessions(res.data.data?.sessions || res.data.data || []))
+            .catch(() => setMentorSessions([]))
+        );
+        promises.push(
+          Apiservices.fetchBookings()
+            .then((res) => setLearnerSessions(res.data.data?.requests || res.data.data || []))
+            .catch(() => setLearnerSessions([]))
+        );
+        await Promise.all(promises);
+      } catch {
+        setMentorSessions([]);
+        setLearnerSessions([]);
+      } finally {
+        setJourneyLoading(false);
       }
-      await Apiservices.updateProfile(data);
-      setProfile({ ...editForm });
-      showToast.success("Profile updated");
-      setEditModal(false);
-    } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to update");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const addSkill = () => {
-    const n = newSkill.trim();
-    if (!n || editForm.skills.find((s) => s.name.toLowerCase() === n.toLowerCase())) return;
-    setEditForm({ ...editForm, skills: [...editForm.skills, { name: n, level: "beginner" }] });
-    setNewSkill("");
-  };
-
-  const removeSkill = (idx) => {
-    setEditForm({ ...editForm, skills: editForm.skills.filter((_, i) => i !== idx) });
-  };
+    };
+    fetchJourneyData();
+  }, [activeTab]);
 
   const skillLevel = (l) => l === "advanced" ? 100 : l === "intermediate" ? 65 : 35;
-
-  const generateBio = async () => {
-    const interests = editForm.interests.trim();
-    const goals = editForm.goals.trim();
-    if (!interests && !goals) { showToast.warning("Add interests or goals first"); return; }
-    setAiBioLoading(true);
-    try {
-      const res = await Apiservices.chatAI({
-        message: `Write a short professional bio (2-3 sentences) for a ${isMentor ? "mentor" : "learner"} interested in: ${interests || "various skills"}. ${goals ? `Goal: ${goals}.` : ""} Keep it first-person.`,
-      });
-      setEditForm({ ...editForm, bio: res.data.data.reply });
-      showToast.success("Bio generated");
-    } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed");
-    } finally {
-      setAiBioLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -155,9 +112,9 @@ const Profile = () => {
                 <p className="text-muted mb-1">{profile.email}</p>
                 {profile.bio && <p className="mb-0 small">{profile.bio}</p>}
               </div>
-              <button className="btn btn-outline-primary rounded-pill px-4 fw-semibold flex-shrink-0" onClick={openEdit}>
-                <i className="fa fa-pen me-2" />Edit Profile
-              </button>
+              <Link to="/settings" className="btn btn-outline-primary rounded-pill px-4 fw-semibold flex-shrink-0">
+                <i className="fa fa-pen" style={{ marginRight: 10 }} />Edit Profile
+              </Link>
             </div>
           </div>
 
@@ -188,13 +145,13 @@ const Profile = () => {
             {[
               { id: "about", label: "About", icon: "fa-user" },
               { id: "skills", label: "Skills", icon: "fa-code" },
-              { id: "journey", label: "Learning Journey", icon: "fa-road" },
+              { id: "journey", label: "Journey", icon: "fa-road" },
               { id: "social", label: "Connect", icon: "fa-share-nodes" },
             ].map((t) => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
                 className={`btn btn-sm rounded-top-3 fw-semibold px-4 py-2 ${activeTab === t.id ? "btn-primary" : "btn-outline-secondary border-0"}`}
                 style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}>
-                <i className={`fa ${t.icon} me-2`} />{t.label}
+                <i className={`fa ${t.icon}`} style={{ marginRight: 10 }} />{t.label}
               </button>
             ))}
           </div>
@@ -269,7 +226,7 @@ const Profile = () => {
                   ))}
                 </div>
                 <div className="learner-card p-4">
-                  <h5 className="fw-bold mb-3"><i className="fa fa-robot text-info me-2" />SwapMind AI</h5>
+                  <h5 className="fw-bold mb-3"><i className="fa fa-robot text-info" style={{ marginRight: 10 }} />SwapMind AI</h5>
                   <p className="text-muted small mb-0">AI-powered learning insights coming soon. Get personalized recommendations based on your profile and activity.</p>
                 </div>
               </div>
@@ -307,27 +264,119 @@ const Profile = () => {
 
           {activeTab === "journey" && (
             <div className="learner-card p-4">
-              <h5 className="fw-bold mb-4"><i className="fa fa-road me-2 text-primary" />Learning Journey</h5>
-              <div className="row g-4">
-                <div className="col-md-6">
-                  <div className="bg-light rounded-4 p-4 text-center">
-                    <h2 className="fw-bold text-primary mb-1">{stats.sessions}</h2>
-                    <small className="text-muted">Sessions {isMentor ? "Created" : "Attended"}</small>
-                  </div>
+              <div className="d-flex align-items-center mb-4 pb-2" style={{ gap: 10, borderBottom: "1px solid #eef2f7" }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: 16,
+                  background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 6px 16px rgba(102,16,242,0.25)",
+                }}>
+                  <i className="fa fa-road" style={{ color: "white", fontSize: "1.3rem" }} />
                 </div>
-                <div className="col-md-6">
-                  <div className="bg-light rounded-4 p-4 text-center">
-                    <h2 className="fw-bold text-success mb-1">{stats.reviews}</h2>
-                    <small className="text-muted">Reviews {isMentor ? "Received" : "Written"}</small>
-                  </div>
+                <div>
+                  <h5 className="fw-bold mb-1">Journey</h5>
+                  <p className="text-muted mb-0" style={{ fontSize: "0.85rem" }}>Track your progress and activity</p>
                 </div>
               </div>
+
+              {journeyLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status" style={{ width: 32, height: 32 }} />
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+                  {/* Mentor Journey */}
+                  <div>
+                    <div className="d-flex align-items-center mb-3" style={{ gap: 10 }}>
+                      <i className="fa fa-chalkboard" style={{ color: "#4f46e5", fontSize: "1.1rem" }} />
+                      <div style={{ width: 3, height: 22, borderRadius: 2, background: "linear-gradient(180deg, #0d6efd, #6610f2)" }} />
+                      <h6 className="fw-bold mb-0">Mentor Journey</h6>
+                    </div>
+                    {mentorSessions.length === 0 ? (
+                      <div className="text-center py-4" style={{ background: "#fafbfc", borderRadius: 20 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, margin: "0 auto 12px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <i className="fa fa-video" style={{ color: "#94a3b8", fontSize: "1.3rem" }} />
+                        </div>
+                        <p className="fw-semibold mb-1" style={{ fontSize: "0.9rem" }}>No sessions created yet</p>
+                        <small className="text-muted">Create your first session to start mentoring</small>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {mentorSessions.map((s) => {
+                          const date = s.date ? new Date(s.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+                          const skill = s.skillId?.name || "";
+                          return (
+                            <div key={s._id} style={{ background: "#fafbfc", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 20 }}>
+                              <div style={{ width: 48, height: 48, borderRadius: 14, flexShrink: 0, background: "linear-gradient(135deg, #eef2ff, #e0e7ff)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <i className="fa fa-chalkboard" style={{ color: "#4f46e5", fontSize: "1.1rem" }} />
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div className="fw-bold mb-2" style={{ fontSize: "0.95rem" }}>{s.title}</div>
+                                <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                                  {date && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-calendar" style={{ color: "#94a3b8", marginRight: 10 }} />{date}</span>}
+                                  {skill && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-tag" style={{ color: "#94a3b8", marginRight: 10 }} />{skill}</span>}
+                                  <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-users" style={{ color: "#94a3b8", marginRight: 10 }} />{s.bookings || 0} bookings</span>
+                                </div>
+                              </div>
+                              {badge(s.status)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Learner Journey */}
+                  <div>
+                    <div className="d-flex align-items-center mb-3" style={{ gap: 10 }}>
+                      <i className="fa fa-graduation-cap" style={{ color: "#059669", fontSize: "1.1rem" }} />
+                      <div style={{ width: 3, height: 22, borderRadius: 2, background: "linear-gradient(180deg, #059669, #10b981)" }} />
+                      <h6 className="fw-bold mb-0">Learner Journey</h6>
+                    </div>
+                    {learnerSessions.length === 0 ? (
+                      <div className="text-center py-4" style={{ background: "#fafbfc", borderRadius: 20 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 16, margin: "0 auto 12px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <i className="fa fa-calendar" style={{ color: "#94a3b8", fontSize: "1.3rem" }} />
+                        </div>
+                        <p className="fw-semibold mb-1" style={{ fontSize: "0.9rem" }}>No bookings yet</p>
+                        <small className="text-muted">Book a session to start learning</small>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                        {learnerSessions.map((s) => {
+                          const session = s.sessionId || s;
+                          const title = session?.title || "Untitled";
+                          const date = session?.date ? new Date(session.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+                          const skill = session?.skillId?.name || "";
+                          const mentor = session?.mentorId?.name || session?.mentorId?.email || "";
+                          const status = s.requestStatus || s.status || "";
+                          return (
+                            <div key={s._id} style={{ background: "#fafbfc", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 20 }}>
+                              <div style={{ width: 48, height: 48, borderRadius: 14, flexShrink: 0, background: "linear-gradient(135deg, #ecfdf5, #d1fae5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <i className="fa fa-graduation-cap" style={{ color: "#059669", fontSize: "1.1rem" }} />
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div className="fw-bold mb-2" style={{ fontSize: "0.95rem" }}>{title}</div>
+                                <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+                                  {date && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-calendar" style={{ color: "#94a3b8", marginRight: 10 }} />{date}</span>}
+                                  {skill && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-tag" style={{ color: "#94a3b8", marginRight: 10 }} />{skill}</span>}
+                                  {mentor && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-user" style={{ color: "#94a3b8", marginRight: 10 }} />{mentor}</span>}
+                                </div>
+                              </div>
+                              {badge(status)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === "social" && (
             <div className="learner-card p-4">
-              <h5 className="fw-bold mb-4"><i className="fa fa-share-nodes me-2 text-primary" />Connect</h5>
+              <h5 className="fw-bold mb-4"><i className="fa fa-share-nodes text-primary" style={{ marginRight: 10 }} />Connect</h5>
               <div className="d-flex flex-wrap gap-3">
                 {[
                   { key: "github", icon: "fab fa-github", label: "GitHub", color: "#333" },
@@ -354,156 +403,6 @@ const Profile = () => {
           )}
         </div>
       </div>
-
-      {/* Edit Modal */}
-      {editModal && (
-        <>
-          <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 1040 }} onClick={() => setEditModal(false)} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1050, width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto" }}>
-            <form onSubmit={saveProfile} className="learner-card p-4">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="fw-bold mb-0"><i className="fa fa-user-pen me-2" />Edit Profile</h5>
-                <button type="button" className="btn border-0" style={{ fontSize: "1.2rem", color: "#6c757d" }} onClick={() => setEditModal(false)}>
-                  <i className="fa fa-times" />
-                </button>
-              </div>
-
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small">Name</label>
-                  <input className="form-control rounded-pill" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small">Email</label>
-                  <input className="form-control rounded-pill" type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
-                </div>
-                <div className="col-12">
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="form-label fw-semibold small mb-0">Bio</label>
-                    <button
-                      type="button"
-                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
-                      onClick={generateBio}
-                      disabled={aiBioLoading}
-                      style={{
-                        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                        color: "white",
-                        padding: "8px 22px",
-                        fontSize: "0.85rem",
-                        opacity: aiBioLoading ? 0.7 : 1,
-                        transition: "all 0.3s",
-                        boxShadow: aiBioLoading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                      }}
-                    >
-                      {aiBioLoading ? (
-                        <span className="spinner-border spinner-border-sm" role="status" />
-                      ) : (
-                        <><i className="fa fa-wand-magic-sparkles" /> Generate</>
-                      )}
-                    </button>
-                  </div>
-                  <textarea className="form-control rounded-4 mt-2" rows="3" value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small">Interests</label>
-                  <input className="form-control rounded-pill" placeholder="React, Node.js..." value={editForm.interests} onChange={(e) => setEditForm({ ...editForm, interests: e.target.value })} />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small">Goals</label>
-                  <input className="form-control rounded-pill" placeholder="Learning goals..." value={editForm.goals} onChange={(e) => setEditForm({ ...editForm, goals: e.target.value })} />
-                </div>
-                <div className="col-12">
-                  <label className="form-label fw-semibold small">Skills</label>
-                  <div className="d-flex gap-3 mb-3">
-                    <input className="form-control rounded-pill" placeholder="Add a skill..." value={newSkill} onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }} />
-                    <button type="button" className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={addSkill} style={{ padding: "10px 20px" }}>Add</button>
-                  </div>
-                  <div className="d-flex flex-wrap gap-2">
-                    {editForm.skills.map((s, i) => (
-                      <span key={i} className="badge bg-light border rounded-pill px-3 py-2 d-flex align-items-center gap-2">
-                        {s.name}
-                        <select className="border-0 bg-transparent small" style={{ fontSize: "0.7rem" }} value={s.level}
-                          onChange={(e) => {
-                            const updated = [...editForm.skills];
-                            updated[i].level = e.target.value;
-                            setEditForm({ ...editForm, skills: updated });
-                          }}>
-                          <option value="beginner">Beginner</option>
-                          <option value="intermediate">Intermediate</option>
-                          <option value="advanced">Advanced</option>
-                        </select>
-                        <i className="fa fa-times text-danger" style={{ cursor: "pointer", fontSize: "0.75rem" }} onClick={() => removeSkill(i)} />
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small">Phone</label>
-                  <input className="form-control rounded-pill" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} />
-                </div>
-                <div className="col-md-6">
-                  <label className="form-label fw-semibold small">Timezone</label>
-                  <select className="form-select rounded-pill" value={editForm.timezone} onChange={(e) => setEditForm({ ...editForm, timezone: e.target.value })}>
-                    {["UTC", "America/New_York", "America/Chicago", "Europe/London", "Europe/Paris", "Asia/Kolkata", "Asia/Tokyo", "Australia/Sydney"].map((tz) => (
-                      <option key={tz} value={tz}>{tz}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-12"><hr />
-                  <h6 className="fw-bold mb-3">Social Links</h6>
-                  <div className="row g-3">
-                    {[
-                      ["github", "fab fa-github", "GitHub URL"],
-                      ["linkedin", "fab fa-linkedin", "LinkedIn URL"],
-                      ["portfolio", "fa fa-briefcase", "Portfolio URL"],
-                      ["youtube", "fab fa-youtube", "YouTube URL"],
-                      ["twitter", "fab fa-twitter", "Twitter URL"],
-                    ].map(([k, icon, ph]) => (
-                      <div className="col-md-6" key={k}>
-                        <label className="form-label fw-semibold small"><i className={`${icon} me-1`} />{k.charAt(0).toUpperCase() + k.slice(1)}</label>
-                        <input className="form-control rounded-pill" placeholder={ph} value={editForm[k]} onChange={(e) => setEditForm({ ...editForm, [k]: e.target.value })} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="col-12"><hr />
-                  <h6 className="fw-bold mb-3">Change Password</h6>
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <div style={{ position: "relative" }}>
-                        <input className="form-control rounded-pill" type={showOldPassword ? "text" : "password"} placeholder="Current password" value={editForm.oldPassword}
-                          onChange={(e) => setEditForm({ ...editForm, oldPassword: e.target.value })} style={{ paddingRight: "40px" }} />
-                        <span onClick={() => setShowOldPassword(!showOldPassword)}
-                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}>
-                          <i className={`fa${showOldPassword ? "s fa-eye-slash" : "r fa-eye"}`} />
-                        </span>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div style={{ position: "relative" }}>
-                        <input className="form-control rounded-pill" type={showNewPassword ? "text" : "password"} placeholder="New password" value={editForm.newPassword}
-                          onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })} style={{ paddingRight: "40px" }} />
-                        <span onClick={() => setShowNewPassword(!showNewPassword)}
-                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}>
-                          <i className={`fa${showNewPassword ? "s fa-eye-slash" : "r fa-eye"}`} />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setEditModal(false)}>Cancel</button>
-                <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-4 fw-semibold">
-                  <i className="fa fa-save me-2" />Save Changes
-                </LoadingButton>
-              </div>
-            </form>
-          </div>
-        </>
-      )}
     </>
   );
 };

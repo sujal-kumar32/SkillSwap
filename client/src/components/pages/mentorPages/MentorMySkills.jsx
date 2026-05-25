@@ -53,7 +53,7 @@ const MentorMySkills = () => {
   return (
     <>
       <PageHeader title="My Skills" subtitle="Skills you've created."
-        action={<Link to="/mentor/create-skill" className="btn btn-primary rounded-pill px-4"><i className="fa fa-plus me-2" />New Skill</Link>} />
+        action={<Link to="/mentor/create-skill" className="btn btn-primary rounded-pill px-4"><i className="fa fa-plus" style={{ marginRight: 10 }} />New Skill</Link>} />
       {loading ? <LoadingState /> : skills.length ? (
         <div className="row g-4">
           {skills.map((skill) => (

@@ -51,7 +51,7 @@ const MentorDashboard = () => {
           <p className="text-muted mb-0">Manage your sessions, learners, and track your impact.</p>
         </div>
         <Link to="/mentor/create-session" className="btn btn-primary rounded-pill px-4 fw-semibold flex-shrink-0">
-          <i className="fa fa-plus me-2" />Create Session
+          <i className="fa fa-plus" style={{ marginRight: 10 }} />Create Session
         </Link>
       </div>
 

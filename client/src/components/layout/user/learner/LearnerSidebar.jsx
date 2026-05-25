@@ -63,7 +63,7 @@ const LearnerSidebar = () => {
           className="btn w-100 rounded-pill mb-2 fw-semibold"
           style={{ background: "#f1f5f9", color: "#475569", border: "none", fontSize: "0.85rem" }}
         >
-          <i className="fa fa-exchange-alt me-2" />
+          <i className="fa fa-exchange-alt" style={{ marginRight: 10 }} />
           Switch Role
         </Link>
         <button
@@ -73,7 +73,7 @@ const LearnerSidebar = () => {
           onMouseEnter={(e) => { e.target.style.background = "#fef2f2"; }}
           onMouseLeave={(e) => { e.target.style.background = "transparent"; }}
         >
-          <i className="fa fa-sign-out-alt me-2" />
+          <i className="fa fa-sign-out-alt" style={{ marginRight: 10 }} />
           Logout
         </button>
       </div>

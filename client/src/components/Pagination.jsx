@@ -20,7 +20,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
       >
-        <i className="fa fa-chevron-left me-2" />Prev
+        <i className="fa fa-chevron-left" style={{ marginRight: 10 }} />Prev
       </button>
       {start > 1 && (
         <>

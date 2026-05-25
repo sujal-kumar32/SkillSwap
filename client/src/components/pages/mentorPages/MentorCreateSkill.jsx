@@ -30,7 +30,6 @@ const MentorCreateSkill = () => {
     try {
       const res = await Apiservices.generateDescription({
         skill: name,
-        sessionType: "online",
       });
       setDescription(res.data.data.description);
       showToast.success("AI description generated");
@@ -225,7 +224,7 @@ const MentorCreateSkill = () => {
                     <label className="form-label fw-bold mb-0">Description</label>
                     <button
                       type="button"
-                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center"
                       onClick={generateAIDescription}
                       disabled={aiLoading.description}
                       style={{
@@ -236,6 +235,7 @@ const MentorCreateSkill = () => {
                         opacity: aiLoading.description ? 0.7 : 1,
                         transition: "all 0.3s",
                         boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                        gap: 10,
                       }}
                     >
                       {aiLoading.description ? (
@@ -256,7 +256,7 @@ const MentorCreateSkill = () => {
                     </label>
                     <button
                       type="button"
-                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center"
                       onClick={generateAITags}
                       disabled={aiLoading.tags}
                       style={{
@@ -267,6 +267,7 @@ const MentorCreateSkill = () => {
                         opacity: aiLoading.tags ? 0.7 : 1,
                         transition: "all 0.3s",
                         boxShadow: aiLoading.tags ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                        gap: 10,
                       }}
                     >
                       {aiLoading.tags ? (
@@ -309,7 +310,7 @@ const MentorCreateSkill = () => {
                 <div className="col-12 pt-2">
                   <LoadingButton loading={submitting} type="submit" className="btn btn-primary rounded-pill px-5 py-3 fw-semibold"
                     style={{ fontSize: "1rem" }}>
-                    <i className="fa fa-lightbulb me-2" />Submit Skill
+                    <i className="fa fa-lightbulb" style={{ marginRight: 10 }} />Submit Skill
                   </LoadingButton>
                   <small className="text-muted d-block mt-3">Skills require admin approval before appearing publicly.</small>
                 </div>
