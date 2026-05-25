@@ -250,35 +250,39 @@ const CreateSession = () => {
                   <form onSubmit={handleSubmit}>
                     <div className="row g-4">
                       <div className="col-12">
-                        <label className="form-label fw-bold">
-                          Session Title
-                        </label>
-                        <div className="d-flex gap-2">
-                          <div className="modern-input-group flex-grow-1">
-                            <span>
-                              <i className="fa fa-heading"></i>
-                            </span>
-                            <input
-                              type="text"
-                              name="title"
-                              placeholder="Mastering React Hooks"
-                              value={form.title}
-                              onChange={handleChange}
-                            />
-                          </div>
+                        <div className="d-flex align-items-center justify-content-between mb-2">
+                          <label className="form-label fw-bold mb-0">Session Title</label>
                           <button
                             type="button"
-                            className="btn btn-outline-primary rounded-pill px-3 fw-semibold"
+                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
                             onClick={generateAITitle}
                             disabled={aiLoading.title}
-                            style={{ whiteSpace: "nowrap", minWidth: 130 }}
+                            style={{
+                              background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                              color: "white",
+                              padding: "8px 18px",
+                              fontSize: "0.85rem",
+                              opacity: aiLoading.title ? 0.7 : 1,
+                              transition: "all 0.3s",
+                              boxShadow: aiLoading.title ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                            }}
                           >
                             {aiLoading.title ? (
-                              <><span className="spinner-border spinner-border-sm me-1" /> Generating</>
+                              <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                             ) : (
-                              <><i className="fa fa-wand-magic-sparkles me-1" /> Generate</>
+                              <><i className="fa fa-wand-magic-sparkles" /> <span>Generate with AI</span></>
                             )}
                           </button>
+                        </div>
+                        <div className="modern-input-group">
+                          <span><i className="fa fa-heading"></i></span>
+                          <input
+                            type="text"
+                            name="title"
+                            placeholder="Mastering React Hooks"
+                            value={form.title}
+                            onChange={handleChange}
+                          />
                         </div>
                       </div>
 
@@ -320,32 +324,38 @@ const CreateSession = () => {
                       </div>
 
                       <div className="col-12">
-                        <label className="form-label fw-bold">
-                          Session Description
-                        </label>
-                        <div className="d-flex gap-2">
-                          <textarea
-                            rows="5"
-                            name="description"
-                            className="modern-textarea flex-grow-1"
-                            placeholder="Describe what learners will learn..."
-                            value={form.description}
-                            onChange={handleChange}
-                          ></textarea>
+                        <div className="d-flex align-items-center justify-content-between mb-2">
+                          <label className="form-label fw-bold mb-0">Session Description</label>
                           <button
                             type="button"
-                            className="btn btn-outline-primary rounded-pill px-3 fw-semibold align-self-start"
+                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
                             onClick={generateAIDescription}
                             disabled={aiLoading.description}
-                            style={{ whiteSpace: "nowrap", minWidth: 130 }}
+                            style={{
+                              background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                              color: "white",
+                              padding: "8px 18px",
+                              fontSize: "0.85rem",
+                              opacity: aiLoading.description ? 0.7 : 1,
+                              transition: "all 0.3s",
+                              boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                            }}
                           >
                             {aiLoading.description ? (
-                              <><span className="spinner-border spinner-border-sm me-1" /> Generating</>
+                              <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                             ) : (
-                              <><i className="fa fa-wand-magic-sparkles me-1" /> Generate</>
+                              <><i className="fa fa-wand-magic-sparkles" /> <span>Generate with AI</span></>
                             )}
                           </button>
                         </div>
+                        <textarea
+                          rows="5"
+                          name="description"
+                          className="modern-textarea"
+                          placeholder="Describe what learners will learn..."
+                          value={form.description}
+                          onChange={handleChange}
+                        ></textarea>
                       </div>
 
                       <div className="col-md-4">
@@ -571,58 +581,98 @@ const CreateSession = () => {
                 </p>
                 <div className="d-flex flex-column gap-2">
                   <button
-                    className="btn btn-light rounded-pill px-4 fw-semibold"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
                     onClick={generateAITitle}
                     disabled={aiLoading.title}
+                    style={{
+                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                      color: "white",
+                      padding: "10px 20px",
+                      opacity: aiLoading.title ? 0.7 : 1,
+                      transition: "all 0.3s",
+                      boxShadow: aiLoading.title ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                    }}
                   >
                     {aiLoading.title ? (
-                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                     ) : (
-                      <><i className="fa fa-heading me-2" />Generate Title</>
+                      <><i className="fa fa-heading" /> <span>Generate Title</span></>
                     )}
                   </button>
                   <button
-                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
                     onClick={generateAIDescription}
                     disabled={aiLoading.description}
+                    style={{
+                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                      color: "white",
+                      padding: "10px 20px",
+                      opacity: aiLoading.description ? 0.7 : 1,
+                      transition: "all 0.3s",
+                      boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                    }}
                   >
                     {aiLoading.description ? (
-                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                     ) : (
-                      <><i className="fa fa-file-lines me-2" />Generate Description</>
+                      <><i className="fa fa-file-lines" /> <span>Generate Description</span></>
                     )}
                   </button>
                   <button
-                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
                     onClick={generateAIOutcomes}
                     disabled={aiLoading.outcomes}
+                    style={{
+                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                      color: "white",
+                      padding: "10px 20px",
+                      opacity: aiLoading.outcomes ? 0.7 : 1,
+                      transition: "all 0.3s",
+                      boxShadow: aiLoading.outcomes ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                    }}
                   >
                     {aiLoading.outcomes ? (
-                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                     ) : (
-                      <><i className="fa fa-bullseye me-2" />Generate Outcomes</>
+                      <><i className="fa fa-bullseye" /> <span>Generate Outcomes</span></>
                     )}
                   </button>
                   <button
-                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
                     onClick={generateAITags}
                     disabled={aiLoading.tags}
+                    style={{
+                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                      color: "white",
+                      padding: "10px 20px",
+                      opacity: aiLoading.tags ? 0.7 : 1,
+                      transition: "all 0.3s",
+                      boxShadow: aiLoading.tags ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                    }}
                   >
                     {aiLoading.tags ? (
-                      <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                     ) : (
-                      <><i className="fa fa-tags me-2" />Suggest Tags</>
+                      <><i className="fa fa-tags" /> <span>Suggest Tags</span></>
                     )}
                   </button>
                   <button
-                    className="btn btn-outline-light rounded-pill px-4 fw-semibold"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
                     onClick={getMentorFeedback}
                     disabled={aiLoading.mentor}
+                    style={{
+                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                      color: "white",
+                      padding: "10px 20px",
+                      opacity: aiLoading.mentor ? 0.7 : 1,
+                      transition: "all 0.3s",
+                      boxShadow: aiLoading.mentor ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                    }}
                   >
                     {aiLoading.mentor ? (
-                      <><span className="spinner-border spinner-border-sm me-2" />Analyzing...</>
+                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Analyzing...</span></>
                     ) : (
-                      <><i className="fa fa-wand-magic-sparkles me-2" />Improve Content</>
+                      <><i className="fa fa-wand-magic-sparkles" /> <span>Improve Content</span></>
                     )}
                   </button>
                 </div>

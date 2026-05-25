@@ -1,6 +1,7 @@
 ﻿const Review = require("./reviewModel");
 const Request = require("../Request/requestModel");
 const asyncHandler = require("../../utilities/asyncHandler");
+const getPagination = require("../../utilities/paginate");
 
 const idsEqual = (left, right) => {
   return left && right && left.toString() === right.toString();
@@ -9,9 +10,7 @@ const idsEqual = (left, right) => {
 exports.getReviews = asyncHandler(async (req, res) => {
 
     const { search, sort } = req.query;
-    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
-    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPagination(req.query);
 
     let filter = {};
     if (req.user.roles?.includes("admin")) {

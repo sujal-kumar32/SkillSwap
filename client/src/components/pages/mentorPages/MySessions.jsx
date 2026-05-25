@@ -4,7 +4,8 @@ import { deleteConfirmAlert } from "../../../../src/utils/alertUtils";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader } from "../../learner/LearnerUI";
+import { PageHeader, LoadingState } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop";
@@ -22,12 +23,15 @@ const MySessions = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchSessions = async () => {
     try {
       setLoading(true);
-      const response = await Apiservices.getMySessions();
+      const response = await Apiservices.getMySessions({ page, limit: 12 });
       setSessions(response.data.data || []);
+      setTotalPages(response.data.pages || 1);
     } catch (error) {
       console.log(error);
       showToast.error(error.response?.data?.message || "Failed to load sessions");
@@ -38,7 +42,7 @@ const MySessions = () => {
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+  }, [page]);
 
   const stats = useMemo(() => {
     const totalLearners = sessions.reduce(
@@ -147,11 +151,7 @@ const MySessions = () => {
           {/* SESSION CARDS */}
           <div className="row g-4">
             {loading ? (
-              <div className="col-12 text-center py-5">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
+              <div className="col-12"><LoadingState /></div>
             ) : sessions.length ? (
               sessions.map((session) => (
                 <div className="col-lg-4 col-md-6" key={session._id}>
@@ -241,6 +241,7 @@ const MySessions = () => {
               </div>
             )}
           </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </div>
 

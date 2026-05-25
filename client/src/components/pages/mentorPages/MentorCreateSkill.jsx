@@ -221,47 +221,67 @@ const MentorCreateSkill = () => {
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-bold">Description</label>
-                  <div className="d-flex gap-2">
-                    <textarea className="skill-textarea flex-grow-1" rows="4" value={description} onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe what this skill covers..." style={{ resize: "vertical" }} />
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <label className="form-label fw-bold mb-0">Description</label>
                     <button
                       type="button"
-                      className="btn btn-outline-primary rounded-pill px-3 fw-semibold align-self-start"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
                       onClick={generateAIDescription}
                       disabled={aiLoading.description}
-                      style={{ whiteSpace: "nowrap", minWidth: 110 }}
+                      style={{
+                        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                        color: "white",
+                        padding: "8px 18px",
+                        fontSize: "0.85rem",
+                        opacity: aiLoading.description ? 0.7 : 1,
+                        transition: "all 0.3s",
+                        boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                      }}
                     >
                       {aiLoading.description ? (
-                        <><span className="spinner-border spinner-border-sm me-1" /> Gen</>
+                        <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                       ) : (
-                        <><i className="fa fa-wand-magic-sparkles me-1" /> AI</>
+                        <><i className="fa fa-wand-magic-sparkles" /> <span>Generate with AI</span></>
                       )}
                     </button>
                   </div>
+                  <textarea className="skill-textarea" rows="4" value={description} onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe what this skill covers..." style={{ resize: "vertical" }} />
                 </div>
 
                 <div className="col-12">
-                  <label className="form-label fw-bold">
-                    Tags <small className="text-muted fw-normal">(comma-separated)</small>
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <label className="form-label fw-bold mb-0">
+                      Tags <small className="text-muted fw-normal">(comma-separated)</small>
+                    </label>
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-primary rounded-pill ms-2 px-3"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
                       onClick={generateAITags}
                       disabled={aiLoading.tags}
+                      style={{
+                        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                        color: "white",
+                        padding: "8px 18px",
+                        fontSize: "0.85rem",
+                        opacity: aiLoading.tags ? 0.7 : 1,
+                        transition: "all 0.3s",
+                        boxShadow: aiLoading.tags ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                      }}
                     >
                       {aiLoading.tags ? (
-                        <><span className="spinner-border spinner-border-sm me-1" /></>
+                        <><span className="spinner-border spinner-border-sm" role="status" /> <span>Suggesting...</span></>
                       ) : (
-                        <><i className="fa fa-wand-magic-sparkles me-1" /></>
-                      )} Suggest
+                        <><i className="fa fa-wand-magic-sparkles" /> <span>AI Suggest</span></>
+                      )}
                     </button>
-                  </label>
+                  </div>
                   <input type="text" className="skill-control" value={tagsInput} onChange={(e) => setTagsInput(e.target.value)}
                     placeholder="e.g. react, hooks, redux" />
                   {tagsInput.trim() && (
                     <div className="d-flex flex-wrap gap-1 mt-2">
-                      {tagsInput.split(",").map((t, i) => t.trim() ? <span key={i} className="badge bg-light text-dark border rounded-pill px-3 py-2">{t.trim()}</span> : null)}
+                      {tagsInput.split(",").map((t, i) => t.trim() ? <span key={i} className="badge rounded-pill px-3 py-2"
+                        style={{ background: "#eef2ff", color: "#4338ca", border: "1px solid #c7d2fe" }}>{t.trim()}</span> : null)}
                     </div>
                   )}
                 </div>

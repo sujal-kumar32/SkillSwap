@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const SessionEdit = () => {
   const { id } = useParams();
@@ -113,7 +114,7 @@ const SessionEdit = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
+        <LoadingState />
       ) : error ? (
         <div className="alert alert-danger rounded-4">{error}</div>
       ) : (

@@ -5,6 +5,7 @@ import { deleteConfirmAlert } from "../../../../src/utils/alertUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 
 const MentorMySkills = () => {
   const [skills, setSkills] = useState([]);

@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from "react";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 
 const MentorReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const loadReviews = async () => {
       try {
         setError("");
-        const response = await Apiservices.fetchReviews();
+        const response = await Apiservices.fetchReviews({ page, limit: 12 });
         setReviews(response.data.data || []);
+        setTotalPages(response.data.pages || 1);
       } catch (error) {
         console.log(error);
         setReviews([]);
@@ -22,7 +26,7 @@ const MentorReviews = () => {
       }
     };
     loadReviews();
-  }, []);
+  }, [page]);
 
   const average = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -67,6 +71,7 @@ const MentorReviews = () => {
       ) : (
         <EmptyState title="No Reviews Yet" text="You don't have any reviews from learners yet." />
       )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </>
   );
 };

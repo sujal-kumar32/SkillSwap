@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const AdminProgress = () => {
   const [learners, setLearners] = useState([]);
@@ -52,7 +53,7 @@ const AdminProgress = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-5"><div className="spinner-border text-primary" /></div>
+        <LoadingState />
       ) : (
         <div className="admin-card">
           <div className="p-4">

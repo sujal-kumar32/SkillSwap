@@ -4,6 +4,7 @@ import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 
 const LearnerReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -11,13 +12,16 @@ const LearnerReviews = () => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [form, setForm] = useState({ session: "", mentor: "", rating: 5, comment: "" });
   const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const loadReviews = async () => {
       try {
         setError("");
-        const response = await Apiservices.fetchReviews();
+        const response = await Apiservices.fetchReviews({ page, limit: 12 });
         setReviews(response.data.data || []);
+        setTotalPages(response.data.pages || 1);
       } catch (error) {
         console.log(error);
         setReviews([]);
@@ -28,7 +32,7 @@ const LearnerReviews = () => {
     };
 
     loadReviews();
-  }, []);
+  }, [page]);
 
   const average = useMemo(
     () => (reviews.reduce((sum, review) => sum + review.rating, 0) / (reviews.length || 1)).toFixed(1),
@@ -104,6 +108,7 @@ const LearnerReviews = () => {
       ) : (
         <EmptyState title="No reviews yet" text="After completing sessions, leave feedback for mentors." />
       )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {showReviewForm && (
         <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3" style={{ background: "rgba(15,23,42,.45)", zIndex: 1050 }}>

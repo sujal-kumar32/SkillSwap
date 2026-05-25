@@ -3,6 +3,7 @@ const Skill = require("../Skills/skillModel");
 const Request = require("../Request/requestModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
+const getPagination = require("../../utilities/paginate");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -119,9 +120,7 @@ exports.getMySessions = asyncHandler(async (req, res) => {
 exports.getSessions = asyncHandler(async (req, res) => {
 
     const { search, sort, category, skill, price, sessionType } = req.query;
-    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
-    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPagination(req.query);
 
     let filter = isAdmin(req) ? {} : { status: "active" };
 

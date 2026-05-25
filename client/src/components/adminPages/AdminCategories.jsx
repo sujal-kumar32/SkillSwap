@@ -3,6 +3,8 @@ import { showToast } from "../../utils/toastUtils";
 import { confirmAlert, deleteConfirmAlert } from "../../utils/alertUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -11,12 +13,15 @@ const AdminCategories = () => {
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetch = async () => {
     try {
       setLoading(true);
-      const res = await Apiservices.getCategories();
+      const res = await Apiservices.getCategories({ page, limit: 15 });
       setCategories(res.data.data || []);
+      setTotalPages(res.data.pages || 1);
     } catch {
       showToast.error("Failed to load categories");
     } finally {
@@ -24,7 +29,7 @@ const AdminCategories = () => {
     }
   };
 
-  useEffect(() => { fetch(); }, []);
+  useEffect(() => { fetch(); }, [page]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -153,7 +158,7 @@ const AdminCategories = () => {
           <div className="admin-card">
             <div className="p-4">
               {loading ? (
-                <div className="text-center py-4"><div className="spinner-border text-primary" /></div>
+                <LoadingState />
               ) : categories.length ? (
                 <div className="table-responsive">
                   <table className="table align-middle mb-0">
@@ -196,6 +201,7 @@ const AdminCategories = () => {
               ) : (
                 <p className="text-center py-4 text-muted">No categories yet</p>
               )}
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
           </div>
         </div>

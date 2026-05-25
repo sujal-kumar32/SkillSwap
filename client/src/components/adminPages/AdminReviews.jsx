@@ -1,19 +1,24 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 
 const AdminReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetch = async () => {
       try {
         setLoading(true);
-        const res = await Apiservices.fetchReviews();
+        const res = await Apiservices.fetchReviews({ page, limit: 15 });
         setReviews(res.data.data || []);
+        setTotalPages(res.data.pages || 1);
       } catch (err) {
         showToast.error("Failed to load reviews");
       } finally {
@@ -21,7 +26,7 @@ const AdminReviews = () => {
       }
     };
     fetch();
-  }, []);
+  }, [page]);
 
   const filtered = useMemo(() => {
     return reviews.filter((r) => {
@@ -35,6 +40,9 @@ const AdminReviews = () => {
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "0.0";
 
   const ratings = [5, 4, 3, 2, 1];
+
+  const handleSearch = (value) => { setSearch(value); setPage(1); };
+  const handleFilter = (value) => { setFilter(value); setPage(1); };
 
   return (
     <div>
@@ -65,22 +73,22 @@ const AdminReviews = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-5"><div className="spinner-border text-primary" /></div>
+        <LoadingState />
       ) : (
         <div className="admin-card">
           <div className="p-4">
             <div className="row align-items-center g-3 mb-4">
               <div className="col-md-6">
                 <input type="search" className="form-control rounded-pill" placeholder="Search by mentor or session"
-                  value={search} onChange={(e) => setSearch(e.target.value)}
+                  value={search} onChange={(e) => handleSearch(e.target.value)}
                   style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
               </div>
               <div className="col-md-6 text-md-end">
                 <button className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === "All" ? "btn-primary" : "btn-outline-secondary"}`}
-                  style={{ fontSize: "0.8rem" }} onClick={() => setFilter("All")}>All</button>
+                  style={{ fontSize: "0.8rem" }} onClick={() => handleFilter("All")}>All</button>
                 {ratings.map((r) => (
                   <button key={r} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === String(r) ? "btn-primary" : "btn-outline-secondary"}`}
-                    style={{ fontSize: "0.8rem" }} onClick={() => setFilter(String(r))}>{r}★</button>
+                    style={{ fontSize: "0.8rem" }} onClick={() => handleFilter(String(r))}>{r}★</button>
                 ))}
               </div>
             </div>
@@ -114,6 +122,7 @@ const AdminReviews = () => {
               </table>
             </div>
           </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const SessionView = () => {
   const { id } = useParams();
@@ -49,7 +50,7 @@ const SessionView = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
+        <LoadingState />
       ) : error ? (
         <div className="alert alert-danger rounded-4">{error}</div>
       ) : (

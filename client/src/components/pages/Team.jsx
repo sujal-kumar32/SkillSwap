@@ -7,6 +7,15 @@ function Team() {
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
 
+  const mentors = [
+    { name: "Mentor One", skill: "Web Development", img: "img/team-1.jpg" },
+    { name: "Mentor Two", skill: "Data Science", img: "img/team-2.jpg" },
+    { name: "Mentor Three", skill: "UI/UX Design", img: "img/team-3.jpg" },
+    { name: "Mentor Four", skill: "Mobile Development", img: "img/team-4.jpg" },
+    { name: "Mentor Five", skill: "DevOps", img: "img/team-1.jpg" },
+    { name: "Mentor Six", skill: "Machine Learning", img: "img/team-2.jpg" },
+  ];
+
   useEffect(() => {
     fetch("http://localhost:3000/api/categories").then(r=>r.json()).then(res => setCategories(res.data || [])).catch(()=>{});
   }, []);

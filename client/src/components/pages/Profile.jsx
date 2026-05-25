@@ -3,6 +3,7 @@ import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const initialForm = {
   name: "", email: "", bio: "", image: "", coverImage: "",
@@ -26,6 +27,8 @@ const Profile = () => {
   const [aiBioLoading, setAiBioLoading] = useState(false);
   const [newSkill, setNewSkill] = useState("");
   const [stats, setStats] = useState({ sessions: 0, reviews: 0, skills: 0 });
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -123,8 +126,8 @@ const Profile = () => {
     return (
       <>
         <TopBar />
-        <div className="d-flex justify-content-center align-items-center" style={{ height: "60vh" }}>
-          <div className="spinner-border text-primary" style={{ width: 48, height: 48 }} />
+        <div className="bg-image" style={{ minHeight: "calc(100vh - 64px)" }}>
+          <LoadingState />
         </div>
       </>
     );
@@ -375,8 +378,26 @@ const Profile = () => {
                 <div className="col-12">
                   <div className="d-flex justify-content-between align-items-center">
                     <label className="form-label fw-semibold small mb-0">Bio</label>
-                    <button type="button" className="btn btn-sm btn-outline-success rounded-pill" onClick={generateBio} disabled={aiBioLoading}>
-                      {aiBioLoading ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-magic me-1" />Generate</>}
+                    <button
+                      type="button"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                      onClick={generateBio}
+                      disabled={aiBioLoading}
+                      style={{
+                        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                        color: "white",
+                        padding: "6px 16px",
+                        fontSize: "0.85rem",
+                        opacity: aiBioLoading ? 0.7 : 1,
+                        transition: "all 0.3s",
+                        boxShadow: aiBioLoading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                      }}
+                    >
+                      {aiBioLoading ? (
+                        <span className="spinner-border spinner-border-sm" role="status" />
+                      ) : (
+                        <><i className="fa fa-wand-magic-sparkles" /> Generate</>
+                      )}
                     </button>
                   </div>
                   <textarea className="form-control rounded-4 mt-1" rows="3" value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} />
@@ -448,12 +469,24 @@ const Profile = () => {
                   <h6 className="fw-bold mb-3">Change Password</h6>
                   <div className="row g-3">
                     <div className="col-md-6">
-                      <input className="form-control rounded-pill" type="password" placeholder="Current password" value={editForm.oldPassword}
-                        onChange={(e) => setEditForm({ ...editForm, oldPassword: e.target.value })} />
+                      <div style={{ position: "relative" }}>
+                        <input className="form-control rounded-pill" type={showOldPassword ? "text" : "password"} placeholder="Current password" value={editForm.oldPassword}
+                          onChange={(e) => setEditForm({ ...editForm, oldPassword: e.target.value })} style={{ paddingRight: "40px" }} />
+                        <span onClick={() => setShowOldPassword(!showOldPassword)}
+                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}>
+                          <i className={`fa${showOldPassword ? "s fa-eye-slash" : "r fa-eye"}`} />
+                        </span>
+                      </div>
                     </div>
                     <div className="col-md-6">
-                      <input className="form-control rounded-pill" type="password" placeholder="New password" value={editForm.newPassword}
-                        onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })} />
+                      <div style={{ position: "relative" }}>
+                        <input className="form-control rounded-pill" type={showNewPassword ? "text" : "password"} placeholder="New password" value={editForm.newPassword}
+                          onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })} style={{ paddingRight: "40px" }} />
+                        <span onClick={() => setShowNewPassword(!showNewPassword)}
+                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}>
+                          <i className={`fa${showNewPassword ? "s fa-eye-slash" : "r fa-eye"}`} />
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

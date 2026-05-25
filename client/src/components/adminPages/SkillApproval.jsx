@@ -3,6 +3,7 @@ import { confirmAlert, deleteConfirmAlert } from "../../utils/alertUtils";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const SkillApproval = () => {
   const [skills, setSkills] = useState([]);
@@ -141,9 +142,7 @@ const SkillApproval = () => {
       )}
 
       {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status" />
-        </div>
+        <LoadingState />
       ) : (
         <div className="admin-card">
           <div className="p-4">

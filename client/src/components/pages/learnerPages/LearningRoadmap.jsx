@@ -78,12 +78,23 @@ const LearningRoadmap = () => {
             </select>
           </div>
           <div className="col-md-4">
-            <button className="btn btn-success btn-lg rounded-pill w-100 fw-bold" onClick={generateRoadmap} disabled={loading || !targetSkill.trim()}
-              style={{ padding: "14px 30px" }}>
+            <button
+              className="btn rounded-pill w-100 fw-bold border-0 d-flex align-items-center justify-content-center gap-2"
+              onClick={generateRoadmap}
+              disabled={loading || !targetSkill.trim()}
+              style={{
+                background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                color: "white",
+                padding: "14px 30px",
+                opacity: loading ? 0.7 : 1,
+                transition: "all 0.3s",
+                boxShadow: loading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+              }}
+            >
               {loading ? (
-                <><span className="spinner-border spinner-border-sm me-2" />Generating...</>
+                <><span className="spinner-border spinner-border-sm" role="status" /> Generating...</>
               ) : (
-                <><i className="fa fa-magic me-2" />Generate Roadmap</>
+                <><i className="fa fa-wand-magic-sparkles" /> Generate Roadmap</>
               )}
             </button>
           </div>

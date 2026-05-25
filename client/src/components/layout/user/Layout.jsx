@@ -12,11 +12,11 @@ function Layout() {
   }
 
   return (
-    <>
+    <div className="bg-image">
       <Navbar />
       <Outlet/>
       <Footer />
-    </>
+    </div>
   );
 }
 

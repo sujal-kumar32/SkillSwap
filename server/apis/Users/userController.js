@@ -1,6 +1,7 @@
 ﻿const User = require("./userModel");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("../../utilities/asyncHandler");
+const getPagination = require("../../utilities/paginate");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -9,9 +10,7 @@ const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 exports.getAllUsers = asyncHandler(async (req, res) => {
 
     const { search, sort, status, role } = req.query;
-    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
-    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPagination(req.query);
 
     let filter = { roles: { $ne: "admin" } };
 

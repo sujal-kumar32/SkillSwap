@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const AdminSettings = () => {
   const [settings, setSettings] = useState(null);
@@ -48,7 +49,7 @@ const AdminSettings = () => {
           <h1 className="fw-bold mb-1">System Settings</h1>
           <p className="text-muted mb-0">Configure platform-wide settings.</p>
         </div>
-        <div className="text-center py-5"><div className="spinner-border text-primary" /></div>
+        <LoadingState />
       </div>
     );
   }

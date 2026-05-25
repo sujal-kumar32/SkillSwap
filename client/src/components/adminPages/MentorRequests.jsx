@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 import { showToast } from "../../utils/toastUtils";
 import { confirmAlert } from "../../utils/alertUtils";
 
@@ -108,9 +109,7 @@ const MentorRequests = () => {
       </div>
 
       {loading ? (
-        <div className="learner-card p-5 text-center">
-          <div className="spinner-border text-primary" role="status" />
-        </div>
+        <LoadingState />
       ) : mentors.length ? (
         <div className="learner-card p-4">
           <div className="table-responsive">

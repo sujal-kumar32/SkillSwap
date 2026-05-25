@@ -3,6 +3,7 @@ const Session = require("../Session/sessionModel");
 const Payment = require("../Payment/paymentModel");
 const razorpay = require("../../config/razorpay");
 const asyncHandler = require("../../utilities/asyncHandler");
+const getPagination = require("../../utilities/paginate");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -63,9 +64,7 @@ exports.createRequest = asyncHandler(async (req, res) => {
 exports.getRequests = asyncHandler(async (req, res) => {
 
     const { sort, status } = req.query;
-    const limit = req.query.limit ? Math.min(100, Math.max(1, parseInt(req.query.limit))) : 100000;
-    const page = req.query.page ? Math.max(1, parseInt(req.query.page)) : 1;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPagination(req.query);
 
     let filter = isAdmin(req)
       ? {}
@@ -103,22 +102,29 @@ exports.getRequests = asyncHandler(async (req, res) => {
 
 // GET CURRENT LEARNER BOOKINGS
 exports.getMyBookings = asyncHandler(async (req, res) => {
-    const requests = await Request.find({ learnerId: req.user.id })
-      .populate({
-        path: "sessionId",
-        populate: [
-          { path: "skillId", populate: { path: "categoryId", select: "name" } },
-          { path: "mentorId", select: "name email profileImage" },
-        ],
-      })
-      .populate("learnerId", "name email profileImage")
-      .populate("mentorId", "name email profileImage")
-      .sort({ createdAt: -1 })
-      .lean();
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = { learnerId: req.user.id };
+    const [requests, total] = await Promise.all([
+      Request.find(filter).skip(skip).limit(limit)
+        .populate({
+          path: "sessionId",
+          populate: [
+            { path: "skillId", populate: { path: "categoryId", select: "name" } },
+            { path: "mentorId", select: "name email profileImage" },
+          ],
+        })
+        .populate("learnerId", "name email profileImage")
+        .populate("mentorId", "name email profileImage")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Request.countDocuments(filter),
+    ]);
 
     res.json({
       success: true,
-      total: requests.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: requests,
     });
 
@@ -126,19 +132,26 @@ exports.getMyBookings = asyncHandler(async (req, res) => {
 
 // GET BOOKINGS FOR THE CURRENT MENTOR
 exports.getMentorBookings = asyncHandler(async (req, res) => {
-    const requests = await Request.find({ mentorId: req.user.id })
-      .populate({
-        path: "sessionId",
-        populate: { path: "skillId", select: "name categoryId" },
-      })
-      .populate("learnerId", "name email profileImage")
-      .populate("mentorId", "name email profileImage")
-      .sort({ createdAt: -1 })
-      .lean();
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = { mentorId: req.user.id };
+    const [requests, total] = await Promise.all([
+      Request.find(filter).skip(skip).limit(limit)
+        .populate({
+          path: "sessionId",
+          populate: { path: "skillId", select: "name categoryId" },
+        })
+        .populate("learnerId", "name email profileImage")
+        .populate("mentorId", "name email profileImage")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Request.countDocuments(filter),
+    ]);
 
     res.json({
       success: true,
-      total: requests.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: requests,
     });
 
@@ -146,20 +159,25 @@ exports.getMentorBookings = asyncHandler(async (req, res) => {
 
 // GET UNIQUE LEARNERS FOR THE CURRENT MENTOR
 exports.getMentorLearners = asyncHandler(async (req, res) => {
-    const requests = await Request.find({
+    const { page, limit, skip } = getPagination(req.query);
+    const filter = {
       mentorId: req.user.id,
       requestStatus: { $in: ["accepted", "completed"] },
-    })
-      .populate({
-        path: "sessionId",
-        select: "title skillId",
-        populate: { path: "skillId", select: "name" },
-      })
-      .populate("learnerId", "name email profileImage")
-      .sort({ updatedAt: -1 })
-      .lean();
+    };
+    const [requests, totalRequests] = await Promise.all([
+      Request.find(filter)
+        .populate({
+          path: "sessionId",
+          select: "title skillId",
+          populate: { path: "skillId", select: "name" },
+        })
+        .populate("learnerId", "name email profileImage")
+        .sort({ updatedAt: -1 })
+        .lean(),
+      Request.countDocuments(filter),
+    ]);
 
-    const learners = Array.from(
+    const allLearners = Array.from(
       requests
         .reduce((map, request) => {
           const learner = request.learnerId;
@@ -192,10 +210,15 @@ exports.getMentorLearners = asyncHandler(async (req, res) => {
       progress: Math.min(100, learner.sessions * 20),
     }));
 
+    const total = allLearners.length;
+    const data = allLearners.slice(skip, skip + limit);
+
     res.json({
       success: true,
-      total: learners.length,
-      data: learners,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      data,
     });
 
 });

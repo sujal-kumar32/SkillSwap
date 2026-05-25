@@ -49,8 +49,8 @@ class Apiservices {
     return axios.get(baseUrl + "sessions", this.getAuthConfig({ params }));
   }
 
-  getMySessions() {
-    return axios.get(baseUrl + "sessions/mentor/me", this.getToken());
+  getMySessions(params = {}) {
+    return axios.get(baseUrl + "sessions/mentor/me", this.getAuthConfig({ params }));
   }
 
   getSession(sessionId) {
@@ -85,8 +85,8 @@ class Apiservices {
     return axios.delete(baseUrl + `skills/${skillId}`, this.getToken());
   }
 
-  getCategories() {
-    return axios.get(baseUrl + "categories");
+  getCategories(params = {}) {
+    return axios.get(baseUrl + "categories", { params });
   }
 
   addCategory(data) {
@@ -153,8 +153,8 @@ class Apiservices {
     return axios.get(baseUrl + "progress/all", this.getToken());
   }
 
-  fetchReviews() {
-    return axios.get(baseUrl + "reviews", this.getToken());
+  fetchReviews(params = {}) {
+    return axios.get(baseUrl + "reviews", this.getAuthConfig({ params }));
   }
 
   createReview(data) {
@@ -217,12 +217,12 @@ class Apiservices {
     return axios.post(baseUrl + "ai/search", data, this.getToken());
   }
 
-  getMentorBookings() {
-    return axios.get(baseUrl + "requests/mentor/bookings", this.getToken());
+  getMentorBookings(params = {}) {
+    return axios.get(baseUrl + "requests/mentor/bookings", this.getAuthConfig({ params }));
   }
 
-  getMentorLearners() {
-    return axios.get(baseUrl + "requests/mentor/learners", this.getToken());
+  getMentorLearners(params = {}) {
+    return axios.get(baseUrl + "requests/mentor/learners", this.getAuthConfig({ params }));
   }
 
   updateRequest(id, status) {

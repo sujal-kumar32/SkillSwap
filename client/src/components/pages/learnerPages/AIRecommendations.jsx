@@ -196,11 +196,23 @@ const AIRecommendations = () => {
               {profile.interests.trim() ? `Based on your interests: ${profile.interests}` : "Add interests in your profile to get personalized insights."}
             </p>
             {profile.interests.trim() && (
-              <button className="btn btn-success rounded-pill w-100 fw-semibold mb-3" onClick={getInsights} disabled={insightLoading}>
+              <button
+                className="btn rounded-pill w-100 fw-semibold mb-3 border-0 d-flex align-items-center justify-content-center gap-2"
+                onClick={getInsights}
+                disabled={insightLoading}
+                style={{
+                  background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                  color: "white",
+                  padding: "12px 24px",
+                  opacity: insightLoading ? 0.7 : 1,
+                  transition: "all 0.3s",
+                  boxShadow: insightLoading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
+                }}
+              >
                 {insightLoading ? (
-                  <><span className="spinner-border spinner-border-sm me-2" />Analyzing...</>
+                  <><span className="spinner-border spinner-border-sm" role="status" /> Analyzing...</>
                 ) : (
-                  <><i className="fa fa-magic me-2" />Get Learning Insights</>
+                  <><i className="fa fa-wand-magic-sparkles" /> Get Learning Insights</>
                 )}
               </button>
             )}

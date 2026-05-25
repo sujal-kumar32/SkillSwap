@@ -12,6 +12,8 @@ function Login() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -357,13 +359,22 @@ padding: 0;
                     <label className="form-label small fw-semibold text-muted">
                       Password
                     </label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      placeholder="••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
+                    <div style={{ position: "relative" }}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        className="form-control"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        style={{ paddingRight: "40px" }}
+                      />
+                      <span
+                        onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}
+                      >
+                        <i className={`fa${showPassword ? "s fa-eye-slash" : "r fa-eye"}`} />
+                      </span>
+                    </div>
                   </div>
 
                   {/* Signup only */}
@@ -372,13 +383,22 @@ padding: 0;
                       <label className="form-label small fw-semibold text-muted">
                         Confirm Password
                       </label>
-                      <input
-                        type="password"
-                        className="form-control"
-                        placeholder="••••••••"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                      />
+                      <div style={{ position: "relative" }}>
+                        <input
+                          type={showConfirm ? "text" : "password"}
+                          className="form-control"
+                          placeholder="••••••••"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          style={{ paddingRight: "40px" }}
+                        />
+                        <span
+                          onClick={() => setShowConfirm(!showConfirm)}
+                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}
+                        >
+                          <i className={`fa${showConfirm ? "s fa-eye-slash" : "r fa-eye"}`} />
+                        </span>
+                      </div>
                     </div>
                   )}
 

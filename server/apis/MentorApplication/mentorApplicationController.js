@@ -2,6 +2,7 @@
 const User = require("../Users/userModel");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("../../utilities/asyncHandler");
+const getPagination = require("../../utilities/paginate");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -83,6 +84,7 @@ exports.getMyApplication = asyncHandler(async (req, res) => {
 exports.getAllApplications = asyncHandler(async (req, res) => {
 
     const { status, userId } = req.query;
+    const { page, limit, skip } = getPagination(req.query);
     let filter = {};
     if (status && ["pending", "approved", "rejected", "blocked"].includes(status)) {
       filter.status = status;
@@ -91,13 +93,16 @@ exports.getAllApplications = asyncHandler(async (req, res) => {
       filter.userId = userId;
     }
 
-    const applications = await MentorApplication.find(filter)
-      .populate("userId", "name email profileImage")
-      .populate("reviewedBy", "name")
-      .sort({ createdAt: -1 })
-      .lean();
+    const [applications, total] = await Promise.all([
+      MentorApplication.find(filter).skip(skip).limit(limit)
+        .populate("userId", "name email profileImage")
+        .populate("reviewedBy", "name")
+        .sort({ createdAt: -1 })
+        .lean(),
+      MentorApplication.countDocuments(filter),
+    ]);
 
-    res.json({ success: true, total: applications.length, data: applications });
+    res.json({ success: true, total, page, pages: Math.ceil(total / limit), data: applications });
 
 });
 

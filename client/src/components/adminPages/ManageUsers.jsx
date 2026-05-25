@@ -3,6 +3,7 @@ import { confirmAlert } from "../../utils/alertUtils";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const PAGE_SIZE = 10;
 
@@ -149,7 +150,7 @@ const ManageUsers = () => {
           </div>
 
           {loading ? (
-            <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
+            <LoadingState />
           ) : users.length ? (
             <>
               <div className="table-responsive">

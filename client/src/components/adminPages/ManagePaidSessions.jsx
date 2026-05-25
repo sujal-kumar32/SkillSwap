@@ -4,6 +4,7 @@ import { deleteConfirmAlert } from "../../utils/alertUtils";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { StatCard, LoadingState } from "../learner/LearnerUI";
 
 const ManagePaidSessions = () => {
   const navigate = useNavigate();
@@ -89,7 +90,7 @@ const ManagePaidSessions = () => {
       </div>
 
       {loading ? (
-        <div className="text-center py-5"><div className="spinner-border text-primary" role="status" /></div>
+        <LoadingState />
       ) : (
         <>
           {error && <div className="alert alert-danger rounded-4">{error}</div>}

@@ -4,7 +4,8 @@ import { showToast } from "../../../utils/toastUtils";
 import { confirmAlert } from "../../../utils/alertUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader } from "../../learner/LearnerUI";
+import { PageHeader, LoadingState } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 
 
 const avatarFor = (name = "Learner", image) =>
@@ -23,12 +24,15 @@ const Bookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await Apiservices.getMentorBookings();
+      const response = await Apiservices.getMentorBookings({ page, limit: 12 });
       setBookings(response.data.data || []);
+      setTotalPages(response.data.pages || 1);
     } catch (error) {
       console.log(error);
       showToast.error(error.response?.data?.message || "Failed to load bookings");
@@ -39,7 +43,7 @@ const Bookings = () => {
 
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [page]);
 
   const stats = useMemo(
     () => ({
@@ -142,11 +146,7 @@ const Bookings = () => {
           {/* REQUEST CARDS */}
           <div className="row g-4">
             {loading ? (
-              <div className="col-12 text-center py-5">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
+              <div className="col-12"><LoadingState /></div>
             ) : bookings.length ? (
               bookings.map((booking) => {
                     const learnerName = booking.learnerId?.name || "Learner";
@@ -247,6 +247,7 @@ const Bookings = () => {
               </div>
             )}
           </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </div>
 

@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader } from "../../learner/LearnerUI";
+import { PageHeader, LoadingState } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 
 const avatarFor = (name = "Learner", image) =>
   image || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
@@ -10,13 +11,16 @@ const avatarFor = (name = "Learner", image) =>
 const Learners = () => {
   const [learners, setLearners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const fetchLearners = async () => {
       try {
         setLoading(true);
-        const response = await Apiservices.getMentorLearners();
+        const response = await Apiservices.getMentorLearners({ page, limit: 12 });
         setLearners(response.data.data || []);
+        setTotalPages(response.data.pages || 1);
       } catch (error) {
         console.log(error);
         showToast.error(error.response?.data?.message || "Failed to load learners");
@@ -26,7 +30,7 @@ const Learners = () => {
     };
 
     fetchLearners();
-  }, []);
+  }, [page]);
 
   const stats = useMemo(() => {
     const avgProgress = learners.length
@@ -117,11 +121,7 @@ const Learners = () => {
           {/* LEARNERS GRID */}
           <div className="row g-4">
             {loading ? (
-              <div className="col-12 text-center py-5">
-                <div className="spinner-border" role="status">
-                  <span className="visually-hidden">Loading...</span>
-                </div>
-              </div>
+              <div className="col-12"><LoadingState /></div>
             ) : learners.length ? (
               learners.map((learner) => (
               <div className="col-lg-3 col-md-6" key={learner._id}>
@@ -191,6 +191,7 @@ const Learners = () => {
               </div>
             )}
           </div>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       </div>
 
