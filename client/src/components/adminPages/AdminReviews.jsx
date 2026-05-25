@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
@@ -9,6 +9,7 @@ const AdminReviews = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
+  const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -16,7 +17,10 @@ const AdminReviews = () => {
     const fetch = async () => {
       try {
         setLoading(true);
-        const res = await Apiservices.fetchReviews({ page, limit: 15 });
+        const params = { page, limit: 15, sort };
+        if (search) params.search = search;
+        if (filter !== "All") params.rating = filter;
+        const res = await Apiservices.fetchReviews(params);
         setReviews(res.data.data || []);
         setTotalPages(res.data.pages || 1);
       } catch (err) {
@@ -26,16 +30,7 @@ const AdminReviews = () => {
       }
     };
     fetch();
-  }, [page]);
-
-  const filtered = useMemo(() => {
-    return reviews.filter((r) => {
-      const q = search.toLowerCase();
-      const matchSearch = (r.mentor || "").toLowerCase().includes(q) || (r.session || "").toLowerCase().includes(q);
-      const matchFilter = filter === "All" || r.rating === Number(filter);
-      return matchSearch && matchFilter;
-    });
-  }, [reviews, search, filter]);
+  }, [page, search, filter, sort]);
 
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "0.0";
 
@@ -43,6 +38,7 @@ const AdminReviews = () => {
 
   const handleSearch = (value) => { setSearch(value); setPage(1); };
   const handleFilter = (value) => { setFilter(value); setPage(1); };
+  const handleSort = (value) => { setSort(value); setPage(1); };
 
   return (
     <div>
@@ -90,6 +86,11 @@ const AdminReviews = () => {
                   <button key={r} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === String(r) ? "btn-primary" : "btn-outline-secondary"}`}
                     style={{ fontSize: "0.8rem" }} onClick={() => handleFilter(String(r))}>{r}★</button>
                 ))}
+                <select className="form-select form-select-sm d-inline-block w-auto ms-3 rounded-pill" value={sort} onChange={(e) => handleSort(e.target.value)} style={{ fontSize: "0.8rem", background: "#f8faff", border: "1px solid #eef2f7" }}>
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
               </div>
             </div>
 
@@ -105,10 +106,10 @@ const AdminReviews = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.length ? (
-                    filtered.map((r) => (
+                  {reviews.length ? (
+                    reviews.map((r) => (
                       <tr key={r._id}>
-                        <td className="fw-semibold" style={{ color: "#1e293b" }}>{r.learnerId?.name || "Unknown"}</td>
+                        <td className="fw-semibold" style={{ color: "#1e293b" }}>{r.learner || r.learnerId?.name || "Unknown"}</td>
                         <td style={{ color: "#64748b" }}>{r.session || r.sessionId?.title}</td>
                         <td style={{ color: "#64748b" }}>{r.mentor || r.mentorId?.name}</td>
                         <td><span className="text-warning">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span></td>

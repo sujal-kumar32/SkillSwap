@@ -64,31 +64,93 @@ exports.getProgress = asyncHandler(async (req, res) => {
 
 exports.getAllProgress = asyncHandler(async (req, res) => {
 
-    const learners = await User.find({ roles: "learner" }).select("name email profileImage").lean();
+    const { page, limit, skip } = getPagination(req.query);
 
-    const data = await Promise.all(
-      learners.map(async (learner) => {
-        const bookings = await Request.find({ learnerId: learner._id })
-          .populate({ path: "sessionId", select: "title skillId mentorId", populate: { path: "skillId", select: "name" } })
-          .lean();
+    const pipeline = [
+      { $match: { roles: "learner" } },
+      {
+        $lookup: {
+          from: "requests",
+          let: { learnerId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$learnerId", "$$learnerId"] } } },
+            {
+              $lookup: {
+                from: "sessions",
+                localField: "sessionId",
+                foreignField: "_id",
+                as: "session",
+              },
+            },
+            { $unwind: { path: "$session", preserveNullAndEmptyArrays: true } },
+            {
+              $lookup: {
+                from: "skills",
+                localField: "session.skillId",
+                foreignField: "_id",
+                as: "skill",
+              },
+            },
+            { $unwind: { path: "$skill", preserveNullAndEmptyArrays: true } },
+          ],
+          as: "requests",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          profileImage: 1,
+          totalBookings: { $size: "$requests" },
+          completedBookings: {
+            $size: {
+              $filter: {
+                input: "$requests",
+                as: "r",
+                cond: { $eq: ["$$r.requestStatus", "completed"] },
+              },
+            },
+          },
+          skills: {
+            $let: {
+              vars: {
+                skillNames: {
+                  $filter: {
+                    input: { $map: { input: "$requests", as: "r", in: "$$r.skill.name" } },
+                    as: "s",
+                    cond: { $ne: ["$$s", null] },
+                  },
+                },
+              },
+              in: { $setUnion: ["$$skillNames", []] },
+            },
+          },
+        },
+      },
+      {
+        $addFields: {
+          completion: {
+            $cond: [
+              { $gt: ["$totalBookings", 0] },
+              { $round: [{ $multiply: [{ $divide: ["$completedBookings", "$totalBookings"] }, 100] }, 0] },
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $facet: {
+          metadata: [{ $count: "total" }],
+          data: [{ $skip: skip }, { $limit: limit }],
+        },
+      },
+    ];
 
-        const totalBookings = bookings.length;
-        const completedBookings = bookings.filter((b) => b.requestStatus === "completed").length;
-        const completion = totalBookings > 0 ? Math.round((completedBookings / totalBookings) * 100) : 0;
+    const result = await User.aggregate(pipeline);
+    const total = result[0]?.metadata[0]?.total || 0;
+    const data = result[0]?.data || [];
 
-        return {
-          _id: learner._id,
-          name: learner.name,
-          email: learner.email,
-          profileImage: learner.profileImage,
-          totalBookings,
-          completedBookings,
-          completion,
-          skills: [...new Set(bookings.map((b) => b.sessionId?.skillId?.name).filter(Boolean))],
-        };
-      }),
-    );
-
-    res.json({ success: true, total: data.length, data });
+    res.json({ success: true, total, page, pages: Math.ceil(total / limit), data });
 
 });

@@ -31,6 +31,7 @@ const MentorReviews = () => {
   const average = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : "—";
+  const learnerSet = new Set(reviews.map((r) => r.learner || r.learnerId?.name).filter(Boolean));
 
   return (
     <>
@@ -40,7 +41,7 @@ const MentorReviews = () => {
       <div className="row g-4 mb-4">
         <StatCard icon="fa-star" label="Average Rating" value={average} tone="warning" />
         <StatCard icon="fa-comments" label="Total Reviews" value={reviews.length} />
-        <StatCard icon="fa-users" label="Learners Rated" value={new Set(reviews.map((r) => r.learner || r.learnerId?.name)).size} tone="success" />
+        <StatCard icon="fa-users" label="Learners Rated" value={learnerSet.size} tone="success" />
       </div>
 
       {loading ? <LoadingState /> : reviews.length ? (

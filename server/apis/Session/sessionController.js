@@ -1,6 +1,7 @@
 ﻿const Session = require("./sessionModel");
 const Skill = require("../Skills/skillModel");
 const Request = require("../Request/requestModel");
+const Review = require("../Reviews/reviewModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
@@ -156,12 +157,28 @@ exports.getSessions = asyncHandler(async (req, res) => {
       Session.countDocuments(filter),
     ]);
 
+    const sessionIds = sessions.map((s) => s._id);
+    const ratings = sessionIds.length
+      ? await Review.aggregate([
+          { $match: { sessionId: { $in: sessionIds } } },
+          { $group: { _id: "$sessionId", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+        ])
+      : [];
+    const ratingMap = {};
+    ratings.forEach((r) => { ratingMap[r._id.toString()] = { avg: Math.round(r.avgRating * 10) / 10, count: r.count }; });
+
+    const data = sessions.map((s) => ({
+      ...s,
+      rating: ratingMap[s._id.toString()]?.avg || null,
+      reviewCount: ratingMap[s._id.toString()]?.count || 0,
+    }));
+
     res.json({
       success: true,
       total,
       page,
       pages: Math.ceil(total / limit),
-      data: sessions,
+      data,
     });
 
 

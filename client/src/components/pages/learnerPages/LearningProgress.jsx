@@ -71,16 +71,41 @@ const LearningProgress = () => {
         </div>
         <div className="col-lg-4">
           <div className="learner-card p-4 mb-4">
-            <h5 className="fw-bold">Skill Growth</h5>
-            <div className="bg-light rounded-4 p-5 text-center mt-3">
-              <i className="fa fa-chart-pie fa-2x text-primary mb-3" />
-              <p className="text-muted mb-0">Skill analytics are calculated from your completed bookings.</p>
+            <h5 className="fw-bold"><i className="fa fa-chart-pie text-primary me-2" />Skill Growth</h5>
+            <div className="mt-3">
+              {items.length
+                ? items.slice(0, 5).map((item) => (
+                    <div key={item.skill} className="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-light">
+                      <small className="fw-semibold">{item.skill}</small>
+                      <small className={`fw-bold ${item.completion >= 80 ? "text-success" : item.completion >= 40 ? "text-warning" : "text-muted"}`}>
+                        {item.completion}%
+                      </small>
+                    </div>
+                  ))
+                : <p className="text-muted small mb-0">Complete sessions to track skill growth.</p>}
+              {items.length > 5 && <small className="text-muted">+{items.length - 5} more skills</small>}
             </div>
           </div>
           <div className="learner-card p-4">
-            <h5 className="fw-bold">Certificates</h5>
-            <p className="text-muted small">Certificates will appear after eligible completed learning paths.</p>
-            <button className="btn btn-outline-primary rounded-pill w-100">View Certificates</button>
+            <h5 className="fw-bold"><i className="fa fa-certificate text-warning me-2" />Certificates</h5>
+            {items.filter((i) => i.completion === 100).length > 0 ? (
+              <div>
+                <p className="text-success small fw-semibold mb-2">
+                  <i className="fa fa-check-circle me-1" />{items.filter((i) => i.completion === 100).length} skill{items.filter((i) => i.completion === 100).length > 1 ? "s" : ""} completed!
+                </p>
+                {items.filter((i) => i.completion === 100).slice(0, 3).map((item) => (
+                  <div key={item.skill} className="d-flex align-items-center gap-2 mb-2 p-2 rounded-3" style={{ background: "#f0fdf4" }}>
+                    <i className="fa fa-trophy text-success" />
+                    <small className="fw-semibold">{item.skill}</small>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted small mb-3">Complete all sessions in a skill to earn a certificate.</p>
+            )}
+            <button className="btn btn-outline-primary rounded-pill w-100 mt-2" disabled={!items.filter((i) => i.completion === 100).length}>
+              {items.filter((i) => i.completion === 100).length ? "Download Certificates" : "No Certificates Yet"}
+            </button>
           </div>
         </div>
       </div>

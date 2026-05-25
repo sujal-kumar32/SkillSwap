@@ -20,6 +20,7 @@ const reviewSchema = new mongoose.Schema(
 
     session: String,
     mentor: String,
+    learner: String,
 
     rating: {
       type: Number,

@@ -113,10 +113,10 @@ export const SessionCard = ({ session, onBook }) => {
           {mentor}
         </p>
         <div className="d-flex flex-wrap gap-3 small text-muted mb-3">
-          {session.rating && <span>
+          {session.rating ? <span>
             <i className="fa fa-star text-warning" style={{ marginRight: 10 }} />
-            {session.rating}
-          </span>}
+            {session.rating} <small className="text-muted">({session.reviewCount || 0})</small>
+          </span> : null}
           {session.learners > 0 && <span>
             <i className="fa fa-users text-success" style={{ marginRight: 10 }} />
             {session.learners} learners

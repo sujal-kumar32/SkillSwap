@@ -2,17 +2,23 @@ import React, { useEffect, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 
 const AdminProgress = () => {
   const [learners, setLearners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const fetch = async () => {
       try {
         setLoading(true);
-        const res = await Apiservices.getAllProgress();
+        const res = await Apiservices.getAllProgress({ page, limit: 15 });
         setLearners(res.data.data || []);
+        setTotalPages(res.data.pages || 1);
+        setTotal(res.data.total || 0);
       } catch (err) {
         showToast.error("Failed to load learner progress");
       } finally {
@@ -20,7 +26,12 @@ const AdminProgress = () => {
       }
     };
     fetch();
-  }, []);
+  }, [page]);
+
+  const activeCount = learners.filter((l) => l.totalBookings > 0).length;
+  const avgCompletion = learners.length
+    ? Math.round(learners.reduce((s, l) => s + l.completion, 0) / learners.length)
+    : 0;
 
   return (
     <div>
@@ -33,21 +44,19 @@ const AdminProgress = () => {
         <div className="col-sm-4">
           <div className="admin-card p-4">
             <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>Total Learners</p>
-            <h3 className="fw-bold mb-0">{learners.length}</h3>
+            <h3 className="fw-bold mb-0">{total}</h3>
           </div>
         </div>
         <div className="col-sm-4">
           <div className="admin-card p-4">
             <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>Active Learners</p>
-            <h3 className="fw-bold mb-0" style={{ color: "#198754" }}>{learners.filter((l) => l.totalBookings > 0).length}</h3>
+            <h3 className="fw-bold mb-0" style={{ color: "#198754" }}>{activeCount}</h3>
           </div>
         </div>
         <div className="col-sm-4">
           <div className="admin-card p-4">
             <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>Avg Completion</p>
-            <h3 className="fw-bold mb-0" style={{ color: "#0d6efd" }}>
-              {learners.length ? Math.round(learners.reduce((s, l) => s + l.completion, 0) / learners.length) : 0}%
-            </h3>
+            <h3 className="fw-bold mb-0" style={{ color: "#0d6efd" }}>{avgCompletion}%</h3>
           </div>
         </div>
       </div>
@@ -102,6 +111,7 @@ const AdminProgress = () => {
                 </tbody>
               </table>
             </div>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         </div>
       )}

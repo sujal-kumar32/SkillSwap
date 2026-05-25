@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import {
   EmptyState,
@@ -28,9 +29,31 @@ const LearnerDashboard = () => {
           Apiservices.fetchRecommendations().catch(() => Apiservices.fetchSessions()),
           Apiservices.fetchProgress().catch(() => ({ data: { summary: { completion: 0 } } })),
         ]);
-        setBookings(bookingRes.data.data || []);
+        const fetchedBookings = bookingRes.data.data || [];
+        setBookings(fetchedBookings);
         setSessions(sessionRes.data.data || []);
         setProgressSummary(progressRes.data.summary || { completion: 0 });
+
+        const completedWithoutReview = fetchedBookings.filter(
+          (b) => b.requestStatus === "completed",
+        );
+        if (completedWithoutReview.length > 0) {
+          const reviewRes = await Apiservices.fetchReviews({ limit: 100 }).catch(() => ({ data: { data: [] } }));
+          const myReviews = reviewRes.data.data || [];
+          const reviewedSessionIds = new Set(myReviews.map((r) => r.sessionId?._id || r.sessionId).filter(Boolean));
+          const unreviewed = completedWithoutReview.filter(
+            (b) => !reviewedSessionIds.has(b.sessionId?._id || b.sessionId),
+          );
+          if (unreviewed.length > 0) {
+            const key = "dismiss_review_prompt";
+            if (!sessionStorage.getItem(key)) {
+              showToast.info(
+                `${unreviewed.length} completed session${unreviewed.length > 1 ? "s" : ""} awaiting your review! Tap to review.`,
+                { autoClose: 10000, onClick: () => { sessionStorage.setItem(key, "1"); navigate("/learner/reviews"); } },
+              );
+            }
+          }
+        }
       } catch (error) {
         console.log(error);
         setBookings([]);
@@ -43,7 +66,7 @@ const LearnerDashboard = () => {
     };
 
     loadDashboard();
-  }, []);
+  }, [navigate]);
 
   const stats = useMemo(
     () => ({

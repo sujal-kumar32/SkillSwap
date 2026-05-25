@@ -8,41 +8,98 @@ import Pagination from "../../Pagination";
 
 const LearnerReviews = () => {
   const [reviews, setReviews] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [form, setForm] = useState({ session: "", mentor: "", rating: 5, comment: "" });
+  const [form, setForm] = useState({ sessionId: "", session: "", mentor: "", rating: 5, comment: "" });
+  const [editingReview, setEditingReview] = useState(null);
+  const [editForm, setEditForm] = useState({ rating: 5, comment: "" });
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    const loadReviews = async () => {
+    const loadData = async () => {
       try {
         setError("");
-        const response = await Apiservices.fetchReviews({ page, limit: 12 });
-        setReviews(response.data.data || []);
-        setTotalPages(response.data.pages || 1);
+        setLoading(true);
+        const [reviewRes, bookingRes] = await Promise.all([
+          Apiservices.fetchReviews({ page, limit: 12 }),
+          Apiservices.fetchBookings({ limit: 100 }).catch(() => ({ data: { data: [] } })),
+        ]);
+        setReviews(reviewRes.data.data || []);
+        setTotalPages(reviewRes.data.pages || 1);
+        setBookings(bookingRes.data.data || []);
       } catch (error) {
         console.log(error);
         setReviews([]);
-        setError(error.response?.data?.message || "Failed to load reviews");
+        setBookings([]);
+        setError(error.response?.data?.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
 
-    loadReviews();
+    loadData();
   }, [page]);
+
+  const reviewedSessionIds = useMemo(
+    () => new Set(reviews.map((r) => r.sessionId?._id || r.sessionId).filter(Boolean)),
+    [reviews],
+  );
+
+  const pendingCount = useMemo(
+    () => bookings.filter(
+      (b) => (b.requestStatus === "completed" || b.requestStatus === "accepted")
+        && !reviewedSessionIds.has(b.sessionId?._id || b.sessionId),
+    ).length,
+    [bookings, reviewedSessionIds],
+  );
 
   const average = useMemo(
     () => (reviews.reduce((sum, review) => sum + review.rating, 0) / (reviews.length || 1)).toFixed(1),
     [reviews],
   );
 
+  const availableBookings = useMemo(
+    () => bookings.filter(
+      (b) => (b.requestStatus === "completed" || b.requestStatus === "accepted")
+        && !reviewedSessionIds.has(b.sessionId?._id || b.sessionId),
+    ),
+    [bookings, reviewedSessionIds],
+  );
+
+  const handleSessionSelect = (sessionId) => {
+    const booking = bookings.find((b) => (b.sessionId?._id || b.sessionId) === sessionId);
+    if (booking) {
+      setForm({
+        sessionId,
+        session: booking.sessionId?.title || "",
+        mentor: booking.mentorId?.name || booking.sessionId?.mentorId?.name || "",
+        rating: form.rating,
+        comment: form.comment,
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setForm({ sessionId: "", session: "", mentor: "", rating: 5, comment: "" });
+  };
+
   const submitReview = async (event) => {
     event.preventDefault();
     try {
-      const response = await Apiservices.createReview(form);
+      const payload = {
+        rating: form.rating,
+        comment: form.comment,
+      };
+      if (form.sessionId) {
+        payload.sessionId = form.sessionId;
+      } else {
+        payload.session = form.session;
+        payload.mentor = form.mentor;
+      }
+      const response = await Apiservices.createReview(payload);
       setReviews((prev) => [response.data.data, ...prev]);
       showToast.success("Review submitted");
     } catch (error) {
@@ -50,8 +107,29 @@ const LearnerReviews = () => {
       showToast.error(error.response?.data?.message || "Failed to submit review");
       return;
     }
-    setForm({ session: "", mentor: "", rating: 5, comment: "" });
+    resetForm();
     setShowReviewForm(false);
+  };
+
+  const openEditReview = (review) => {
+    setEditingReview(review);
+    setEditForm({ rating: review.rating, comment: review.comment || "" });
+  };
+
+  const submitEditReview = async (event) => {
+    event.preventDefault();
+    if (!editingReview) return;
+    try {
+      const response = await Apiservices.updateReview(editingReview._id, editForm);
+      setReviews((prev) => prev.map((r) => (r._id === editingReview._id ? { ...r, ...response.data.data } : r)));
+      showToast.success("Review updated");
+    } catch (error) {
+      console.log(error);
+      showToast.error(error.response?.data?.message || "Failed to update review");
+      return;
+    }
+    setEditingReview(null);
+    setEditForm({ rating: 5, comment: "" });
   };
 
   return (
@@ -66,7 +144,7 @@ const LearnerReviews = () => {
         <StatCard icon="fa-star" label="Average Rating Given" value={average} tone="warning" />
         <StatCard icon="fa-comments" label="Reviews Written" value={reviews.length} />
         <StatCard icon="fa-user-tie" label="Mentors Rated" value={new Set(reviews.map((r) => r.mentor)).size} tone="success" />
-        <StatCard icon="fa-pen" label="Pending Reviews" value="3" tone="info" />
+        <StatCard icon="fa-pen" label="Pending Reviews" value={pendingCount} tone="info" />
       </div>
 
       {loading ? <LoadingState /> : reviews.length ? (
@@ -83,6 +161,12 @@ const LearnerReviews = () => {
                 </div>
                 <p className="text-muted mt-3">{review.comment}</p>
                 <div className="d-flex gap-2">
+                  <LoadingButton
+                    className="btn btn-outline-primary btn-sm rounded-pill"
+                    onClick={() => openEditReview(review)}
+                  >
+                    Edit
+                  </LoadingButton>
                   <LoadingButton
                     className="btn btn-outline-danger btn-sm rounded-pill"
                     onClick={async () => {
@@ -115,17 +199,50 @@ const LearnerReviews = () => {
           <form className="learner-card p-4" style={{ maxWidth: 520, width: "100%" }} onSubmit={submitReview}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold mb-0">Give Review</h5>
-              <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowReviewForm(false)} />
+              <button type="button" className="btn-close" aria-label="Close" onClick={() => { resetForm(); setShowReviewForm(false); }} />
             </div>
-            <input className="form-control mb-3" placeholder="Session name" value={form.session} onChange={(e) => setForm({ ...form, session: e.target.value })} required />
-            <input className="form-control mb-3" placeholder="Mentor name" value={form.mentor} onChange={(e) => setForm({ ...form, mentor: e.target.value })} required />
+            {availableBookings.length > 0 ? (
+              <select className="form-select mb-3" value={form.sessionId} onChange={(e) => handleSessionSelect(e.target.value)}>
+                <option value="">Select a session...</option>
+                {availableBookings.map((b) => (
+                  <option key={b._id} value={b.sessionId?._id || b.sessionId}>
+                    {b.sessionId?.title || "Untitled Session"} — {b.mentorId?.name || "Mentor"}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <>
+                <input className="form-control mb-3" placeholder="Session name" value={form.session} onChange={(e) => setForm({ ...form, session: e.target.value })} required={!form.sessionId} />
+                <input className="form-control mb-3" placeholder="Mentor name" value={form.mentor} onChange={(e) => setForm({ ...form, mentor: e.target.value })} required={!form.sessionId} />
+              </>
+            )}
             <select className="form-select mb-3" value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })}>
               {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
             </select>
             <textarea className="form-control mb-4" rows="4" placeholder="Feedback" value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} required />
             <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowReviewForm(false)}>Cancel</button>
+              <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => { resetForm(); setShowReviewForm(false); }}>Cancel</button>
               <LoadingButton className="btn btn-primary rounded-pill px-4">Submit Review</LoadingButton>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {editingReview && (
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3" style={{ background: "rgba(15,23,42,.45)", zIndex: 1050 }}>
+          <form className="learner-card p-4" style={{ maxWidth: 520, width: "100%" }} onSubmit={submitEditReview}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold mb-0">Edit Review</h5>
+              <button type="button" className="btn-close" aria-label="Close" onClick={() => { setEditingReview(null); setEditForm({ rating: 5, comment: "" }); }} />
+            </div>
+            <p className="text-muted mb-3"><strong>{editingReview.session}</strong> — {editingReview.mentor}</p>
+            <select className="form-select mb-3" value={editForm.rating} onChange={(e) => setEditForm({ ...editForm, rating: Number(e.target.value) })}>
+              {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
+            </select>
+            <textarea className="form-control mb-4" rows="4" placeholder="Feedback" value={editForm.comment} onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })} required />
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => { setEditingReview(null); setEditForm({ rating: 5, comment: "" }); }}>Cancel</button>
+              <LoadingButton className="btn btn-primary rounded-pill px-4">Save Changes</LoadingButton>
             </div>
           </form>
         </div>

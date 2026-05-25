@@ -149,16 +149,16 @@ class Apiservices {
     return axios.post(baseUrl + "requests/book", data, this.getToken());
   }
 
-  fetchBookings() {
-    return axios.get(baseUrl + "requests/my-bookings", this.getToken());
+  fetchBookings(params = {}) {
+    return axios.get(baseUrl + "requests/my-bookings", this.getAuthConfig({ params }));
   }
 
   fetchProgress() {
     return axios.get(baseUrl + "progress", this.getToken());
   }
 
-  getAllProgress() {
-    return axios.get(baseUrl + "progress/all", this.getToken());
+  getAllProgress(params = {}) {
+    return axios.get(baseUrl + "progress/all", this.getAuthConfig({ params }));
   }
 
   fetchReviews(params = {}) {

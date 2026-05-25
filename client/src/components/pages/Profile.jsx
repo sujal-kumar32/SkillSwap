@@ -18,6 +18,7 @@ const Profile = () => {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("about");
   const [stats, setStats] = useState({ sessions: 0, reviews: 0, skills: 0 });
+  const [avgRating, setAvgRating] = useState(null);
   const [mentorSessions, setMentorSessions] = useState([]);
   const [learnerSessions, setLearnerSessions] = useState([]);
   const [journeyLoading, setJourneyLoading] = useState(false);
@@ -40,7 +41,17 @@ const Profile = () => {
           portfolio: u.socialLinks?.portfolio || "", youtube: u.socialLinks?.youtube || "",
           twitter: u.socialLinks?.twitter || "",
         });
-        if (sRes.data?.data) setStats(sRes.data.data);
+        if (sRes.data?.data) {
+          setStats(sRes.data.data);
+          if (isMentor && sRes.data.data.reviews > 0) {
+            const reviewRes = await Apiservices.fetchReviews({ limit: 100 }).catch(() => ({ data: { data: [] } }));
+            const mentorReviews = reviewRes.data.data || [];
+            if (mentorReviews.length) {
+              const avg = (mentorReviews.reduce((s, r) => s + r.rating, 0) / mentorReviews.length).toFixed(1);
+              setAvgRating(avg);
+            }
+          }
+        }
       } catch (e) {
         setError(e.response?.data?.message || "Failed to load profile");
       } finally {
@@ -123,6 +134,7 @@ const Profile = () => {
             {[
               { label: "Sessions", value: stats.sessions, icon: "fa-video", color: "primary" },
               { label: "Reviews", value: stats.reviews, icon: "fa-star", color: "warning" },
+              ...(isMentor && avgRating ? [{ label: "Avg Rating", value: avgRating, icon: "fa-star-half-stroke", color: "warning" }] : []),
               { label: "Skills", value: stats.skills, icon: "fa-code", color: "success" },
               { label: profile.skills.length ? "Profile Skills" : "Interests", value: profile.skills.length || profile.interests.split(",").filter(Boolean).length, icon: "fa-lightbulb", color: "info" },
             ].map((s) => (

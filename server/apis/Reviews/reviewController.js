@@ -1,5 +1,6 @@
 ﻿const Review = require("./reviewModel");
 const Request = require("../Request/requestModel");
+const User = require("../Users/userModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
 
@@ -9,7 +10,7 @@ const idsEqual = (left, right) => {
 
 exports.getReviews = asyncHandler(async (req, res) => {
 
-    const { search, sort } = req.query;
+    const { search, sort, rating } = req.query;
     const { page, limit, skip } = getPagination(req.query);
 
     let filter = {};
@@ -26,6 +27,10 @@ exports.getReviews = asyncHandler(async (req, res) => {
         { session: { $regex: search, $options: "i" } },
         { mentor: { $regex: search, $options: "i" } },
       ];
+    }
+
+    if (rating) {
+      filter.rating = Number(rating);
     }
 
     let sortObj = {};
@@ -52,6 +57,7 @@ exports.getReviews = asyncHandler(async (req, res) => {
         ...review,
         session: review.session || review.sessionId?.title,
         mentor: review.mentor || review.mentorId?.name,
+        learner: review.learner || review.learnerId?.name,
       })),
     });
 
@@ -60,6 +66,8 @@ exports.getReviews = asyncHandler(async (req, res) => {
 exports.createReview = asyncHandler(async (req, res) => {
 
     const { sessionId, rating, comment, session, mentor } = req.body;
+
+    const user = await User.findById(req.user.id).select("name").lean();
 
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({
@@ -100,6 +108,7 @@ exports.createReview = asyncHandler(async (req, res) => {
       learnerId: req.user.id,
       session: sessionName,
       mentor: mentorName,
+      learner: user?.name || "Learner",
       rating,
       comment,
     });
