@@ -56,6 +56,9 @@ const userSchema = new mongoose.Schema(
       youtube: String,
       twitter: String,
     },
+
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   { timestamps: true },
 );

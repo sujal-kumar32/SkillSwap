@@ -1,7 +1,10 @@
 ﻿const User = require("../Users/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const asyncHandler = require("../../utilities/asyncHandler");
+const { sendEmail } = require("../../utilities/emailService");
+const { welcomeEmail, passwordResetEmail } = require("../../utilities/emailTemplates");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -56,6 +59,12 @@ exports.register = asyncHandler(async (req, res) => {
       token,
       data: userData,
     });
+
+    sendEmail({
+      to: user.email,
+      subject: "Welcome to SkillSwap!",
+      html: welcomeEmail(user.name),
+    }).catch((err) => console.error("Welcome email failed:", err.message));
 
 });
 
@@ -144,6 +153,79 @@ exports.login = asyncHandler(async (req, res) => {
       message: "Login successful",
       token,
       data: { ...payload, name: user.name },
+    });
+
+});
+
+// FORGOT PASSWORD
+exports.forgotPassword = asyncHandler(async (req, res) => {
+
+    const { email } = req.body;
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.json({
+        success: true,
+        message: "If that email exists, a reset link has been sent.",
+      });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const hash = crypto.createHash("sha256").update(token).digest("hex");
+
+    user.resetPasswordToken = hash;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
+
+    const resetLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${token}`;
+
+    sendEmail({
+      to: user.email,
+      subject: "Password Reset - SkillSwap",
+      html: passwordResetEmail(user.name, resetLink),
+    }).catch((err) => console.error("Reset email failed:", err.message));
+
+    res.json({
+      success: true,
+      message: "If that email exists, a reset link has been sent.",
+    });
+
+});
+
+// RESET PASSWORD
+exports.resetPassword = asyncHandler(async (req, res) => {
+
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Token and new password are required.",
+      });
+    }
+
+    const hash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      resetPasswordToken: hash,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Token is invalid or has expired.",
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successful. You can now log in.",
     });
 
 });

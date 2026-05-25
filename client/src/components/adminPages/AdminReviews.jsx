@@ -84,10 +84,10 @@ const AdminReviews = () => {
                   style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
               </div>
               <div className="col-md-6 text-md-end">
-                <button className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === "All" ? "btn-primary" : "btn-outline-secondary"}`}
+                <button className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === "All" ? "btn-primary" : "btn-outline-secondary"}`}
                   style={{ fontSize: "0.8rem" }} onClick={() => handleFilter("All")}>All</button>
                 {ratings.map((r) => (
-                  <button key={r} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === String(r) ? "btn-primary" : "btn-outline-secondary"}`}
+                  <button key={r} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === String(r) ? "btn-primary" : "btn-outline-secondary"}`}
                     style={{ fontSize: "0.8rem" }} onClick={() => handleFilter(String(r))}>{r}★</button>
                 ))}
               </div>

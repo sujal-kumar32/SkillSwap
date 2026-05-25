@@ -161,11 +161,11 @@ const ExploreSessions = () => {
               </div>
             ))}
           </div>
-          <div className="d-flex justify-content-center mt-4">
-            <div className="btn-group">
-              <button className="btn btn-outline-primary" disabled={page === 1} onClick={() => setPage((prev) => prev - 1)}>Prev</button>
-              <button className="btn btn-primary">Page {page} / {pages}</button>
-              <button className="btn btn-outline-primary" disabled={page === pages} onClick={() => setPage((prev) => prev + 1)}>Next</button>
+          <div className="d-flex justify-content-center mt-5">
+            <div className="d-flex gap-3">
+              <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((prev) => prev - 1)}><i className="fa fa-chevron-left me-2" />Prev</button>
+              <button className="btn btn-primary rounded-pill px-4 py-2 fw-semibold">Page {page} / {pages}</button>
+              <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === pages} onClick={() => setPage((prev) => prev + 1)}>Next<i className="fa fa-chevron-right ms-2" /></button>
             </div>
           </div>
         </>

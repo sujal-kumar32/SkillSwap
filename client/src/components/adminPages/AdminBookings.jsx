@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 
 const PAGE_SIZE = 10;
 
@@ -102,26 +103,18 @@ const AdminBookings = () => {
         <div className="admin-card">
           <div className="p-4">
             <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
-              <div className="d-flex gap-2 flex-wrap">
+              <div className="d-flex gap-3 flex-wrap">
                 {["All", ...Object.keys(statusLabels)].map((s) => (
-                  <button key={s} className={`btn btn-sm rounded-pill fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                  <button key={s} className={`btn btn-sm rounded-pill fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
                     style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
                     {s === "All" ? "All" : statusLabels[s]}
                   </button>
                 ))}
               </div>
-              {totalPages > 1 && (
-                <div className="d-flex align-items-center gap-2">
-                  <small className="text-muted">{filtered.length} bookings</small>
-                  <div className="btn-group">
-                    <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
-                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => (
-                      <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
-                    ))}
-                    <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
-                  </div>
-                </div>
-              )}
+              <div className="d-flex align-items-center gap-3 flex-wrap">
+                <small className="text-muted">{filtered.length} bookings</small>
+                <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
             </div>
 
             <div className="row g-3">

@@ -536,19 +536,19 @@ function Home() {
                   <h5 className="mb-3">Priya Sharma</h5>
                   <p className="mb-2">React & Full-Stack Development</p>
                   <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-twitter" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-facebook-f" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-linkedin-in" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-instagram" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-youtube" />
                     </a>
                   </div>
@@ -560,19 +560,19 @@ function Home() {
                   <h5 className="mb-3">Arjun Kapoor</h5>
                   <p className="mb-2">Guitar & Music Production</p>
                   <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-twitter" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-facebook-f" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-linkedin-in" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-instagram" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-youtube" />
                     </a>
                   </div>
@@ -584,19 +584,19 @@ function Home() {
                   <h5 className="mb-3">Neha Patel</h5>
                   <p className="mb-2">UI/UX Design & Branding</p>
                   <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-twitter" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-facebook-f" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-linkedin-in" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-instagram" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-youtube" />
                     </a>
                   </div>
@@ -608,19 +608,19 @@ function Home() {
                   <h5 className="mb-3">Rahul Verma</h5>
                   <p className="mb-2">Public Speaking & Communication</p>
                   <div className="d-flex justify-content-center">
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-twitter" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-facebook-f" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-linkedin-in" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-instagram" />
                     </a>
-                    <a className="mx-1 p-1" href="#">
+                    <a className="mx-2 p-2" href="#">
                       <i className="fab fa-youtube" />
                     </a>
                   </div>

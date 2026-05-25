@@ -197,13 +197,14 @@ const AIRecommendations = () => {
             </p>
             {profile.interests.trim() && (
               <button
-                className="btn rounded-pill w-100 fw-semibold mb-3 border-0 d-flex align-items-center justify-content-center gap-2"
+                className="btn rounded-pill w-100 fw-semibold mb-4 border-0 d-flex align-items-center justify-content-center gap-3"
                 onClick={getInsights}
                 disabled={insightLoading}
                 style={{
                   background: "linear-gradient(135deg, #0d6efd, #6610f2)",
                   color: "white",
-                  padding: "12px 24px",
+                  padding: "14px 28px",
+                  fontSize: "0.95rem",
                   opacity: insightLoading ? 0.7 : 1,
                   transition: "all 0.3s",
                   boxShadow: insightLoading ? "none" : "0 4px 14px rgba(102,16,242,0.3)",

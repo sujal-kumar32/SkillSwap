@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../../utils/toastUtils";
 import illustration from "../../assets/images/image.png";
 import Apiservices from "../../../Apiservices";
@@ -312,125 +312,76 @@ padding: 0;
             <div className="col-lg-5 px-lg-4">
               <div className="glass-card">
                 <div className="text-center mb-4">
-                  <h3
-                    className="fw-bold mb-1"
-                    style={{ color: "#333", fontSize: "1.8rem" }}
-                  >
+                  <h3 className="fw-bold mb-1" style={{ color: "#333", fontSize: "1.8rem" }}>
                     {isSignup ? "Create Account" : "Welcome back"}
                   </h3>
                   <p className="text-muted small" style={{ fontSize: "1rem" }}>
-                    {isSignup
-                      ? "Sign up to get started"
-                      : "Sign in to continue"}
+                    {isSignup ? "Sign up to get started" : "Sign in to continue"}
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                  {/* Signup only */}
                   {isSignup && (
                     <div className="mb-3">
-                      <label className="form-label small fw-semibold text-muted">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Full name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                      />
+                      <label className="form-label small fw-semibold text-muted">Full Name</label>
+                      <input type="text" className="form-control" placeholder="Full name" value={name}
+                        onChange={(e) => setName(e.target.value)} />
                     </div>
                   )}
 
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      placeholder="example@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
+                    <label className="form-label small fw-semibold text-muted">Email</label>
+                    <input type="email" className="form-control" placeholder="example@email.com" value={email}
+                      onChange={(e) => setEmail(e.target.value)} />
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label small fw-semibold text-muted">
-                      Password
-                    </label>
+                    <label className="form-label small fw-semibold text-muted">Password</label>
                     <div style={{ position: "relative" }}>
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        className="form-control"
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        style={{ paddingRight: "40px" }}
-                      />
-                      <span
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}
-                      >
+                      <input type={showPassword ? "text" : "password"} className="form-control"
+                        placeholder="Enter password" value={password}
+                        onChange={(e) => setPassword(e.target.value)} style={{ paddingRight: "40px" }} />
+                      <span onClick={() => setShowPassword(!showPassword)}
+                        style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}>
                         <i className={`fa${showPassword ? "s fa-eye-slash" : "r fa-eye"}`} />
                       </span>
                     </div>
                   </div>
 
-                  {/* Signup only */}
+                  {!isSignup && (
+                    <div className="text-end mb-3">
+                      <Link to="/forgot-password" className="small" style={{ color: "#4285F4", fontWeight: 500, textDecoration: "none" }}>
+                        Forgot Password?
+                      </Link>
+                    </div>
+                  )}
+
                   {isSignup && (
                     <div className="mb-3">
-                      <label className="form-label small fw-semibold text-muted">
-                        Confirm Password
-                      </label>
+                      <label className="form-label small fw-semibold text-muted">Confirm Password</label>
                       <div style={{ position: "relative" }}>
-                        <input
-                          type={showConfirm ? "text" : "password"}
-                          className="form-control"
-                          placeholder="••••••••"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          style={{ paddingRight: "40px" }}
-                        />
-                        <span
-                          onClick={() => setShowConfirm(!showConfirm)}
-                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}
-                        >
+                        <input type={showConfirm ? "text" : "password"} className="form-control"
+                          placeholder="Confirm password" value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)} style={{ paddingRight: "40px" }} />
+                        <span onClick={() => setShowConfirm(!showConfirm)}
+                          style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", cursor: "pointer", color: "#6c757d", zIndex: 5 }}>
                           <i className={`fa${showConfirm ? "s fa-eye-slash" : "r fa-eye"}`} />
                         </span>
                       </div>
                     </div>
                   )}
 
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-primary-custom text-white"
-                    disabled={loading}
-                  >
-                    {loading
-                      ? "Please wait..."
-                      : isSignup
-                        ? "Sign Up"
-                        : "Sign In"}
+                  <button type="submit" className="btn btn-primary btn-primary-custom text-white" disabled={loading}>
+                    {loading ? "Please wait..." : isSignup ? "Sign Up" : "Sign In"}
                   </button>
 
                   <div className="text-center mt-4">
                     <p className="small text-muted">
-                      {isSignup
-                        ? "Already have an account?"
-                        : "Don't have an account?"}{" "}
-                      <span
-                        style={{
-                          cursor: "pointer",
-                          color: "#4285F4",
-                          fontWeight: "600",
-                          textDecoration: "none",
-                          transition: "all 0.3s ease",
-                        }}
+                      {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+                      <span style={{ cursor: "pointer", color: "#4285F4", fontWeight: "600", textDecoration: "none", transition: "all 0.3s ease" }}
                         onMouseEnter={(e) => (e.target.style.color = "#3367D6")}
                         onMouseLeave={(e) => (e.target.style.color = "#4285F4")}
-                        onClick={() => setIsSignup(!isSignup)}
-                      >
+                        onClick={() => setIsSignup(!isSignup)}>
                         {isSignup ? "Login" : "Sign up"}
                       </span>
                     </p>

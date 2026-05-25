@@ -47,30 +47,48 @@ const auth = {
       "string.empty": "New password is required",
     }),
   }),
+
+  forgotPassword: Joi.object({
+    email: Joi.string().trim().email().required().messages({
+      "string.email": "Please provide a valid email",
+      "string.empty": "Email is required",
+    }),
+  }),
+
+  resetPassword: Joi.object({
+    token: Joi.string().required().messages({
+      "string.empty": "Reset token is required",
+    }),
+    password: Joi.string().min(6).max(128).required().messages({
+      "string.min": "Password must be at least 6 characters",
+      "string.max": "Password cannot exceed 128 characters",
+      "string.empty": "Password is required",
+    }),
+  }),
 };
 
 const profile = {
   update: Joi.object({
-    name: Joi.string().trim().min(2).max(50),
+    name: Joi.string().trim().min(2).max(100),
     email: Joi.string().trim().email(),
-    bio: Joi.string().trim().max(500).allow(""),
+    bio: Joi.string().trim().max(5000).allow(""),
     interests: Joi.alternatives().try(Joi.array().items(Joi.string()), Joi.string()),
-    goals: Joi.string().trim().max(500).allow(""),
-    learningGoals: Joi.string().trim().max(500).allow(""),
+    goals: Joi.string().trim().max(2000).allow(""),
+    learningGoals: Joi.string().trim().max(2000).allow(""),
     phone: Joi.string().allow(""),
     timezone: Joi.string().allow(""),
-    skills: Joi.array().items(Joi.object({ name: Joi.string(), level: Joi.string() })).allow(),
+    skills: Joi.any(),
     coverImage: Joi.string().allow(""),
-    linkedin: Joi.string().uri().allow(""),
-    github: Joi.string().uri().allow(""),
-    portfolio: Joi.string().uri().allow(""),
-    youtube: Joi.string().uri().allow(""),
-    twitter: Joi.string().uri().allow(""),
+    linkedin: Joi.string().allow(""),
+    github: Joi.string().allow(""),
+    portfolio: Joi.string().allow(""),
+    youtube: Joi.string().allow(""),
+    twitter: Joi.string().allow(""),
     image: Joi.string().allow(""),
     profileImage: Joi.string().allow(""),
     profilePublicId: Joi.string().allow(""),
-    oldPassword: Joi.string(),
-    newPassword: Joi.string().min(6).max(128),
+    oldPassword: Joi.string().allow(""),
+    newPassword: Joi.string().allow("").min(6).max(128),
   }).min(1),
 };
 

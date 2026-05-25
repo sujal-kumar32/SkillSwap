@@ -4,6 +4,7 @@ import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 
 const SkillApproval = () => {
   const [skills, setSkills] = useState([]);
@@ -154,7 +155,7 @@ const SkillApproval = () => {
               </div>
               <div className="col-md-6 text-md-end">
                 {["All", "approved", "pending", "rejected", "deleted"].map((s) => (
-                  <button key={s} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                  <button key={s} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
                     style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
                     {s.charAt(0).toUpperCase() + s.slice(1)}
                   </button>
@@ -189,18 +190,18 @@ const SkillApproval = () => {
                         <td className="text-end">
                           {skill.status === "pending" && (
                             <>
-                              <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-success rounded-pill me-1 fw-semibold"
+                              <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-success rounded-pill me-2 fw-semibold px-3 py-2"
                                 style={{ fontSize: "0.8rem" }} onClick={() => handleApprove(skill._id)}>
                                 <i className="fa fa-check me-1" />Approve
                               </LoadingButton>
-                              <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
+                              <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-outline-danger rounded-pill me-2 fw-semibold px-3 py-2"
                                 style={{ fontSize: "0.8rem" }} onClick={() => handleReject(skill._id)}>
                                 <i className="fa fa-times me-1" />Reject
                               </LoadingButton>
                             </>
                           )}
                           {!skill.isDeleted && (
-                            <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-outline-dark rounded-pill ms-1 fw-semibold"
+                            <LoadingButton loading={actionLoading === skill._id} className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
                               style={{ fontSize: "0.8rem" }} onClick={() => handleDelete(skill._id)}>
                               <i className="fa fa-trash me-1" />Delete
                             </LoadingButton>
@@ -219,18 +220,7 @@ const SkillApproval = () => {
           </div>
         </div>
       )}
-      {totalPages > 1 && (
-        <div className="d-flex justify-content-center mt-4">
-          <div className="btn-group">
-            <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
-            {Array.from({ length: Math.min(totalPages, 10) }, (_, i) => (
-              <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
-            ))}
-            {totalPages > 10 && <button className="btn btn-sm btn-outline-primary" disabled>...</button>}
-            <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
-          </div>
-        </div>
-      )}
+      <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </div>
   );
 };

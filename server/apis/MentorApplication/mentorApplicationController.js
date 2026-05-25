@@ -3,6 +3,8 @@ const User = require("../Users/userModel");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
+const { sendEmail } = require("../../utilities/emailService");
+const { mentorApplicationApproved, mentorApplicationRejected } = require("../../utilities/emailTemplates");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -64,6 +66,12 @@ exports.applyForMentor = asyncHandler(async (req, res) => {
       token,
       data: { id: user._id, roles: user.roles, status: "approved" },
     });
+
+    sendEmail({
+      to: user.email,
+      subject: "Welcome to SkillSwap Mentors!",
+      html: mentorApplicationApproved(user.name),
+    }).catch((err) => console.error("Mentor approval email failed:", err.message));
 
 });
 
@@ -142,6 +150,12 @@ exports.approveApplication = asyncHandler(async (req, res) => {
       data: { status: "approved" },
     });
 
+    sendEmail({
+      to: user.email,
+      subject: "Mentor Application Approved!",
+      html: mentorApplicationApproved(user.name),
+    }).catch((err) => console.error("Approval email failed:", err.message));
+
 });
 
 exports.rejectApplication = asyncHandler(async (req, res) => {
@@ -169,6 +183,15 @@ exports.rejectApplication = asyncHandler(async (req, res) => {
       message: "Mentor application rejected",
       data: { status: "rejected" },
     });
+
+    User.findById(application.userId).select("name email").then((user) => {
+      if (!user?.email) return;
+      sendEmail({
+        to: user.email,
+        subject: "Mentor Application Update",
+        html: mentorApplicationRejected(user.name, application.adminRemarks),
+      });
+    }).catch((err) => console.error("Rejection email failed:", err.message));
 
 });
 

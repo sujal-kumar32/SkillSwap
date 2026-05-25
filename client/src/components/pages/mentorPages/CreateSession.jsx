@@ -250,17 +250,17 @@ const CreateSession = () => {
                   <form onSubmit={handleSubmit}>
                     <div className="row g-4">
                       <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between mb-2">
+                        <div className="d-flex align-items-center justify-content-between mb-3">
                           <label className="form-label fw-bold mb-0">Session Title</label>
                           <button
                             type="button"
-                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
                             onClick={generateAITitle}
                             disabled={aiLoading.title}
                             style={{
                               background: "linear-gradient(135deg, #0d6efd, #6610f2)",
                               color: "white",
-                              padding: "8px 18px",
+                              padding: "10px 24px",
                               fontSize: "0.85rem",
                               opacity: aiLoading.title ? 0.7 : 1,
                               transition: "all 0.3s",
@@ -324,17 +324,17 @@ const CreateSession = () => {
                       </div>
 
                       <div className="col-12">
-                        <div className="d-flex align-items-center justify-content-between mb-2">
+                        <div className="d-flex align-items-center justify-content-between mb-3">
                           <label className="form-label fw-bold mb-0">Session Description</label>
                           <button
                             type="button"
-                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
                             onClick={generateAIDescription}
                             disabled={aiLoading.description}
                             style={{
                               background: "linear-gradient(135deg, #0d6efd, #6610f2)",
                               color: "white",
-                              padding: "8px 18px",
+                              padding: "10px 24px",
                               fontSize: "0.85rem",
                               opacity: aiLoading.description ? 0.7 : 1,
                               transition: "all 0.3s",
@@ -569,148 +569,103 @@ const CreateSession = () => {
               </div>
             </div>
 
-            <div className="col-lg-4">
-              <div className="ai-card mb-4">
-                <span className="badge bg-light text-primary px-3 py-2 rounded-pill mb-3">
-                  AI Powered
-                </span>
-                <h3 className="fw-bold mb-3">Smart Session Generator</h3>
-                <p className="text-light opacity-75 mb-4">
-                  Generate better titles, descriptions, and session ideas using
-                  SkillSwap AI.
+            <div className="col-lg-4 d-flex flex-column gap-4">
+              <div className="ai-card">
+                <div className="d-flex align-items-center gap-3 mb-4">
+                  <span className="ai-badge">
+                    <i className="fa fa-microchip me-2" />AI Powered
+                  </span>
+                </div>
+
+                <h3 className="fw-bold mb-3" style={{ fontSize: "1.4rem" }}>Smart Session Generator</h3>
+                <p className="opacity-60 mb-4" style={{ fontSize: "0.9rem", lineHeight: 1.7 }}>
+                  Generate better titles, descriptions, and session ideas using SkillSwap AI.
                 </p>
-                <div className="d-flex flex-column gap-2">
+
+                <div className="d-flex flex-column gap-3">
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
                     onClick={generateAITitle}
                     disabled={aiLoading.title}
-                    style={{
-                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                      color: "white",
-                      padding: "10px 20px",
-                      opacity: aiLoading.title ? 0.7 : 1,
-                      transition: "all 0.3s",
-                      boxShadow: aiLoading.title ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                    }}
+                    style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "white", padding: "14px 24px", opacity: aiLoading.title ? 0.7 : 1 }}
                   >
-                    {aiLoading.title ? (
-                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
-                    ) : (
-                      <><i className="fa fa-heading" /> <span>Generate Title</span></>
-                    )}
+                    {aiLoading.title ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-heading" />}
+                    {aiLoading.title ? "Generating..." : "Generate Title"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
                     onClick={generateAIDescription}
                     disabled={aiLoading.description}
-                    style={{
-                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                      color: "white",
-                      padding: "10px 20px",
-                      opacity: aiLoading.description ? 0.7 : 1,
-                      transition: "all 0.3s",
-                      boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                    }}
+                    style={{ background: "linear-gradient(135deg, #7c3aed, #db2777)", color: "white", padding: "14px 24px", opacity: aiLoading.description ? 0.7 : 1 }}
                   >
-                    {aiLoading.description ? (
-                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
-                    ) : (
-                      <><i className="fa fa-file-lines" /> <span>Generate Description</span></>
-                    )}
+                    {aiLoading.description ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-file-lines" />}
+                    {aiLoading.description ? "Generating..." : "Generate Description"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
                     onClick={generateAIOutcomes}
                     disabled={aiLoading.outcomes}
-                    style={{
-                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                      color: "white",
-                      padding: "10px 20px",
-                      opacity: aiLoading.outcomes ? 0.7 : 1,
-                      transition: "all 0.3s",
-                      boxShadow: aiLoading.outcomes ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                    }}
+                    style={{ background: "linear-gradient(135deg, #059669, #10b981)", color: "white", padding: "14px 24px", opacity: aiLoading.outcomes ? 0.7 : 1 }}
                   >
-                    {aiLoading.outcomes ? (
-                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
-                    ) : (
-                      <><i className="fa fa-bullseye" /> <span>Generate Outcomes</span></>
-                    )}
+                    {aiLoading.outcomes ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-bullseye" />}
+                    {aiLoading.outcomes ? "Generating..." : "Generate Outcomes"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
                     onClick={generateAITags}
                     disabled={aiLoading.tags}
-                    style={{
-                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                      color: "white",
-                      padding: "10px 20px",
-                      opacity: aiLoading.tags ? 0.7 : 1,
-                      transition: "all 0.3s",
-                      boxShadow: aiLoading.tags ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                    }}
+                    style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)", color: "white", padding: "14px 24px", opacity: aiLoading.tags ? 0.7 : 1 }}
                   >
-                    {aiLoading.tags ? (
-                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
-                    ) : (
-                      <><i className="fa fa-tags" /> <span>Suggest Tags</span></>
-                    )}
+                    {aiLoading.tags ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-tags" />}
+                    {aiLoading.tags ? "Generating..." : "Suggest Tags"}
                   </button>
                   <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-2"
+                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center gap-3 ai-btn"
                     onClick={getMentorFeedback}
                     disabled={aiLoading.mentor}
-                    style={{
-                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                      color: "white",
-                      padding: "10px 20px",
-                      opacity: aiLoading.mentor ? 0.7 : 1,
-                      transition: "all 0.3s",
-                      boxShadow: aiLoading.mentor ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                    }}
+                    style={{ background: "linear-gradient(135deg, #dc2626, #f43f5e)", color: "white", padding: "14px 24px", opacity: aiLoading.mentor ? 0.7 : 1 }}
                   >
-                    {aiLoading.mentor ? (
-                      <><span className="spinner-border spinner-border-sm" role="status" /> <span>Analyzing...</span></>
-                    ) : (
-                      <><i className="fa fa-wand-magic-sparkles" /> <span>Improve Content</span></>
-                    )}
+                    {aiLoading.mentor ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-wand-magic-sparkles" />}
+                    {aiLoading.mentor ? "Analyzing..." : "Improve Content"}
                   </button>
                 </div>
               </div>
 
               <div className="tips-card">
-                <h4 className="fw-bold mb-4">Mentor Tips</h4>
-                <div className="tip-row">
-                  <div className="tip-icon bg-primary">
-                    <i className="fa fa-lightbulb"></i>
+                <div className="d-flex align-items-center gap-3 mb-4">
+                  <div className="tip-header-icon">
+                    <i className="fa fa-lightbulb" />
                   </div>
                   <div>
-                    <h6 className="fw-bold">Clear Descriptions</h6>
-                    <small className="text-muted">
-                      Mention outcomes and learning goals.
-                    </small>
+                    <h5 className="fw-bold mb-1">Mentor Tips</h5>
+                    <small className="text-muted">Best practices for great sessions</small>
                   </div>
                 </div>
                 <div className="tip-row">
-                  <div className="tip-icon bg-success">
-                    <i className="fa fa-users"></i>
+                  <div className="tip-icon" style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)" }}>
+                    <i className="fa fa-pen-fancy" />
                   </div>
                   <div>
-                    <h6 className="fw-bold">Interactive Sessions</h6>
-                    <small className="text-muted">
-                      Encourage learner participation.
-                    </small>
+                    <p className="fw-bold mb-1" style={{ fontSize: "0.9rem" }}>Clear Descriptions</p>
+                    <small className="text-muted">Mention outcomes, prerequisites, and what learners will gain.</small>
+                  </div>
+                </div>
+                <div className="tip-row">
+                  <div className="tip-icon" style={{ background: "linear-gradient(135deg, #059669, #10b981)" }}>
+                    <i className="fa fa-people-group" />
+                  </div>
+                  <div>
+                    <p className="fw-bold mb-1" style={{ fontSize: "0.9rem" }}>Interactive Sessions</p>
+                    <small className="text-muted">Encourage questions, demos, and hands-on practice.</small>
                   </div>
                 </div>
                 <div className="tip-row mb-0">
-                  <div className="tip-icon bg-warning">
-                    <i className="fa fa-clock"></i>
+                  <div className="tip-icon" style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)" }}>
+                    <i className="fa fa-clock" />
                   </div>
                   <div>
-                    <h6 className="fw-bold">Proper Scheduling</h6>
-                    <small className="text-muted">
-                      Pick suitable timing for learners.
-                    </small>
+                    <p className="fw-bold mb-1" style={{ fontSize: "0.9rem" }}>Proper Scheduling</p>
+                    <small className="text-muted">Choose timing that works for your target audience.</small>
                   </div>
                 </div>
               </div>
@@ -838,17 +793,75 @@ const CreateSession = () => {
             font-weight: 600;
           }
           .ai-card {
-            background: linear-gradient(135deg, #111827, #1e3a8a);
-            padding: 35px;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            padding: 40px;
             border-radius: 30px;
             color: white;
           }
+          .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 7px 18px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+          }
+          .ai-btn {
+            transition: all 0.25s ease !important;
+            font-size: 0.95rem;
+          }
+          .ai-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.35) !important;
+          }
+          .tip-header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+          }
           .tips-card {
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.92);
             backdrop-filter: blur(10px);
             border-radius: 30px;
             padding: 35px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+          }
+          .tip-row {
+            display: flex;
+            gap: 18px;
+            margin-bottom: 30px;
+          }
+          .tip-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 18px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+          .tip-header-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            flex-shrink: 0;
           }
           .tip-row {
             display: flex;

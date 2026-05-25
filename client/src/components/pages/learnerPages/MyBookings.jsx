@@ -105,16 +105,16 @@ const MyBookings = () => {
                     <td>{booking.paymentStatus}</td>
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">
-                      <div className="btn-group">
-                        <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-outline-primary btn-sm">Details</Link>
-                        <button className="btn btn-primary btn-sm" disabled={booking.requestStatus !== "accepted"}
+                      <div className="d-flex gap-3 justify-content-end">
+                        <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold">Details</Link>
+                        <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold" disabled={booking.requestStatus !== "accepted"}
                           onClick={() => {
                             const link = booking.sessionId?.meetLink;
                             if (link) window.open(link, "_blank");
                             else showToast.info("Meeting link not available");
                           }}>Join</button>
                         <button
-                          className="btn btn-outline-danger btn-sm"
+                          className="btn btn-sm btn-outline-danger rounded-pill px-3 py-2 fw-semibold"
                           disabled={!["pending", "accepted"].includes(booking.requestStatus)}
                           onClick={async () => {
                             const confirmed = await deleteConfirmAlert("this booking");
@@ -145,14 +145,14 @@ const MyBookings = () => {
             </table>
           </div>
           {totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center px-3 py-3 border-top">
+            <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
               <small className="text-muted">Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} of {filtered.length}</small>
-              <div className="btn-group">
-                <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
+              <div className="d-flex gap-3">
+                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}><i className="fa fa-chevron-left me-2" />Prev</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button key={p} className={`btn btn-sm ${p === page ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(p)}>{p}</button>
+                  <button key={p} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${p === page ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(p)}>{p}</button>
                 ))}
-                <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next<i className="fa fa-chevron-right ms-2" /></button>
               </div>
             </div>
           )}

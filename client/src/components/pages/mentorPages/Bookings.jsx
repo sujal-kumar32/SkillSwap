@@ -206,10 +206,10 @@ const Bookings = () => {
 
                     {/* BUTTONS - only for pending requests */}
                     {status === "pending" && (
-                      <div className="d-flex gap-2">
+                      <div className="d-flex gap-3 mt-3">
                         <LoadingButton
                           loading={updatingId === booking._id}
-                          className="btn btn-success flex-fill rounded-pill"
+                          className="btn btn-success flex-fill rounded-pill py-2"
                           onClick={() => handleStatus(booking._id, "accepted")}
                         >
                           <i className="fa fa-check me-2"></i>
@@ -218,7 +218,7 @@ const Bookings = () => {
 
                         <LoadingButton
                           loading={updatingId === booking._id}
-                          className="btn btn-outline-danger rounded-pill flex-fill"
+                          className="btn btn-outline-danger rounded-pill flex-fill py-2"
                           onClick={async () => {
                             const confirmed = await confirmAlert("Reject this booking request?");
                             if (confirmed) handleStatus(booking._id, "rejected");

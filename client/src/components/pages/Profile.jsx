@@ -71,7 +71,7 @@ const Profile = () => {
       setSaving(true);
       const data = new FormData();
       Object.entries(editForm).forEach(([k, v]) => {
-        if (k === "skills" || k === "oldPassword" || k === "newPassword") return;
+        if (k === "skills" || k === "oldPassword" || k === "newPassword" || k === "image" || k === "coverImage") return;
         if (v) data.append(k, v);
       });
       data.append("skills", JSON.stringify(editForm.skills));
@@ -362,8 +362,10 @@ const Profile = () => {
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1050, width: "100%", maxWidth: 600, maxHeight: "90vh", overflowY: "auto" }}>
             <form onSubmit={saveProfile} className="learner-card p-4">
               <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="fw-bold mb-0">Edit Profile</h5>
-                <button type="button" className="btn-close" onClick={() => setEditModal(false)} />
+                <h5 className="fw-bold mb-0"><i className="fa fa-user-pen me-2" />Edit Profile</h5>
+                <button type="button" className="btn border-0" style={{ fontSize: "1.2rem", color: "#6c757d" }} onClick={() => setEditModal(false)}>
+                  <i className="fa fa-times" />
+                </button>
               </div>
 
               <div className="row g-3">
@@ -373,20 +375,20 @@ const Profile = () => {
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-semibold small">Email</label>
-                  <input className="form-control rounded-pill" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+                  <input className="form-control rounded-pill" type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
                 </div>
                 <div className="col-12">
                   <div className="d-flex justify-content-between align-items-center">
                     <label className="form-label fw-semibold small mb-0">Bio</label>
                     <button
                       type="button"
-                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
                       onClick={generateBio}
                       disabled={aiBioLoading}
                       style={{
                         background: "linear-gradient(135deg, #0d6efd, #6610f2)",
                         color: "white",
-                        padding: "6px 16px",
+                        padding: "8px 22px",
                         fontSize: "0.85rem",
                         opacity: aiBioLoading ? 0.7 : 1,
                         transition: "all 0.3s",
@@ -400,7 +402,7 @@ const Profile = () => {
                       )}
                     </button>
                   </div>
-                  <textarea className="form-control rounded-4 mt-1" rows="3" value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} />
+                  <textarea className="form-control rounded-4 mt-2" rows="3" value={editForm.bio} onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })} />
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-semibold small">Interests</label>
@@ -412,10 +414,10 @@ const Profile = () => {
                 </div>
                 <div className="col-12">
                   <label className="form-label fw-semibold small">Skills</label>
-                  <div className="d-flex gap-2 mb-2">
+                  <div className="d-flex gap-3 mb-3">
                     <input className="form-control rounded-pill" placeholder="Add a skill..." value={newSkill} onChange={(e) => setNewSkill(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }} />
-                    <button type="button" className="btn btn-outline-primary rounded-pill px-3" onClick={addSkill}>Add</button>
+                    <button type="button" className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={addSkill} style={{ padding: "10px 20px" }}>Add</button>
                   </div>
                   <div className="d-flex flex-wrap gap-2">
                     {editForm.skills.map((s, i) => (

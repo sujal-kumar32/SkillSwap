@@ -1,9 +1,12 @@
 ﻿const Request = require("./requestModel");
 const Session = require("../Session/sessionModel");
 const Payment = require("../Payment/paymentModel");
+const User = require("../Users/userModel");
 const razorpay = require("../../config/razorpay");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
+const { sendEmail } = require("../../utilities/emailService");
+const { bookingRequestMentorNotification, bookingStatusUpdateLearner } = require("../../utilities/emailTemplates");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -57,6 +60,19 @@ exports.createRequest = asyncHandler(async (req, res) => {
       message: "Session booked successfully",
       data: request,
     });
+
+    // Notify mentor
+    Promise.all([
+      User.findById(req.user.id).select("name"),
+      User.findById(session.mentorId).select("name email"),
+    ]).then(([learner, mentor]) => {
+      if (!mentor?.email) return;
+      sendEmail({
+        to: mentor.email,
+        subject: "New Booking Request",
+        html: bookingRequestMentorNotification(mentor.name, learner?.name || "A learner", session.title),
+      });
+    }).catch((err) => console.error("Booking notification failed:", err.message));
 
 });
 
@@ -333,6 +349,21 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       data: request,
       refund: refundInfo,
     });
+
+    // Notify learner on accepted/rejected/cancelled
+    if (["accepted", "rejected", "cancelled", "completed"].includes(status)) {
+      Promise.all([
+        Session.findById(request.sessionId).select("title"),
+        User.findById(request.learnerId).select("name email"),
+      ]).then(([session, learner]) => {
+        if (!learner?.email) return;
+        sendEmail({
+          to: learner.email,
+          subject: status === "accepted" ? "Booking Confirmed!" : `Booking ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+          html: bookingStatusUpdateLearner(learner.name, session?.title || "Session", status),
+        });
+      }).catch((err) => console.error("Status notification failed:", err.message));
+    }
 
 });
 

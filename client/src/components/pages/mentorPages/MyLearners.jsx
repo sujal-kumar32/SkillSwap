@@ -163,13 +163,13 @@ const Learners = () => {
                     </div>
 
                     {/* BUTTONS */}
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-primary rounded-pill flex-fill" disabled>
+                    <div className="d-flex gap-3 mt-3">
+                      <button className="btn btn-primary rounded-pill flex-fill py-2" disabled>
                         <i className="fa fa-user me-2"></i>
                         Profile
                       </button>
 
-                      <button className="btn btn-outline-dark rounded-pill flex-fill" disabled>
+                      <button className="btn btn-outline-dark rounded-pill flex-fill py-2" disabled>
                         <i className="fa fa-envelope me-2"></i>
                         Message
                       </button>

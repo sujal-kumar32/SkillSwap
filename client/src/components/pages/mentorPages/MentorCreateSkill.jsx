@@ -221,17 +221,17 @@ const MentorCreateSkill = () => {
                 </div>
 
                 <div className="col-12">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
                     <label className="form-label fw-bold mb-0">Description</label>
                     <button
                       type="button"
-                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
                       onClick={generateAIDescription}
                       disabled={aiLoading.description}
                       style={{
                         background: "linear-gradient(135deg, #0d6efd, #6610f2)",
                         color: "white",
-                        padding: "8px 18px",
+                        padding: "10px 24px",
                         fontSize: "0.85rem",
                         opacity: aiLoading.description ? 0.7 : 1,
                         transition: "all 0.3s",
@@ -250,19 +250,19 @@ const MentorCreateSkill = () => {
                 </div>
 
                 <div className="col-12">
-                  <div className="d-flex align-items-center justify-content-between mb-2">
+                  <div className="d-flex align-items-center justify-content-between mb-3">
                     <label className="form-label fw-bold mb-0">
                       Tags <small className="text-muted fw-normal">(comma-separated)</small>
                     </label>
                     <button
                       type="button"
-                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                      className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-3"
                       onClick={generateAITags}
                       disabled={aiLoading.tags}
                       style={{
                         background: "linear-gradient(135deg, #0d6efd, #6610f2)",
                         color: "white",
-                        padding: "8px 18px",
+                        padding: "10px 24px",
                         fontSize: "0.85rem",
                         opacity: aiLoading.tags ? 0.7 : 1,
                         transition: "all 0.3s",

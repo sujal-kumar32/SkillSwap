@@ -136,19 +136,19 @@ function Team() {
                     <h5 className="mb-3">{mentor.name}</h5>
                     <p className="mb-2">{mentor.skill}</p>
                     <div className="d-flex justify-content-center">
-                      <a className="mx-1 p-1" href="#">
+                      <a className="mx-2 p-2" href="#">
                         <i className="fab fa-twitter" />
                       </a>
-                      <a className="mx-1 p-1" href="#">
+                      <a className="mx-2 p-2" href="#">
                         <i className="fab fa-facebook-f" />
                       </a>
-                      <a className="mx-1 p-1" href="#">
+                      <a className="mx-2 p-2" href="#">
                         <i className="fab fa-linkedin-in" />
                       </a>
-                      <a className="mx-1 p-1" href="#">
+                      <a className="mx-2 p-2" href="#">
                         <i className="fab fa-instagram" />
                       </a>
-                      <a className="mx-1 p-1" href="#">
+                      <a className="mx-2 p-2" href="#">
                         <i className="fab fa-youtube" />
                       </a>
                     </div>

@@ -207,15 +207,15 @@ const MySessions = () => {
                     </div>
 
                     {/* BUTTONS */}
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-primary flex-fill rounded-pill" disabled>
+                    <div className="d-flex gap-3 mt-3">
+                      <button className="btn btn-primary flex-fill rounded-pill py-2" disabled>
                         <i className="fa fa-edit me-2"></i>
                         Edit
                       </button>
 
                       <LoadingButton
                         loading={deletingId === session._id}
-                        className="btn btn-outline-danger rounded-pill px-3"
+                        className="btn btn-outline-danger rounded-pill px-4 py-2"
                         onClick={() => handleDelete(session._id)}
                       >
                         <i className="fa fa-trash"></i>

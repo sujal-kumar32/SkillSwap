@@ -48,6 +48,8 @@ import Profile from "./components/pages/Profile";
 import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
 import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
+import ForgotPassword from "./components/pages/ForgotPassword";
+import ResetPassword from "./components/pages/ResetPassword";
 
 
 const isAdminLoggedIn = () =>
@@ -124,6 +126,8 @@ function App() {
             <Route path="/testimonial" element={<Testimonial />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
           </Route>
 
           <Route

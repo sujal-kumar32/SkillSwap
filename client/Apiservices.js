@@ -31,6 +31,14 @@ class Apiservices {
     return axios.post(baseUrl + "auth/login", data);
   }
 
+  forgotPassword(data) {
+    return axios.post(baseUrl + "auth/forgot-password", data);
+  }
+
+  resetPassword(data) {
+    return axios.post(baseUrl + "auth/reset-password", data);
+  }
+
   AddSkill(data) {
     return axios.post(baseUrl + "skills", data, this.getToken());
   }

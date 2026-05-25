@@ -180,15 +180,15 @@ const AdminCategories = () => {
                               style={{ fontSize: "0.75rem" }}>{cat.status}</span>
                           </td>
                           <td className="text-end py-3">
-                            <div className="d-flex gap-2 justify-content-end">
-                              <button className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3" onClick={() => startEdit(cat)}>
+                            <div className="d-flex gap-3 justify-content-end">
+                              <button className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3 py-2" onClick={() => startEdit(cat)}>
                                 <i className="fa fa-pen me-1" />Edit
                               </button>
-                              <button className={`btn btn-sm rounded-pill fw-semibold px-3 ${cat.status === "active" ? "btn-outline-warning" : "btn-outline-success"}`}
+                              <button className={`btn btn-sm rounded-pill fw-semibold px-3 py-2 ${cat.status === "active" ? "btn-outline-warning" : "btn-outline-success"}`}
                                 onClick={() => toggleStatus(cat._id, cat.status)}>
                                 <i className={`fa ${cat.status === "active" ? "fa-pause" : "fa-play"} me-1`} />{cat.status === "active" ? "Deactivate" : "Activate"}
                               </button>
-                              <button className="btn btn-sm btn-outline-danger rounded-pill fw-semibold px-3" onClick={() => handleDelete(cat._id)}>
+                              <button className="btn btn-sm btn-outline-danger rounded-pill fw-semibold px-3 py-2" onClick={() => handleDelete(cat._id)}>
                                 <i className="fa fa-trash me-1" />Delete
                               </button>
                             </div>

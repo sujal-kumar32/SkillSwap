@@ -98,13 +98,13 @@ const ManageUsers = () => {
   );
 
   const Pagination = () => totalPages > 1 ? (
-    <div className="d-flex justify-content-center mt-4">
-      <div className="btn-group">
-        <button className="btn btn-outline-primary btn-sm" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</button>
+    <div className="d-flex justify-content-center mt-5">
+      <div className="d-flex gap-3">
+        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left me-2" />Prev</button>
         {Array.from({ length: totalPages }, (_, i) => (
-          <button key={i + 1} className={`btn btn-sm ${page === i + 1 ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+          <button key={i + 1} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${page === i + 1 ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
         ))}
-        <button className="btn btn-outline-primary btn-sm" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next</button>
+        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next<i className="fa fa-chevron-right ms-2" /></button>
       </div>
     </div>
   ) : null;
@@ -141,7 +141,7 @@ const ManageUsers = () => {
             </div>
             <div className="col-md-6 text-md-end">
               {["All", "active", "blocked"].map((s) => (
-                <button key={s} className={`btn btn-sm rounded-pill mx-1 fw-semibold ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                <button key={s} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
                   style={{ fontSize: "0.8rem" }} onClick={() => { setFilter(s); setPage(1); }}>
                   {s.charAt(0).toUpperCase() + s.slice(1)}
                 </button>
