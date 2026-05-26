@@ -43,8 +43,18 @@ const authLimiter = rateLimit({
 const PORT = process.env.PORT || 3000;
 
 const adminSeeder = require("./config/seeder");
+const cron = require("node-cron");
+const { checkSessionReminders, autoCompleteSessions } = require("./jobs/sessionReminder");
 
 adminSeeder();
+
+cron.schedule("* * * * *", () => {
+  checkSessionReminders();
+});
+
+cron.schedule("*/5 * * * *", () => {
+  autoCompleteSessions();
+});
 
 app.get("/", (req, res) => {
   res.send("welcome back");

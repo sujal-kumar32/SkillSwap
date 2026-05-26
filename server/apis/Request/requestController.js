@@ -9,6 +9,7 @@ const { sendEmail } = require("../../utilities/emailService");
 const { bookingRequestMentorNotification, bookingStatusUpdateLearner } = require("../../utilities/emailTemplates");
 const CalendarToken = require("../Calendar/calendarTokenModel");
 const { createCalendarEvent, deleteCalendarEvent, refreshAccessToken } = require("../../utilities/calendarService");
+const { ensureMeetLink } = require("../../utilities/meetLinkHelper");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -138,6 +139,10 @@ exports.getMyBookings = asyncHandler(async (req, res) => {
       Request.countDocuments(filter),
     ]);
 
+    for (const r of requests) {
+      if (r.sessionId) await ensureMeetLink(r.sessionId);
+    }
+
     res.json({
       success: true,
       total,
@@ -164,6 +169,10 @@ exports.getMentorBookings = asyncHandler(async (req, res) => {
         .lean(),
       Request.countDocuments(filter),
     ]);
+
+    for (const r of requests) {
+      if (r.sessionId) await ensureMeetLink(r.sessionId);
+    }
 
     res.json({
       success: true,
@@ -266,7 +275,6 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
     const allowedTransitions = {
       pending: ["accepted", "rejected", "cancelled"],
       accepted: ["completed", "cancelled"],
-      rejected: [],
       completed: [],
       cancelled: [],
     };

@@ -229,6 +229,18 @@ const Bookings = () => {
                         </LoadingButton>
                       </div>
                     )}
+
+                    {status === "accepted" && booking.sessionId?.meetLink && (
+                      <div className="mt-3">
+                        <button
+                          className="btn btn-success rounded-pill w-100 py-2"
+                          onClick={() => window.open(booking.sessionId.meetLink, "_blank")}
+                        >
+                          <i className="fa fa-video" style={{ marginRight: 10 }}></i>
+                          Start Session
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

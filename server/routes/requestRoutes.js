@@ -15,7 +15,7 @@ const {
 } = require("../apis/Request/requestController");
 
 router.post("/", protect, validate(request.create), createRequest);
-router.post("/book", protect, createRequest);
+router.post("/book", protect, validate(request.create), createRequest);
 router.get("/mentor/bookings", protect, getMentorBookings);
 router.get("/mentor/learners", protect, getMentorLearners);
 router.get("/my-bookings", protect, getMyBookings);

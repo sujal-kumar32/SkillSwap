@@ -3,10 +3,12 @@
     "@google/genai": "^2.2.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.1",
+    "googleapis": "^172.0.0",
     "groq-sdk": "^1.2.0",
     "helmet": "^8.2.0",
     "joi": "^18.2.1",
@@ -14,13 +16,12 @@
     "mongodb": "^7.1.1",
     "mongoose": "^9.4.1",
     "multer": "^2.1.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^8.0.8",
     "razorpay": "^2.9.6",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
-    "cookie-parser": "^1.4.7",
-    "googleapis": "^172.0.0",
-    "nodemailer": "^8.0.8",
     "nodemon": "^3.1.14",
     "pdfkit": "^0.18.0"
   },

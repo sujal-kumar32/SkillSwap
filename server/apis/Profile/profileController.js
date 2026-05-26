@@ -122,7 +122,10 @@ exports.updateProfile = asyncHandler(async (req, res) => {
       user.learningGoals = goals || learningGoals || "";
     }
     if (skills !== undefined) {
-      const parsed = typeof skills === "string" ? JSON.parse(skills) : skills;
+      let parsed = skills;
+      if (typeof skills === "string") {
+        try { parsed = JSON.parse(skills); } catch { parsed = []; }
+      }
       user.skills = Array.isArray(parsed) ? parsed : [];
     }
     if (coverImage !== undefined) user.coverImage = coverImage;

@@ -176,4 +176,29 @@ function emailVerification(name, verifyLink) {
   `;
 }
 
-module.exports = { welcomeEmail, emailVerification, bookingRequestMentorNotification, bookingStatusUpdateLearner, mentorApplicationApproved, mentorApplicationRejected, certificateCompleted, passwordResetEmail };
+function sessionReminder(name, sessionTitle, date, time, mentorName, meetLink) {
+  const dateStr = date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "TBD";
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+      <h2 style="color: #2563eb;">Session Reminder</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>This is a reminder that your session <strong>"${sessionTitle}"</strong> is coming up!</p>
+      <div style="background: #f0f7ff; border-radius: 12px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 8px;"><strong>Session:</strong> ${sessionTitle}</p>
+        ${mentorName ? `<p style="margin: 0 0 8px;"><strong>Mentor:</strong> ${mentorName}</p>` : ""}
+        <p style="margin: 0 0 8px;"><strong>Date:</strong> ${dateStr}</p>
+        <p style="margin: 0;"><strong>Time:</strong> ${time || "TBD"}</p>
+      </div>
+      ${meetLink ? `<p style="margin-top: 16px;">
+        <a href="${meetLink}"
+           style="background:#059669;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;display:inline-block;">
+          Join Session
+        </a>
+      </p>` : ""}
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <small style="color: #9ca3af;">SkillSwap — Learn. Teach. Grow.</small>
+    </div>
+  `;
+}
+
+module.exports = { welcomeEmail, emailVerification, bookingRequestMentorNotification, bookingStatusUpdateLearner, mentorApplicationApproved, mentorApplicationRejected, certificateCompleted, passwordResetEmail, sessionReminder };

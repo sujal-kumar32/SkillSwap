@@ -1,10 +1,12 @@
-﻿const Session = require("./sessionModel");
+﻿const crypto = require("crypto");
+const Session = require("./sessionModel");
 const Skill = require("../Skills/skillModel");
 const Request = require("../Request/requestModel");
 const Review = require("../Reviews/reviewModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
+const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -73,6 +75,12 @@ exports.createSession = asyncHandler(async (req, res) => {
       thumbnailPublicId,
     });
 
+    if (session.sessionType === "online" && !session.meetLink) {
+      const suffix = crypto.randomBytes(4).toString("hex");
+      session.meetLink = `https://meet.jit.si/skillswap-${session._id}-${suffix}`;
+      await session.save();
+    }
+
     res.status(201).json({
       success: true,
       message: "Session created",
@@ -103,6 +111,8 @@ exports.getMySessions = asyncHandler(async (req, res) => {
       acc[item._id.toString()] = item.count;
       return acc;
     }, {});
+
+    await ensureMeetLinks(sessions);
 
     res.json({
       success: true,
@@ -167,6 +177,8 @@ exports.getSessions = asyncHandler(async (req, res) => {
     const ratingMap = {};
     ratings.forEach((r) => { ratingMap[r._id.toString()] = { avg: Math.round(r.avgRating * 10) / 10, count: r.count }; });
 
+    await ensureMeetLinks(sessions);
+
     const data = sessions.map((s) => ({
       ...s,
       rating: ratingMap[s._id.toString()]?.avg || null,
@@ -201,10 +213,15 @@ exports.getSession = asyncHandler(async (req, res) => {
       });
     }
 
+    const hasBooking = req.user?.id
+      ? await Request.exists({ sessionId: session._id, learnerId: req.user.id })
+      : false;
+
     const canView =
       session.status === "active" ||
       isAdmin(req) ||
-      idsEqual(session.mentorId?._id || session.mentorId, req.user?.id);
+      idsEqual(session.mentorId?._id || session.mentorId, req.user?.id) ||
+      hasBooking;
 
     if (!canView) {
       return res.status(404).json({
@@ -212,6 +229,8 @@ exports.getSession = asyncHandler(async (req, res) => {
         message: "Session not found",
       });
     }
+
+    await ensureMeetLink(session);
 
     res.json({
       success: true,
@@ -241,6 +260,24 @@ exports.updateSession = asyncHandler(async (req, res) => {
         message: "You can only update your own sessions",
       });
     }
+
+    const allowedTransitions = {
+      active: ["completed", "cancelled"],
+      completed: [],
+      cancelled: [],
+    };
+
+    if (req.body.status !== undefined && req.body.status !== session.status) {
+      const newStatus = req.body.status;
+      if (!isAdmin(req) && !allowedTransitions[session.status]?.includes(newStatus)) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot change status from "${session.status}" to "${newStatus}"`,
+        });
+      }
+    }
+
+    const oldStatus = session.status;
 
     const allowedFields = [
       "title",
@@ -275,6 +312,20 @@ exports.updateSession = asyncHandler(async (req, res) => {
     }
 
     await session.save();
+
+    if (session.status !== oldStatus) {
+      if (session.status === "cancelled") {
+        await Request.updateMany(
+          { sessionId: session._id, requestStatus: { $in: ["pending", "accepted"] } },
+          { requestStatus: "cancelled" },
+        );
+      } else if (session.status === "completed") {
+        await Request.updateMany(
+          { sessionId: session._id, requestStatus: "accepted" },
+          { requestStatus: "completed" },
+        );
+      }
+    }
 
     res.json({
       success: true,

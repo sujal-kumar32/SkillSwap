@@ -31,6 +31,11 @@ const requestSchema = new mongoose.Schema(
       enum: ["pending", "paid", "failed"],
       default: "pending",
     },
+
+    reminderSent: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );

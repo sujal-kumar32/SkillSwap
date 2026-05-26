@@ -130,7 +130,7 @@ function Login() {
         navigate("/workspace");
       }
     } catch (error) {
-      setLoading(false);
+      setSubmitting(false);
       showToast.error(error.message || "Login error");
     }
   };

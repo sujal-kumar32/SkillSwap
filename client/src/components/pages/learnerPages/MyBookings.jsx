@@ -4,6 +4,7 @@ import { showToast } from "../../../utils/toastUtils";
 import { deleteConfirmAlert } from "../../../utils/alertUtils";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard, StatusBadge } from "../../learner/LearnerUI";
+import { getSessionState } from "../../../utils/sessionTimeUtils";
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -12,6 +13,7 @@ const MyBookings = () => {
   const [filter, setFilter] = useState("all");
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -31,15 +33,24 @@ const MyBookings = () => {
     loadBookings();
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const bookingsWithState = useMemo(() => {
+    return bookings.map((b) => ({ ...b, _sessionState: getSessionState(b.sessionId) }));
+  }, [bookings, tick]);
+
   const filtered = useMemo(
     () =>
-      bookings.filter((booking) => {
+      bookingsWithState.filter((booking) => {
         const title = booking.sessionId?.title?.toLowerCase() || "";
         const matchQuery = title.includes(query.toLowerCase());
         const matchFilter = filter === "all" || booking.requestStatus === filter;
         return matchQuery && matchFilter;
       }),
-    [bookings, query, filter],
+    [bookingsWithState, query, filter],
   );
 
   const pageSize = 10;
@@ -55,8 +66,8 @@ const MyBookings = () => {
       <div className="row g-4 mb-4">
         <StatCard icon="fa-calendar-alt" label="All Bookings" value={bookings.length} />
         <StatCard icon="fa-clock" label="Pending" value={bookings.filter((b) => b.requestStatus === "pending").length} tone="warning" />
-        <StatCard icon="fa-video" label="Upcoming" value={bookings.filter((b) => b.requestStatus === "accepted").length} tone="success" />
-        <StatCard icon="fa-circle-check" label="Completed" value={bookings.filter((b) => b.requestStatus === "completed").length} tone="info" />
+        <StatCard icon="fa-video" label="Upcoming" value={bookings.filter((b) => b._sessionState === "upcoming" || b._sessionState === "live").length} tone="success" />
+        <StatCard icon="fa-circle-check" label="Completed" value={bookings.filter((b) => b._sessionState === "completed" || b.requestStatus === "completed" || b.requestStatus === "rejected" || b.requestStatus === "cancelled").length} tone="info" />
       </div>
 
       <div className="learner-card p-4 mb-4">
@@ -96,7 +107,15 @@ const MyBookings = () => {
                       <div className="d-flex align-items-center gap-3">
                         <img src={booking.sessionId?.thumbnail} alt="" className="rounded-3" width="72" height="54" style={{ objectFit: "cover" }} />
                         <div>
-                          <h6 className="fw-bold mb-1">{booking.sessionId?.title}</h6>
+                          <h6 className="fw-bold mb-1">
+                            {booking.sessionId?.title}
+                            {booking._sessionState === "live" && booking.requestStatus === "accepted" && (
+                              <span className="badge bg-danger ms-2" style={{ fontSize: "0.65rem" }}>🔴 Live</span>
+                            )}
+                            {booking._sessionState === "upcoming" && booking.requestStatus === "accepted" && (
+                              <span className="badge bg-success ms-2" style={{ fontSize: "0.65rem" }}>Upcoming</span>
+                            )}
+                          </h6>
                           <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>
                         </div>
                       </div>
@@ -107,12 +126,16 @@ const MyBookings = () => {
                     <td className="text-end">
                       <div className="d-flex gap-3 justify-content-end">
                         <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold">Details</Link>
-                        <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold" disabled={booking.requestStatus !== "accepted"}
-                          onClick={() => {
-                            const link = booking.sessionId?.meetLink;
-                            if (link) window.open(link, "_blank");
-                            else showToast.info("Meeting link not available");
-                          }}>Join</button>
+                        {(booking._sessionState === "live" || booking._sessionState === "upcoming") && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
+                          <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"
+                            onClick={() => {
+                              const link = booking.sessionId?.meetLink;
+                              if (link) window.open(link, "_blank");
+                              else showToast.info("Meeting link not available");
+                            }}>{booking._sessionState === "live" ? "Join" : "Join Early"}</button>
+                        ) : (
+                          <button className="btn btn-sm btn-secondary rounded-pill px-3 py-2 fw-semibold" disabled>Join</button>
+                        )}
                         <button
                           className="btn btn-sm btn-outline-danger rounded-pill px-3 py-2 fw-semibold"
                           disabled={!["pending", "accepted"].includes(booking.requestStatus)}
