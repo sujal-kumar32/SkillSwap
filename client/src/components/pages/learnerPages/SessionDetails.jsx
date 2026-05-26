@@ -106,7 +106,7 @@ const SessionDetails = () => {
                 <div className="border-top py-3" key={review._id}>
                   <div className="text-warning mb-1">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
                   <p className="mb-1">{review.comment}</p>
-                  <small className="text-muted">{review.mentor}</small>
+                  <small className="text-muted">{review.learner || review.learnerId?.name || "Anonymous"}</small>
                 </div>
               )) : (
                 <p className="text-muted mb-0">No reviews for this session yet.</p>

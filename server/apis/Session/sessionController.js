@@ -102,15 +102,24 @@ exports.getMySessions = asyncHandler(async (req, res) => {
       .lean();
 
     const sessionIds = sessions.map((session) => session._id);
-    const bookingCounts = await Request.aggregate([
-      { $match: { sessionId: { $in: sessionIds } } },
-      { $group: { _id: "$sessionId", count: { $sum: 1 } } },
+    const [bookingCounts, ratings] = await Promise.all([
+      Request.aggregate([
+        { $match: { sessionId: { $in: sessionIds } } },
+        { $group: { _id: "$sessionId", count: { $sum: 1 } } },
+      ]),
+      Review.aggregate([
+        { $match: { sessionId: { $in: sessionIds } } },
+        { $group: { _id: "$sessionId", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+      ]),
     ]);
 
     const countMap = bookingCounts.reduce((acc, item) => {
       acc[item._id.toString()] = item.count;
       return acc;
     }, {});
+
+    const ratingMap = {};
+    ratings.forEach((r) => { ratingMap[r._id.toString()] = { avg: Math.round(r.avgRating * 10) / 10, count: r.count }; });
 
     await ensureMeetLinks(sessions);
 
@@ -120,6 +129,8 @@ exports.getMySessions = asyncHandler(async (req, res) => {
       data: sessions.map((session) => ({
         ...session,
         bookings: countMap[session._id.toString()] || 0,
+        rating: ratingMap[session._id.toString()]?.avg || null,
+        reviewCount: ratingMap[session._id.toString()]?.count || 0,
       })),
     });
 
@@ -213,6 +224,11 @@ exports.getSession = asyncHandler(async (req, res) => {
       });
     }
 
+    const [ratingResult] = await Review.aggregate([
+      { $match: { sessionId: session._id } },
+      { $group: { _id: null, avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]);
+
     const hasBooking = req.user?.id
       ? await Request.exists({ sessionId: session._id, learnerId: req.user.id })
       : false;
@@ -234,7 +250,11 @@ exports.getSession = asyncHandler(async (req, res) => {
 
     res.json({
       success: true,
-      data: session,
+      data: {
+        ...session,
+        rating: ratingResult?.avgRating ? Math.round(ratingResult.avgRating * 10) / 10 : null,
+        reviewCount: ratingResult?.count || 0,
+      },
     });
 
 
@@ -321,7 +341,7 @@ exports.updateSession = asyncHandler(async (req, res) => {
         );
       } else if (session.status === "completed") {
         await Request.updateMany(
-          { sessionId: session._id, requestStatus: "accepted" },
+          { sessionId: session._id, requestStatus: { $in: ["pending", "accepted"] } },
           { requestStatus: "completed" },
         );
       }

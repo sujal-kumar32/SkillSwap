@@ -76,6 +76,16 @@ exports.createReview = asyncHandler(async (req, res) => {
       });
     }
 
+    if (sessionId) {
+      const existing = await Review.findOne({ sessionId, learnerId: req.user.id });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already reviewed this session",
+        });
+      }
+    }
+
     let mentorId;
     let sessionName = session;
     let mentorName = mentor;
@@ -84,9 +94,8 @@ exports.createReview = asyncHandler(async (req, res) => {
       const booking = await Request.findOne({
         sessionId,
         learnerId: req.user.id,
-        requestStatus: { $in: ["accepted", "completed"] },
       })
-        .populate("sessionId", "title mentorId")
+        .populate("sessionId", "title mentorId status")
         .populate("mentorId", "name profileImage")
         .lean();
 
@@ -94,6 +103,18 @@ exports.createReview = asyncHandler(async (req, res) => {
         return res.status(403).json({
           success: false,
           message: "You can review only sessions you booked",
+        });
+      }
+
+      const canReview =
+        booking.requestStatus === "completed" ||
+        booking.requestStatus === "accepted" ||
+        booking.sessionId?.status === "completed";
+
+      if (!canReview) {
+        return res.status(403).json({
+          success: false,
+          message: "You can review only completed or accepted sessions",
         });
       }
 

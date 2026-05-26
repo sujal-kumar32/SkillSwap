@@ -28,7 +28,7 @@ async function autoCompleteSessions() {
       if (now > endTime) {
         await Session.findByIdAndUpdate(session._id, { status: "completed" });
         await Request.updateMany(
-          { sessionId: session._id, requestStatus: "accepted" },
+          { sessionId: session._id, requestStatus: { $in: ["pending", "accepted"] } },
           { requestStatus: "completed" },
         );
         console.log(`Auto-completed session "${session.title}" (${session._id})`);

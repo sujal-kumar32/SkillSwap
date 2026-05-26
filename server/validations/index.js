@@ -193,9 +193,9 @@ const review = {
   create: Joi.object({
     session: Joi.string().trim().max(200).allow(""),
     mentor: Joi.string().trim().max(200).allow(""),
-    sessionId: Joi.string().allow(""),
+    sessionId: Joi.string(),
     mentorId: Joi.string().allow(""),
-    rating: Joi.number().min(1).max(5).required().messages({
+    rating: Joi.number().integer().min(1).max(5).required().messages({
       "number.base": "Rating must be a number",
       "number.min": "Rating must be at least 1",
       "number.max": "Rating cannot exceed 5",
@@ -203,7 +203,7 @@ const review = {
     comment: Joi.string().trim().max(1000).allow(""),
   }),
   update: Joi.object({
-    rating: Joi.number().min(1).max(5),
+    rating: Joi.number().integer().min(1).max(5),
     comment: Joi.string().trim().max(1000).allow(""),
   }).min(1),
 };

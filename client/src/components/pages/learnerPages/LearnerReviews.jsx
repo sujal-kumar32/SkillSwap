@@ -6,6 +6,44 @@ import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 
+const Modal = ({ children }) => (
+  <div style={{
+    position: "fixed", inset: 0, zIndex: 1050,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    padding: "16px", background: "rgba(15,23,42,.45)",
+  }}>
+    <div className="learner-card" style={{
+      maxWidth: 500, width: "100%", maxHeight: "90vh", overflowY: "auto",
+      padding: "24px",
+    }}>
+      {children}
+    </div>
+  </div>
+);
+
+const StarInput = ({ value, onChange }) => {
+  const [hover, setHover] = useState(0);
+  return (
+    <div className="d-flex gap-1" style={{ fontSize: "1.5rem", cursor: "pointer" }}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          onMouseEnter={() => setHover(star)}
+          onMouseLeave={() => setHover(0)}
+          onClick={() => onChange(star)}
+          style={{
+            color: star <= (hover || value) ? "#f59e0b" : "#d1d5db",
+            transition: "color 0.15s",
+            userSelect: "none",
+          }}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+};
+
 const LearnerReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -50,7 +88,7 @@ const LearnerReviews = () => {
 
   const pendingCount = useMemo(
     () => bookings.filter(
-      (b) => (b.requestStatus === "completed" || b.requestStatus === "accepted")
+      (b) => (b.requestStatus === "completed" || b.requestStatus === "accepted" || b.sessionId?.status === "completed")
         && !reviewedSessionIds.has(b.sessionId?._id || b.sessionId),
     ).length,
     [bookings, reviewedSessionIds],
@@ -63,7 +101,7 @@ const LearnerReviews = () => {
 
   const availableBookings = useMemo(
     () => bookings.filter(
-      (b) => (b.requestStatus === "completed" || b.requestStatus === "accepted")
+      (b) => (b.requestStatus === "completed" || b.requestStatus === "accepted" || b.sessionId?.status === "completed")
         && !reviewedSessionIds.has(b.sessionId?._id || b.sessionId),
     ),
     [bookings, reviewedSessionIds],
@@ -72,13 +110,13 @@ const LearnerReviews = () => {
   const handleSessionSelect = (sessionId) => {
     const booking = bookings.find((b) => (b.sessionId?._id || b.sessionId) === sessionId);
     if (booking) {
-      setForm({
+      setForm((prev) => ({
         sessionId,
         session: booking.sessionId?.title || "",
         mentor: booking.mentorId?.name || booking.sessionId?.mentorId?.name || "",
-        rating: form.rating,
-        comment: form.comment,
-      });
+        rating: prev.rating,
+        comment: prev.comment,
+      }));
     }
   };
 
@@ -152,15 +190,15 @@ const LearnerReviews = () => {
           {reviews.map((review) => (
             <div className="col-md-6" key={review._id}>
               <div className="learner-card p-4 h-100">
-                <div className="d-flex justify-content-between">
+                <div className="d-flex justify-content-between align-items-start mb-2">
                   <div>
                     <h5 className="fw-bold mb-1">{review.session}</h5>
                     <small className="text-muted">{review.mentor}</small>
                   </div>
-                  <div className="text-warning">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
+                  <span className="text-warning">{Array(review.rating).fill("★").join("")}{Array(5 - review.rating).fill("☆").join("")}</span>
                 </div>
-                <p className="text-muted mt-3">{review.comment}</p>
-                <div className="d-flex gap-2">
+                <p className="text-muted mt-2 mb-3">{review.comment}</p>
+                <div className="d-flex" style={{ gap: "10px" }}>
                   <LoadingButton
                     className="btn btn-outline-primary btn-sm rounded-pill"
                     onClick={() => openEditReview(review)}
@@ -195,57 +233,108 @@ const LearnerReviews = () => {
       <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 
       {showReviewForm && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3" style={{ background: "rgba(15,23,42,.45)", zIndex: 1050 }}>
-          <form className="learner-card p-4" style={{ maxWidth: 520, width: "100%" }} onSubmit={submitReview}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold mb-0">Give Review</h5>
-              <button type="button" className="btn-close" aria-label="Close" onClick={() => { resetForm(); setShowReviewForm(false); }} />
+        <Modal>
+          <div style={{ margin: "-24px -24px 20px -24px", padding: "28px 24px", borderRadius: "20px 20px 0 0",
+            background: "linear-gradient(135deg, #0d6efd 0%, #6610f2 100%)", color: "#fff" }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 className="fw-bold mb-1" style={{ color: "#fff" }}>Write a Review</h5>
+                <small style={{ opacity: 0.85 }}>Share your learning experience</small>
+              </div>
+              <button type="button" className="btn-close btn-close-white" onClick={() => { resetForm(); setShowReviewForm(false); }} />
             </div>
+          </div>
+          <form onSubmit={submitReview}>
             {availableBookings.length > 0 ? (
-              <select className="form-select mb-3" value={form.sessionId} onChange={(e) => handleSessionSelect(e.target.value)}>
-                <option value="">Select a session...</option>
-                {availableBookings.map((b) => (
-                  <option key={b._id} value={b.sessionId?._id || b.sessionId}>
-                    {b.sessionId?.title || "Untitled Session"} — {b.mentorId?.name || "Mentor"}
-                  </option>
-                ))}
-              </select>
+              <div className="mb-4">
+                <label className="form-label fw-semibold text-muted small">Which session are you reviewing?</label>
+                <select className="form-select" style={{ borderRadius: 12, padding: "10px 14px", border: "1px solid #e2e8f0", background: "#f8faff" }}
+                  value={form.sessionId} onChange={(e) => handleSessionSelect(e.target.value)}>
+                  <option value="">Select a session...</option>
+                  {availableBookings.map((b) => (
+                    <option key={b._id} value={b.sessionId?._id || b.sessionId}>
+                      {b.sessionId?.title || "Untitled Session"} — {b.mentorId?.name || "Mentor"}
+                    </option>
+                  ))}
+                </select>
+              </div>
             ) : (
-              <>
-                <input className="form-control mb-3" placeholder="Session name" value={form.session} onChange={(e) => setForm({ ...form, session: e.target.value })} required={!form.sessionId} />
-                <input className="form-control mb-3" placeholder="Mentor name" value={form.mentor} onChange={(e) => setForm({ ...form, mentor: e.target.value })} required={!form.sessionId} />
-              </>
+              <div className="mb-4">
+                <label className="form-label fw-semibold text-muted small">Session Name</label>
+                <input className="form-control mb-2" placeholder="e.g. React Basics" value={form.session} onChange={(e) => setForm((prev) => ({ ...prev, session: e.target.value }))} required={!form.sessionId} />
+                <label className="form-label fw-semibold text-muted small">Mentor Name</label>
+                <input className="form-control" placeholder="e.g. John Doe" value={form.mentor} onChange={(e) => setForm((prev) => ({ ...prev, mentor: e.target.value }))} required={!form.sessionId} />
+              </div>
             )}
-            <select className="form-select mb-3" value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })}>
-              {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
-            </select>
-            <textarea className="form-control mb-4" rows="4" placeholder="Feedback" value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} required />
-            <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => { resetForm(); setShowReviewForm(false); }}>Cancel</button>
+            <div className="mb-4">
+              <label className="form-label fw-semibold text-muted small d-block mb-2">Your Rating</label>
+              <div style={{ background: "#f8faff", borderRadius: 12, padding: "12px 16px", border: "1px solid #e2e8f0" }}>
+                <StarInput value={form.rating} onChange={(v) => setForm((prev) => ({ ...prev, rating: v }))} />
+                <div className="mt-1" style={{ fontSize: "0.8rem", color: form.rating >= 4 ? "#059669" : form.rating >= 3 ? "#d97706" : "#dc2626" }}>
+                  {form.rating === 5 && "Excellent! Loved it"}
+                  {form.rating === 4 && "Great session"}
+                  {form.rating === 3 && "Good, but could be better"}
+                  {form.rating === 2 && "Needs improvement"}
+                  {form.rating === 1 && "Not satisfied"}
+                </div>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="form-label fw-semibold text-muted small">Feedback</label>
+              <textarea className="form-control" rows="4" placeholder="What did you like? What could be improved?" value={form.comment} onChange={(e) => setForm((prev) => ({ ...prev, comment: e.target.value }))} required
+                style={{ borderRadius: 12, border: "1px solid #e2e8f0", resize: "vertical" }} />
+            </div>
+            <div className="d-flex justify-content-end gap-2 border-top pt-3" style={{ borderColor: "#eef2f7" }}>
+              <button type="button" className="btn rounded-pill px-4" style={{ border: "1px solid #e2e8f0", color: "#64748b" }}
+                onClick={() => { resetForm(); setShowReviewForm(false); }}>Cancel</button>
               <LoadingButton className="btn btn-primary rounded-pill px-4">Submit Review</LoadingButton>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
 
       {editingReview && (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3" style={{ background: "rgba(15,23,42,.45)", zIndex: 1050 }}>
-          <form className="learner-card p-4" style={{ maxWidth: 520, width: "100%" }} onSubmit={submitEditReview}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold mb-0">Edit Review</h5>
-              <button type="button" className="btn-close" aria-label="Close" onClick={() => { setEditingReview(null); setEditForm({ rating: 5, comment: "" }); }} />
+        <Modal>
+          <div style={{ margin: "-24px -24px 20px -24px", padding: "28px 24px", borderRadius: "20px 20px 0 0",
+            background: "linear-gradient(135deg, #0d6efd 0%, #6610f2 100%)", color: "#fff" }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 className="fw-bold mb-1" style={{ color: "#fff" }}>Edit Review</h5>
+                <small style={{ opacity: 0.85 }}>Update your feedback</small>
+              </div>
+              <button type="button" className="btn-close btn-close-white" onClick={() => { setEditingReview(null); setEditForm({ rating: 5, comment: "" }); }} />
             </div>
-            <p className="text-muted mb-3"><strong>{editingReview.session}</strong> — {editingReview.mentor}</p>
-            <select className="form-select mb-3" value={editForm.rating} onChange={(e) => setEditForm({ ...editForm, rating: Number(e.target.value) })}>
-              {[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} stars</option>)}
-            </select>
-            <textarea className="form-control mb-4" rows="4" placeholder="Feedback" value={editForm.comment} onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })} required />
-            <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => { setEditingReview(null); setEditForm({ rating: 5, comment: "" }); }}>Cancel</button>
+          </div>
+          <form onSubmit={submitEditReview}>
+            <div style={{ background: "#f0f4fa", borderRadius: 12, padding: "12px 16px", marginBottom: 20 }}>
+              <div className="fw-bold" style={{ fontSize: "0.95rem" }}>{editingReview.session}</div>
+              <div className="text-muted" style={{ fontSize: "0.85rem" }}>{editingReview.mentor}</div>
+            </div>
+            <div className="mb-4">
+              <label className="form-label fw-semibold text-muted small d-block mb-2">Your Rating</label>
+              <div style={{ background: "#f8faff", borderRadius: 12, padding: "12px 16px", border: "1px solid #e2e8f0" }}>
+                <StarInput value={editForm.rating} onChange={(v) => setEditForm((prev) => ({ ...prev, rating: v }))} />
+                <div className="mt-1" style={{ fontSize: "0.8rem", color: editForm.rating >= 4 ? "#059669" : editForm.rating >= 3 ? "#d97706" : "#dc2626" }}>
+                  {editForm.rating === 5 && "Excellent! Loved it"}
+                  {editForm.rating === 4 && "Great session"}
+                  {editForm.rating === 3 && "Good, but could be better"}
+                  {editForm.rating === 2 && "Needs improvement"}
+                  {editForm.rating === 1 && "Not satisfied"}
+                </div>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="form-label fw-semibold text-muted small">Feedback</label>
+              <textarea className="form-control" rows="4" placeholder="What did you like? What could be improved?" value={editForm.comment} onChange={(e) => setEditForm((prev) => ({ ...prev, comment: e.target.value }))} required
+                style={{ borderRadius: 12, border: "1px solid #e2e8f0", resize: "vertical" }} />
+            </div>
+            <div className="d-flex justify-content-end gap-2 border-top pt-3" style={{ borderColor: "#eef2f7" }}>
+              <button type="button" className="btn rounded-pill px-4" style={{ border: "1px solid #e2e8f0", color: "#64748b" }}
+                onClick={() => { setEditingReview(null); setEditForm({ rating: 5, comment: "" }); }}>Cancel</button>
               <LoadingButton className="btn btn-primary rounded-pill px-4">Save Changes</LoadingButton>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
     </>
   );
