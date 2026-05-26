@@ -342,6 +342,14 @@ class Apiservices {
   getLearnerLeaderboard(params = {}) {
     return axios.get(baseUrl + "leaderboard/learners", { params });
   }
+
+  toggleWishlist(sessionId) {
+    return axios.post(baseUrl + "wishlist/toggle", { sessionId });
+  }
+
+  getWishlist(params = {}) {
+    return axios.get(baseUrl + "wishlist", { params });
+  }
 }
 
 export default new Apiservices();

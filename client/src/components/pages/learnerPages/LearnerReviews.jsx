@@ -57,19 +57,22 @@ const LearnerReviews = () => {
   const { badgeData, setBadgeData, handleXpResponse } = useXpCelebration();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [allReviews, setAllReviews] = useState([]);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setError("");
         setLoading(true);
-        const [reviewRes, bookingRes] = await Promise.all([
+        const [reviewRes, bookingRes, allRes] = await Promise.all([
           Apiservices.fetchReviews({ page, limit: 12 }),
           Apiservices.fetchBookings({ limit: 100 }).catch(() => ({ data: { data: [] } })),
+          Apiservices.fetchReviews({ limit: 10000 }).catch(() => ({ data: { data: [] } })),
         ]);
         setReviews(reviewRes.data.data || []);
         setTotalPages(reviewRes.data.pages || 1);
         setBookings(bookingRes.data.data || []);
+        setAllReviews(allRes.data.data || []);
       } catch (error) {
         console.log(error);
         setReviews([]);
@@ -84,8 +87,8 @@ const LearnerReviews = () => {
   }, [page]);
 
   const reviewedSessionIds = useMemo(
-    () => new Set(reviews.map((r) => r.sessionId?._id || r.sessionId).filter(Boolean)),
-    [reviews],
+    () => new Set(allReviews.map((r) => r.sessionId?._id || r.sessionId).filter(Boolean)),
+    [allReviews],
   );
 
   const pendingCount = useMemo(
@@ -141,6 +144,7 @@ const LearnerReviews = () => {
       }
       const response = await Apiservices.createReview(payload);
       setReviews((prev) => [response.data.data, ...prev]);
+      setAllReviews((prev) => [response.data.data, ...prev]);
       showToast.success("Review submitted");
       if (response.data?.xp) {
         handleXpResponse(response.data.xp);
@@ -218,6 +222,7 @@ const LearnerReviews = () => {
                       try {
                         await Apiservices.deleteReview(review._id);
                         setReviews((prev) => prev.filter((item) => item._id !== review._id));
+                        setAllReviews((prev) => prev.filter((item) => item._id !== review._id));
                         showToast.success("Review deleted");
                       } catch (error) {
                         console.log(error);
@@ -253,12 +258,12 @@ const LearnerReviews = () => {
             {availableBookings.length > 0 ? (
               <div className="mb-4">
                 <label className="form-label fw-semibold text-muted small">Which session are you reviewing?</label>
-                <select className="form-select" style={{ borderRadius: 12, padding: "10px 14px", border: "1px solid #e2e8f0", background: "#f8faff" }}
+                <select className="form-select" style={{ borderRadius: 12, padding: "10px 14px", border: "1px solid #e2e8f0", background: "#f8faff", maxWidth: "100%" }}
                   value={form.sessionId} onChange={(e) => handleSessionSelect(e.target.value)}>
                   <option value="">Select a session...</option>
                   {availableBookings.map((b) => (
                     <option key={b._id} value={b.sessionId?._id || b.sessionId}>
-                      {b.sessionId?.title || "Untitled Session"} — {b.mentorId?.name || "Mentor"}
+                      {(b.sessionId?.title || "Untitled Session").substring(0, 40)}{(b.sessionId?.title || "").length > 40 ? "…" : ""} — {b.mentorId?.name || "Mentor"}
                     </option>
                   ))}
                 </select>

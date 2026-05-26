@@ -11,6 +11,7 @@ const links = [
   { to: "/learner/progress", label: "Learning Progress", icon: "fa-chart-line" },
   { to: "/learner/reviews", label: "Reviews", icon: "fa-star" },
   { to: "/learner/leaderboard", label: "Leaderboard", icon: "fa-trophy" },
+  { to: "/learner/wishlist", label: "Wishlist", icon: "fa-heart" },
   { to: "/learner/history", label: "Booking History", icon: "fa-history" },
   { to: "/learner/ai", label: "AI Recommendations", icon: "fa-magic" },
   { to: "/learner/ai-roadmap", label: "Learning Roadmap", icon: "fa-road" },

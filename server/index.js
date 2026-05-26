@@ -28,6 +28,7 @@ const calendarRoutes = require("./routes/calendarRoutes");
 const availabilityRoutes = require("./routes/availabilityRoutes");
 const badgeRoutes = require("./routes/badgeRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
+const wishlistRoutes = require("./routes/wishlistRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -88,6 +89,7 @@ app.use("/api/calendar", calendarRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/badges", badgeRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err.message);

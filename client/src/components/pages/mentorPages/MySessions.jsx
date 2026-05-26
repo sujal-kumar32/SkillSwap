@@ -21,10 +21,10 @@ const formatDate = (date) => {
 };
 
 const stateBadge = (state) => {
-  if (state === "live") return { cls: "bg-danger", label: "🔴 Live Now" };
-  if (state === "upcoming") return { cls: "bg-success", label: "Upcoming" };
-  if (state === "cancelled") return { cls: "bg-secondary", label: "Cancelled" };
-  return { cls: "bg-secondary", label: "Completed" };
+  if (state === "live") return { bg: "linear-gradient(135deg, #dc2626, #b91c1c)", label: "Live Now" };
+  if (state === "upcoming") return { bg: "linear-gradient(135deg, #16a34a, #15803d)", label: "Upcoming" };
+  if (state === "cancelled") return { bg: "linear-gradient(135deg, #64748b, #475569)", label: "Cancelled" };
+  return { bg: "linear-gradient(135deg, #0d6efd, #0a58ca)", label: "Completed" };
 };
 
 const MySessions = () => {
@@ -204,7 +204,7 @@ const MySessions = () => {
                       className="card-img-top session-image"
                     />
 
-                    <span className={`badge session-badge ${badge.cls}`}>
+                    <span style={{ position: "absolute", top: 12, right: 12, background: badge.bg, color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px", zIndex: 2 }}>
                       {badge.label}
                     </span>
                   </div>
@@ -230,6 +230,13 @@ const MySessions = () => {
 
                       <span>{session.bookings || 0} Bookings</span>
                     </div>
+
+                    {session.maxLearners > 0 && (
+                      <div className="session-detail mb-2">
+                        <i className="fa fa-layer-group" style={{ color: "#7c3aed", marginRight: 10 }}></i>
+                        <span>Group • {session.spotsFilled || 0}/{session.maxLearners} spots filled</span>
+                      </div>
+                    )}
 
                     <div className="session-detail mb-4">
                       <i className="fa fa-wallet text-warning" style={{ marginRight: 10 }}></i>
@@ -258,7 +265,7 @@ const MySessions = () => {
                         </>
                       )}
                       {session.status !== "active" && (
-                        <span className={`badge ${badge.cls} fs-6 px-3 py-2 flex-fill text-center`}>
+                        <span style={{ background: badge.bg, color: "white", padding: "6px 16px", borderRadius: 999, fontSize: "0.85rem", fontWeight: 600, letterSpacing: "0.3px", flex: 1, textAlign: "center" }}>
                           {badge.label}
                         </span>
                       )}

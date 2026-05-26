@@ -6,6 +6,7 @@ const Review = require("../Reviews/reviewModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
+const Wishlist = require("../Wishlist/wishlistModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
@@ -102,7 +103,7 @@ exports.getMySessions = asyncHandler(async (req, res) => {
       .lean();
 
     const sessionIds = sessions.map((session) => session._id);
-    const [bookingCounts, ratings] = await Promise.all([
+    const [bookingCounts, ratings, acceptedCounts] = await Promise.all([
       Request.aggregate([
         { $match: { sessionId: { $in: sessionIds } } },
         { $group: { _id: "$sessionId", count: { $sum: 1 } } },
@@ -110,6 +111,10 @@ exports.getMySessions = asyncHandler(async (req, res) => {
       Review.aggregate([
         { $match: { sessionId: { $in: sessionIds } } },
         { $group: { _id: "$sessionId", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+      ]),
+      Request.aggregate([
+        { $match: { sessionId: { $in: sessionIds }, requestStatus: "accepted" } },
+        { $group: { _id: "$sessionId", count: { $sum: 1 } } },
       ]),
     ]);
 
@@ -121,6 +126,9 @@ exports.getMySessions = asyncHandler(async (req, res) => {
     const ratingMap = {};
     ratings.forEach((r) => { ratingMap[r._id.toString()] = { avg: Math.round(r.avgRating * 10) / 10, count: r.count }; });
 
+    const acceptedMap = {};
+    acceptedCounts.forEach((a) => { acceptedMap[a._id.toString()] = a.count; });
+
     await ensureMeetLinks(sessions);
 
     res.json({
@@ -131,6 +139,7 @@ exports.getMySessions = asyncHandler(async (req, res) => {
         bookings: countMap[session._id.toString()] || 0,
         rating: ratingMap[session._id.toString()]?.avg || null,
         reviewCount: ratingMap[session._id.toString()]?.count || 0,
+        spotsFilled: acceptedMap[session._id.toString()] || 0,
       })),
     });
 
@@ -179,14 +188,28 @@ exports.getSessions = asyncHandler(async (req, res) => {
     ]);
 
     const sessionIds = sessions.map((s) => s._id);
-    const ratings = sessionIds.length
-      ? await Review.aggregate([
-          { $match: { sessionId: { $in: sessionIds } } },
-          { $group: { _id: "$sessionId", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
-        ])
-      : [];
+    const [ratings, acceptedCounts, userWishlist] = await Promise.all([
+      sessionIds.length
+        ? Review.aggregate([
+            { $match: { sessionId: { $in: sessionIds } } },
+            { $group: { _id: "$sessionId", avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+          ])
+        : [],
+      sessionIds.length
+        ? Request.aggregate([
+            { $match: { sessionId: { $in: sessionIds }, requestStatus: "accepted" } },
+            { $group: { _id: "$sessionId", count: { $sum: 1 } } },
+          ])
+        : [],
+      req.user?.id
+        ? Wishlist.find({ userId: req.user.id, sessionId: { $in: sessionIds } }).select("sessionId").lean()
+        : [],
+    ]);
     const ratingMap = {};
     ratings.forEach((r) => { ratingMap[r._id.toString()] = { avg: Math.round(r.avgRating * 10) / 10, count: r.count }; });
+    const acceptedMap = {};
+    acceptedCounts.forEach((a) => { acceptedMap[a._id.toString()] = a.count; });
+    const savedSet = new Set(userWishlist.map((w) => w.sessionId.toString()));
 
     await ensureMeetLinks(sessions);
 
@@ -194,6 +217,8 @@ exports.getSessions = asyncHandler(async (req, res) => {
       ...s,
       rating: ratingMap[s._id.toString()]?.avg || null,
       reviewCount: ratingMap[s._id.toString()]?.count || 0,
+      spotsFilled: acceptedMap[s._id.toString()] || 0,
+      isSaved: savedSet.has(s._id.toString()),
     }));
 
     res.json({
@@ -224,9 +249,15 @@ exports.getSession = asyncHandler(async (req, res) => {
       });
     }
 
-    const [ratingResult] = await Review.aggregate([
-      { $match: { sessionId: session._id } },
-      { $group: { _id: null, avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+    const [ratingResult, acceptedCount, isSaved] = await Promise.all([
+      Review.aggregate([
+        { $match: { sessionId: session._id } },
+        { $group: { _id: null, avgRating: { $avg: "$rating" }, count: { $sum: 1 } } },
+      ]),
+      Request.countDocuments({ sessionId: session._id, requestStatus: "accepted" }),
+      req.user?.id
+        ? Wishlist.exists({ userId: req.user.id, sessionId: session._id })
+        : false,
     ]);
 
     const hasBooking = req.user?.id
@@ -254,6 +285,8 @@ exports.getSession = asyncHandler(async (req, res) => {
         ...session,
         rating: ratingResult?.avgRating ? Math.round(ratingResult.avgRating * 10) / 10 : null,
         reviewCount: ratingResult?.count || 0,
+        spotsFilled: acceptedCount || 0,
+        isSaved: !!isSaved,
       },
     });
 

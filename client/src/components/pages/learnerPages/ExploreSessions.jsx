@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
 import { showToast } from "../../../utils/toastUtils";
@@ -21,6 +21,21 @@ const ExploreSessions = () => {
   const [aiSearch, setAiSearch] = useState(false);
   const [aiKeywords, setAiKeywords] = useState("");
   const [aiSearching, setAiSearching] = useState(false);
+  const [savedSessionIds, setSavedSessionIds] = useState(new Set());
+
+  const handleToggleSave = useCallback(async (session) => {
+    try {
+      const res = await Apiservices.toggleWishlist(session._id);
+      if (res.data.saved) {
+        setSavedSessionIds((prev) => new Set(prev).add(session._id));
+      } else {
+        setSavedSessionIds((prev) => { const next = new Set(prev); next.delete(session._id); return next; });
+      }
+      showToast.success(res.data.message);
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to update");
+    }
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -114,7 +129,7 @@ const ExploreSessions = () => {
       <div className="learner-card p-4 mb-4">
         <div className="row g-3">
           <div className="col-lg-4">
-            <div className="d-flex gap-2">
+            <div className="d-flex" style={{ gap: "5px" }}>
               <div className="position-relative flex-grow-1">
                 <input className="form-control rounded-pill" placeholder="Search skills, mentors, sessions..." value={query} onChange={(e) => { setQuery(e.target.value); if (aiSearch) clearAISearch(); }} />
               </div>
@@ -173,11 +188,7 @@ const ExploreSessions = () => {
           <div className="row g-4">
             {paginated.map((session) => (
               <div className="col-md-6 col-xl-4" key={session._id}>
-                {aiSearch ? (
-                  <SessionCard session={{ ...session, isAiRecommended: true }} onBook={() => navigate(`/learner/book/${session._id}`)} />
-                ) : (
-                  <SessionCard session={session} onBook={() => navigate(`/learner/book/${session._id}`)} />
-                )}
+                <SessionCard session={{ ...session, isSaved: savedSessionIds.has(session._id) }} onBook={() => navigate(`/learner/book/${session._id}`)} onToggleSave={handleToggleSave} />
               </div>
             ))}
           </div>

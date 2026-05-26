@@ -185,7 +185,7 @@ const Bookings = () => {
                       <span>{booking.sessionId?.title || "Session"}</span>
                     </div>
 
-                    <div className="booking-detail mb-4">
+                    <div className="booking-detail mb-2">
                       <i className="fa fa-calendar text-success" style={{ marginRight: 10 }}></i>
 
                       <span>
@@ -194,17 +194,16 @@ const Bookings = () => {
                       </span>
                     </div>
 
+                    {booking.sessionId?.maxLearners > 0 && (
+                      <div className="booking-detail mb-4">
+                        <i className="fa fa-users" style={{ color: "#7c3aed", marginRight: 10 }}></i>
+                        <span>Group session • up to {booking.sessionId.maxLearners} learners</span>
+                      </div>
+                    )}
+
                     {/* STATUS */}
                     <div className="mb-4">
-                      <span
-                        className={`badge px-3 py-2 rounded-pill ${
-                          status === "accepted"
-                            ? "bg-success"
-                            : status === "pending"
-                              ? "bg-warning text-dark"
-                              : "bg-danger"
-                        }`}
-                      >
+                      <span style={{ background: status === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : status === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: status === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                         {status}
                       </span>
                     </div>

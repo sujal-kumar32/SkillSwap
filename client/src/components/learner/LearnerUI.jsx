@@ -78,7 +78,7 @@ export const StatusBadge = ({ status }) => {
   );
 };
 
-export const SessionCard = ({ session, onBook }) => {
+export const SessionCard = ({ session, onBook, onToggleSave }) => {
   const skill = session.skillId?.name || session.skill || "Skill";
   const category = session.skillId?.categoryId?.name || "Learning";
   const mentor = session.mentorId?.name || session.mentor || "SkillSwap Mentor";
@@ -91,10 +91,24 @@ export const SessionCard = ({ session, onBook }) => {
           alt={session.title}
           className="card-img-top learner-session-img"
         />
+        {onToggleSave && (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleSave?.(session); }}
+            style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(8px)", zIndex: 3, transition: "all 0.2s" }}
+            title={session.isSaved ? "Remove from wishlist" : "Save to wishlist"}
+          >
+            <i className={`fa ${session.isSaved ? "fa-heart" : "fa-heart-o"}`} style={{ color: session.isSaved ? "#dc2626" : "#64748b", fontSize: "0.85rem" }} />
+          </button>
+        )}
         <div className="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap" style={{ zIndex: 2 }}>
           <span className="badge rounded-pill" style={{ background: "rgba(255,255,255,0.9)", color: "#0d6efd", fontWeight: 600, backdropFilter: "blur(8px)" }}>
             {category}
           </span>
+          {session.maxLearners > 0 && (
+            <span className="badge rounded-pill" style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", fontWeight: 600, fontSize: "0.7rem" }}>
+              <i className="fa fa-users me-1" />Group
+            </span>
+          )}
           {session.isTrending && <span className="badge rounded-pill bg-danger">Trending</span>}
           {session.isAiRecommended && (
             <span className="badge rounded-pill" style={{ background: "rgba(6,182,212,0.9)", color: "white", backdropFilter: "blur(8px)" }}>
@@ -109,22 +123,28 @@ export const SessionCard = ({ session, onBook }) => {
           <StatusBadge status={session.status} />
         </div>
         <p className="text-muted small mb-3">
-          <i className="fa fa-user-tie text-primary" style={{ marginRight: 10 }} />
+          <i className="fa fa-user-tie text-primary" style={{ marginRight: 5 }} />
           {mentor}
         </p>
-        <div className="d-flex flex-wrap gap-3 small text-muted mb-3">
+        <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: "15px" }}>
           {session.rating ? <span>
-            <i className="fa fa-star text-warning" style={{ marginRight: 10 }} />
+            <i className="fa fa-star text-warning" style={{ marginRight: 5 }} />
             {session.rating} <small className="text-muted">({session.reviewCount || 0})</small>
           </span> : null}
           {session.learners > 0 && <span>
-            <i className="fa fa-users text-success" style={{ marginRight: 10 }} />
+            <i className="fa fa-users text-success" style={{ marginRight: 5 }} />
             {session.learners} learners
           </span>}
           {session.duration && <span>
-            <i className="fa fa-clock text-primary" style={{ marginRight: 10 }} />
+            <i className="fa fa-clock text-primary" style={{ marginRight: 5 }} />
             {session.duration} min
           </span>}
+          {session.maxLearners > 0 && (
+            <span>
+              <i className="fa fa-users" style={{ color: "#7c3aed", marginRight: 5 }} />
+              {session.spotsFilled || 0}/{session.maxLearners} filled
+            </span>
+          )}
         </div>
         <p className="card-desc text-muted mb-4">
           {session.description || "A practical learning session led by an experienced mentor."}

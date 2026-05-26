@@ -51,6 +51,25 @@ exports.createRequest = asyncHandler(async (req, res) => {
       });
     }
 
+    const acceptedCount = await Request.countDocuments({
+      sessionId: session._id,
+      requestStatus: "accepted",
+    });
+
+    const maxL = session.maxLearners || 0;
+    if (maxL > 0 && acceptedCount >= maxL) {
+      return res.status(400).json({
+        success: false,
+        message: "This group session is fully booked",
+      });
+    }
+    if (maxL === 0 && acceptedCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "This 1:1 session already has a confirmed booking",
+      });
+    }
+
     const request = await Request.create({
       sessionId,
       learnerId: req.user.id,
@@ -290,6 +309,29 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
     const isMentorOwner = idsEqual(request.mentorId, req.user.id);
     const learnerCancelling =
       status === "cancelled" && idsEqual(request.learnerId, req.user.id);
+
+    if (status === "accepted") {
+      const session = await Session.findById(request.sessionId).select("maxLearners").lean();
+      if (session) {
+        const acceptedCount = await Request.countDocuments({
+          sessionId: request.sessionId,
+          requestStatus: "accepted",
+        });
+        const maxL = session.maxLearners || 0;
+        if (maxL > 0 && acceptedCount >= maxL) {
+          return res.status(400).json({
+            success: false,
+            message: "This group session is fully booked",
+          });
+        }
+        if (maxL === 0 && acceptedCount > 0) {
+          return res.status(400).json({
+            success: false,
+            message: "This 1:1 session already has a confirmed booking",
+          });
+        }
+      }
+    }
 
     if (status === "accepted" || status === "rejected") {
       if (!isMentorOwner) {

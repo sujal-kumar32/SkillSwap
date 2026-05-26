@@ -48,6 +48,7 @@ import LearnerReviews from "./components/pages/learnerPages/LearnerReviews";
 import Profile from "./components/pages/Profile";
 import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
+import Wishlist from "./components/pages/learnerPages/Wishlist";
 import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
 import LearnerSkills from "./components/pages/learnerPages/LearnerSkills";
 import ForgotPassword from "./components/pages/ForgotPassword";
@@ -262,6 +263,7 @@ function App() {
             <Route path="/learner/ai" element={<AIRecommendations />} />
             <Route path="/learner/ai-roadmap" element={<LearningRoadmap />} />
             <Route path="/learner/leaderboard" element={<LearnerLeaderboard />} />
+            <Route path="/learner/wishlist" element={<Wishlist />} />
           </Route>
         </Routes>
 

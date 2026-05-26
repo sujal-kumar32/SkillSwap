@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
@@ -8,6 +8,8 @@ const SessionDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [session, setSession] = useState(null);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -32,6 +34,7 @@ const SessionDetails = () => {
           }).catch(() => {});
         }
         setSession(detailRes.data.data);
+        setSaved(detailRes.data.data?.isSaved || false);
         setBookings(bookingRes.data.data || []);
         setRelated((relatedRes.data.data || []).filter((item) => item._id !== id));
         const reviewRes = await Apiservices.fetchReviews().catch(() => ({
@@ -67,6 +70,18 @@ const SessionDetails = () => {
     return `${daySlots.slice(0, 3).join(", ")} +${daySlots.length - 3} more`;
   }, [mentorSlots]);
 
+  const handleToggleSave = useCallback(async (sess) => {
+    const targetId = sess?._id || session?._id;
+    if (!targetId) return;
+    try {
+      const res = await Apiservices.toggleWishlist(targetId);
+      if (targetId === session?._id) setSaved(res.data.saved);
+      showToast.success(res.data.message);
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to toggle wishlist");
+    }
+  }, [session?._id]);
+
   const existingBooking = bookings.find((b) => {
     const sId = b.sessionId?._id || b.sessionId;
     return sId === id && ["pending", "accepted", "completed"].includes(b.requestStatus);
@@ -96,7 +111,7 @@ const SessionDetails = () => {
         title={session.title}
         subtitle={`${session.skillId?.name || "Skill"} • ${session.sessionType || "online"} session`}
         action={existingBooking ? (
-          <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}><i className="fa fa-check me-1" />Already Booked</span>
+          <span style={{ background: existingBooking.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}><i className="fa fa-check me-1" />{existingBooking.requestStatus === "completed" ? "Completed" : "Already Booked"}</span>
         ) : (
           <button className="btn btn-primary rounded-pill px-4" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
         )}
@@ -107,7 +122,7 @@ const SessionDetails = () => {
           <div className="learner-card overflow-hidden mb-4">
             <img src={session.thumbnail} alt={session.title} className="w-100" style={{ height: 330, objectFit: "cover" }} />
             <div className="p-4">
-              <div className="d-flex flex-wrap gap-2 mb-3">
+              <div className="d-flex flex-wrap mb-3" style={{ gap: "10px" }}>
                 <StatusBadge status={session.status} />
                 <span style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{session.skillId?.categoryId?.name || "Learning"}</span>
               </div>
@@ -136,7 +151,7 @@ const SessionDetails = () => {
         <div className="col-xl-4">
           <div className="learner-card p-4 mb-4">
             <h5 className="fw-bold">Mentor</h5>
-            <div className="d-flex align-items-center gap-3 my-3">
+            <div className="d-flex align-items-center my-3" style={{ gap: "10px" }}>
               <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" className="rounded-circle" width="56" height="56" style={{ objectFit: "cover" }} />
               <div>
                 <h6 className="fw-bold mb-0">{session.mentorId?.name || "SkillSwap Mentor"}</h6>
@@ -153,16 +168,36 @@ const SessionDetails = () => {
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Date</span><strong>{session.date || "Flexible"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Time</span><strong>{session.time || "Flexible"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Duration</span><strong>{session.duration || 60} min</strong></div>
+              <div className="list-group-item px-0 d-flex justify-content-between"><span>Session</span><strong>{session.maxLearners > 0 ? "Group" : "1:1"}</strong></div>
+              {session.maxLearners > 0 && (
+                <div className="list-group-item px-0 d-flex justify-content-between">
+                  <span>Spots</span>
+                  <strong>{session.spotsFilled || 0} / {session.maxLearners} filled</strong>
+                </div>
+              )}
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
             </div>
-            <div className="d-grid gap-2">
-              {existingBooking ? (
-                <button className="btn btn-success rounded-pill" disabled><i className="fa fa-check me-1" />Already Booked</button>
-              ) : (
+            <div className="d-flex flex-column" style={{ gap: "10px" }}>
+              {!existingBooking ? (
                 <button className="btn btn-primary rounded-pill" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
+              ) : existingBooking.requestStatus === "completed" ? (
+                <>
+                  <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "10px 14px", borderRadius: 999, fontSize: "0.85rem", fontWeight: 600, textAlign: "center" }}>
+                    <i className="fa fa-check-circle" style={{ marginRight: 5 }} />Completed
+                  </span>
+                  <button className="btn btn-outline-warning rounded-pill" onClick={() => navigate(`/learner/reviews?session=${session._id}`)}>
+                    <i className="fa fa-star" style={{ marginRight: 5 }} />Leave a Review
+                  </button>
+                </>
+              ) : (
+                <button className="btn btn-success rounded-pill" disabled><i className="fa fa-check me-1" />Already Booked</button>
               )}
-              <button className="btn btn-outline-secondary rounded-pill" onClick={() => showToast.info("Session saved")}>Save / Wishlist</button>
-              <button className="btn btn-outline-primary rounded-pill" onClick={() => navigator.clipboard?.writeText(window.location.href)}>Share</button>
+              {(!existingBooking || existingBooking.requestStatus !== "completed") && (
+                <button className="btn btn-outline-secondary rounded-pill" onClick={() => handleToggleSave(session)}>
+                  <i className={`fa ${saved ? "fa-heart" : "fa-heart-o"}`} style={{ marginRight: 5, color: saved ? "#dc2626" : undefined }} />{saved ? "Saved" : "Save / Wishlist"}
+                </button>
+              )}
+              <button className="btn btn-outline-primary rounded-pill" onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" style={{ marginRight: 5 }} />Share</button>
             </div>
           </div>
         </div>
@@ -174,7 +209,7 @@ const SessionDetails = () => {
           <div className="row g-4">
             {related.slice(0, 3).map((item) => (
               <div className="col-md-6 col-xl-4" key={item._id}>
-                <SessionCard session={item} onBook={() => navigate(`/learner/book/${item._id}`)} />
+                <SessionCard session={item} onBook={() => navigate(`/learner/book/${item._id}`)} onToggleSave={handleToggleSave} />
               </div>
             ))}
           </div>
