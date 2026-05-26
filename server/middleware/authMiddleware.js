@@ -2,7 +2,11 @@ const jwt = require("jsonwebtoken");
 
 const SECRET = process.env.JWT_SECRET;
 
-const getBearerToken = (req) => {
+const extractToken = (req) => {
+  if (req.cookies?.token) {
+    return { token: req.cookies.token };
+  }
+
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -24,7 +28,7 @@ const getBearerToken = (req) => {
 
 const protect = (req, res, next) => {
   try {
-    const { token, error } = getBearerToken(req);
+    const { token, error } = extractToken(req);
 
     if (error) {
       return res.status(401).json({
@@ -54,7 +58,7 @@ const protect = (req, res, next) => {
 };
 
 protect.optional = (req, res, next) => {
-  const { token, error } = getBearerToken(req);
+  const { token, error } = extractToken(req);
 
   if (error) {
     return next();

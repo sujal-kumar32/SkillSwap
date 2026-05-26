@@ -6,8 +6,10 @@ import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
+import { useAuth } from "../../../App";
 
 const MentorMySkills = () => {
+  const { user } = useAuth();
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -18,9 +20,7 @@ const MentorMySkills = () => {
         setLoading(true);
         const res = await Apiservices.getSkills();
         const allSkills = res.data.data || [];
-        const userId = localStorage.getItem("token");
-        const decoded = userId ? JSON.parse(atob(userId.split(".")[1])) : null;
-        setSkills(allSkills.filter((s) => s.createdBy?._id === decoded?.id));
+        setSkills(allSkills.filter((s) => s.createdBy?._id === user?.id));
       } catch (err) {
         showToast.error("Failed to load skills");
       } finally {

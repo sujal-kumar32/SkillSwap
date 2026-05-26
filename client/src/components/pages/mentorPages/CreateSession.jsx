@@ -271,7 +271,7 @@ const CreateSession = () => {
                             {aiLoading.title ? (
                               <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                             ) : (
-                              <><i className="fa fa-wand-magic-sparkles" /> <span>Generate with AI</span></>
+                              <><i className="fa fa-magic" /> <span>Generate with AI</span></>
                             )}
                           </button>
                         </div>
@@ -346,7 +346,7 @@ const CreateSession = () => {
                             {aiLoading.description ? (
                               <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                             ) : (
-                              <><i className="fa fa-wand-magic-sparkles" /> <span>Generate with AI</span></>
+                              <><i className="fa fa-magic" /> <span>Generate with AI</span></>
                             )}
                           </button>
                         </div>
@@ -627,7 +627,7 @@ const CreateSession = () => {
                     disabled={aiLoading.mentor}
                     style={{ background: "linear-gradient(135deg, #dc2626, #f43f5e)", color: "white", padding: "14px 24px", opacity: aiLoading.mentor ? 0.7 : 1, gap: 10 }}
                   >
-                    {aiLoading.mentor ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-wand-magic-sparkles" />}
+                    {aiLoading.mentor ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-magic" />}
                     {aiLoading.mentor ? "Analyzing..." : "Improve Content"}
                   </button>
                 </div>

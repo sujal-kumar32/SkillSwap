@@ -18,6 +18,7 @@
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
+    "cookie-parser": "^1.4.7",
     "googleapis": "^172.0.0",
     "nodemailer": "^8.0.8",
     "nodemon": "^3.1.14",

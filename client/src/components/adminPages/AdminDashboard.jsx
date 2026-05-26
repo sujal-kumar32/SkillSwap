@@ -75,7 +75,7 @@ const AdminDashboard = () => {
             <p className="text-muted small mb-4">Common admin tasks</p>
             <div className="row g-3">
               {[
-                { label: "Manage Users", icon: "fa-users-gear", to: "/admin/manage-users", color: "#0d6efd" },
+                { label: "Manage Users", icon: "fa-users-cog", to: "/admin/manage-users", color: "#0d6efd" },
                 { label: "Skill Approval", icon: "fa-clipboard-check", to: "/admin/skill-approval", color: "#198754" },
                 { label: "Add Skill", icon: "fa-plus-circle", to: "/admin/add-skill", color: "#6c2bd9" },
                 { label: "Paid Sessions", icon: "fa-credit-card", to: "/admin/manage-paid-sessions", color: "#d97706" },
@@ -100,7 +100,7 @@ const AdminDashboard = () => {
         <div className="col-lg-4">
           <div className="admin-card p-4" style={{ background: "linear-gradient(135deg, #1e293b, #2d1b69)", color: "white" }}>
             <div className="admin-stat-icon mb-3" style={{ width: 48, height: 48, background: "rgba(255,255,255,0.15)", color: "white" }}>
-              <i className="fa fa-shield-halved" />
+              <i className="fa fa-shield-alt" />
             </div>
             <h5 className="fw-bold mb-2" style={{ color: "white" }}>Admin Access</h5>
             <p className="mb-0" style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.9rem" }}>

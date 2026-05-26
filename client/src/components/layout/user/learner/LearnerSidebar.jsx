@@ -1,26 +1,25 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../../utils/toastUtils";
+import { useAuth } from "../../../../App";
 
 const links = [
-  { to: "/learner", label: "Dashboard", icon: "fa-gauge-high", end: true },
+  { to: "/learner", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
   { to: "/learner/explore", label: "Explore Sessions", icon: "fa-compass" },
   { to: "/learner/bookings", label: "My Bookings", icon: "fa-calendar-check" },
   { to: "/learner/progress", label: "Learning Progress", icon: "fa-chart-line" },
   { to: "/learner/reviews", label: "Reviews", icon: "fa-star" },
-  { to: "/learner/history", label: "Booking History", icon: "fa-clock-rotate-left" },
-  { to: "/learner/ai", label: "AI Recommendations", icon: "fa-wand-magic-sparkles" },
+  { to: "/learner/history", label: "Booking History", icon: "fa-history" },
+  { to: "/learner/ai", label: "AI Recommendations", icon: "fa-magic" },
   { to: "/learner/ai-roadmap", label: "Learning Roadmap", icon: "fa-road" },
 ];
 
 const LearnerSidebar = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("roles");
-    window.dispatchEvent(new Event("authChange"));
+  const handleLogout = async () => {
+    await logout();
     showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
@@ -69,11 +68,8 @@ const LearnerSidebar = () => {
         <button
           className="btn w-100 rounded-pill fw-semibold"
           style={{ background: "transparent", color: "#ef4444", border: "1px solid #fee2e2", fontSize: "0.85rem" }}
-          onClick={logout}
-          onMouseEnter={(e) => { e.target.style.background = "#fef2f2"; }}
-          onMouseLeave={(e) => { e.target.style.background = "transparent"; }}
+          onClick={handleLogout}
         >
-          <i className="fa fa-sign-out-alt" style={{ marginRight: 10 }} />
           Logout
         </button>
       </div>

@@ -96,7 +96,7 @@ const LearningRoadmap = () => {
               {loading ? (
                 <><span className="spinner-border spinner-border-sm" role="status" /> Generating...</>
               ) : (
-                <><i className="fa fa-wand-magic-sparkles" /> Generate Roadmap</>
+                <><i className="fa fa-magic" /> Generate Roadmap</>
               )}
             </button>
           </div>

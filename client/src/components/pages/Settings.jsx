@@ -4,6 +4,7 @@ import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import { useAuth } from "../../App";
 
 const initialForm = {
   name: "", email: "", bio: "", image: "", coverImage: "",
@@ -32,8 +33,8 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const roles = JSON.parse(localStorage.getItem("roles") || "[]");
-  const isMentor = roles.includes("mentor");
+  const { user } = useAuth();
+  const isMentor = user?.roles?.includes("mentor");
 
   useEffect(() => {
     const load = async () => {
@@ -266,7 +267,7 @@ const Settings = () => {
                         background: "linear-gradient(135deg, #0d6efd, #6610f2)", color: "white",
                         padding: "8px 20px", fontSize: "0.85rem", opacity: aiBioLoading ? 0.7 : 1,
                       }}>
-                      {aiBioLoading ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-wand-magic-sparkles" /> AI Generate</>}
+                      {aiBioLoading ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-magic" /> AI Generate</>}
                     </button>
                   </div>
                   <textarea className="form-control rounded-4" rows="3" value={form.bio}

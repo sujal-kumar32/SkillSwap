@@ -1,4 +1,4 @@
-import React from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import Home from "./components/pages/Home";
 import About from "./components/pages/About";
@@ -10,7 +10,6 @@ import Testimonial from "./components/pages/Testimonial";
 import Contact from "./components/pages/Contact";
 import Login from "./components/pages/Login";
 import WorkspaceHub from "./components/pages/WorkspaceHub";
-import AddSkill from "./components/adminPages/AddSkill";
 import ManageUsers from "./components/adminPages/ManageUsers";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/layout/user/Layout";
@@ -52,14 +51,50 @@ import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import Settings from "./components/pages/Settings";
 import VerifyEmail from "./components/pages/VerifyEmail";
+import Apiservices from "../Apiservices";
 
+const AuthContext = createContext(null);
 
-const isAdminLoggedIn = () =>
-  !!localStorage.getItem("token") && localStorage.getItem("role") === "admin";
+export function useAuth() {
+  return useContext(AuthContext);
+}
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Apiservices.getProfile()
+      .then((res) => {
+        if (res.data?.success) {
+          setUser(res.data.data);
+        }
+      })
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const logout = async () => {
+    try {
+      await Apiservices.logout();
+    } catch {
+      // ignore
+    }
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
 function HomeRoute() {
-  if (!localStorage.getItem("token")) return <Home />;
-  return localStorage.getItem("role") === "admin" ? (
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Home />;
+  return user.roles?.includes("admin") ? (
     <Navigate to="/admin" replace />
   ) : (
     <Navigate to="/workspace" replace />
@@ -67,11 +102,10 @@ function HomeRoute() {
 }
 
 function RequireAdmin({ children }) {
-  if (!localStorage.getItem("token")) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return localStorage.getItem("role") === "admin" ? (
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return user.roles?.includes("admin") ? (
     children
   ) : (
     <Navigate to="/" replace />
@@ -79,34 +113,32 @@ function RequireAdmin({ children }) {
 }
 
 function RequireUser({ children }) {
-  if (!localStorage.getItem("token")) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return localStorage.getItem("role") === "admin" ? (
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return user.roles?.includes("admin") ? (
     <Navigate to="/admin" replace />
   ) : (
     children
   );
 }
-function RequireMentor({ children }) {
-  if (!localStorage.getItem("token")) {
-    return <Navigate to="/login" replace />;
-  }
 
-  return localStorage.getItem("role") === "mentor" ? (
+function RequireMentor({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return user.roles?.includes("mentor") ? (
     children
   ) : (
-    <Navigate to="/mentor" replace />
+    <Navigate to="/workspace" replace />
   );
 }
 
 function RequireLearner({ children }) {
-  if (!localStorage.getItem("token")) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return localStorage.getItem("role") === "admin" ? (
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return user.roles?.includes("admin") ? (
     <Navigate to="/admin" replace />
   ) : (
     children
@@ -115,7 +147,7 @@ function RequireLearner({ children }) {
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -169,6 +201,7 @@ function App() {
             }
           >
             <Route index element={<AdminDashboard />} />
+            <Route path="/admin/add-skill" element={<MentorCreateSkill />} />
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/manage-users" element={<ManageUsers />} />
             <Route path="/admin/skill-approval" element={<SkillApproval />} />
@@ -227,7 +260,7 @@ function App() {
 
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover draggable theme="light" />
       </BrowserRouter>
-    </>
+    </AuthProvider>
   );
 }
 

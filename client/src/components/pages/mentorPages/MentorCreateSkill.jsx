@@ -75,7 +75,7 @@ const MentorCreateSkill = () => {
     try {
       const res = await Apiservices.AddSkill(data);
       if (res.data.success) {
-        showToast.success("Skill created! Awaiting admin approval.");
+        showToast.success(res.data.message);
         setName("");
         setDescription("");
         setImg(null);
@@ -241,7 +241,7 @@ const MentorCreateSkill = () => {
                       {aiLoading.description ? (
                         <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
                       ) : (
-                        <><i className="fa fa-wand-magic-sparkles" /> <span>Generate with AI</span></>
+                        <><i className="fa fa-magic" /> <span>Generate with AI</span></>
                       )}
                     </button>
                   </div>
@@ -273,7 +273,7 @@ const MentorCreateSkill = () => {
                       {aiLoading.tags ? (
                         <><span className="spinner-border spinner-border-sm" role="status" /> <span>Suggesting...</span></>
                       ) : (
-                        <><i className="fa fa-wand-magic-sparkles" /> <span>AI Suggest</span></>
+                        <><i className="fa fa-magic" /> <span>AI Suggest</span></>
                       )}
                     </button>
                   </div>

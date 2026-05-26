@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader } from "../../learner/LearnerUI";
+import { useAuth } from "../../../App";
 
 const MentorDashboard = () => {
   const [stats, setStats] = useState({ sessions: 0, learners: 0, reviews: 0, rating: "—" });
@@ -40,7 +41,8 @@ const MentorDashboard = () => {
     load();
   }, []);
 
-  const userName = localStorage.getItem("userName") || "Mentor";
+  const { user } = useAuth();
+  const userName = user?.name || "Mentor";
 
   return (
     <>

@@ -4,9 +4,11 @@ import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
+import { useAuth } from "../../../App";
 
 const BookSession = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [session, setSession] = useState(null);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
@@ -113,9 +115,9 @@ const BookSession = () => {
             },
           },
           prefill: {
-            name: localStorage.getItem("userName") || "",
-            email: localStorage.getItem("userEmail") || "",
-            contact: localStorage.getItem("userPhone") || "",
+            name: user?.name || "",
+            email: user?.email || "",
+            contact: user?.phone || "",
           },
           notes: {
             requestId: requestId,

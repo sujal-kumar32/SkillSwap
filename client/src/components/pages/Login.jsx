@@ -3,31 +3,30 @@ import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../../utils/toastUtils";
 import illustration from "../../assets/images/image.png";
 import Apiservices from "../../../Apiservices";
+import { useAuth } from "../../App";
 
 function Login() {
   const navigate = useNavigate();
+  const { user, setUser, loading: authLoading } = useAuth();
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (token) {
-      if (role === "admin") {
+    if (!authLoading && user) {
+      if (user.roles?.includes("admin")) {
         navigate("/admin");
       } else {
         navigate("/workspace");
       }
     }
-  }, [navigate]);
+  }, [user, authLoading, navigate]);
 
   // LOGIN USING AXIOS
   const loginAndRedirect = async (loginEmail, loginPassword) => {
@@ -38,22 +37,11 @@ function Login() {
       });
 
       const data = response.data;
-      const roles = data.data?.roles || [];
 
-      let role = "learner";
-
-      if (roles.includes("admin")) {
-        role = "admin";
-      } else if (roles.includes("mentor")) {
-        role = "mentor";
+      const profileRes = await Apiservices.getProfile();
+      if (profileRes.data?.success) {
+        setUser(profileRes.data.data);
       }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", role);
-      localStorage.setItem("roles", JSON.stringify(roles));
-      localStorage.setItem("userName", data.data?.name || "User");
-      localStorage.setItem("userEmail", data.data?.email || "");
-      window.dispatchEvent(new Event("authChange"));
 
       return data;
     } catch (error) {
@@ -93,7 +81,7 @@ function Login() {
       }
 
       try {
-        setLoading(true);
+        setSubmitting(true);
 
         const response = await Apiservices.register({
           name,
@@ -101,7 +89,7 @@ function Login() {
           password,
         });
 
-        setLoading(false);
+        setSubmitting(false);
 
         if (!response.data.success) {
           showToast.error(response.data.message || "Signup failed");
@@ -116,7 +104,7 @@ function Login() {
         setPassword("");
         setConfirmPassword("");
       } catch (error) {
-        setLoading(false);
+        setSubmitting(false);
         showToast.error(error.response?.data?.message || "Signup error");
       }
 
@@ -125,11 +113,11 @@ function Login() {
 
     // LOGIN FLOW
     try {
-      setLoading(true);
+      setSubmitting(true);
 
       const userData = await loginAndRedirect(email, password);
 
-      setLoading(false);
+      setSubmitting(false);
 
       if (!userData) return;
 
@@ -383,8 +371,8 @@ padding: 0;
                     </div>
                   )}
 
-                  <button type="submit" className="btn btn-primary btn-primary-custom text-white" disabled={loading}>
-                    {loading ? "Please wait..." : isSignup ? "Sign Up" : "Sign In"}
+                  <button type="submit" className="btn btn-primary btn-primary-custom text-white" disabled={submitting}>
+                    {submitting ? "Please wait..." : isSignup ? "Sign Up" : "Sign In"}
                   </button>
 
                   <div className="text-center mt-4">

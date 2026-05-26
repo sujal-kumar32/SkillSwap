@@ -55,6 +55,7 @@ exports.createSkill = asyncHandler(async (req, res) => {
 
     const parsedTags = typeof tags === "string" ? tags.split(",").map((t) => t.trim()).filter(Boolean) : Array.isArray(tags) ? tags : [];
 
+    const approved = isAdmin(req);
     const skill = await Skill.create({
       name: trimmedName,
       categoryId,
@@ -64,6 +65,7 @@ exports.createSkill = asyncHandler(async (req, res) => {
       thumbnail: thumbnail.url,
       thumbnailPublicId: thumbnail.publicId,
       createdBy: req.user.id,
+      status: approved ? "approved" : "pending",
     });
 
     const normalizedNew = normalizeName(trimmedName);
@@ -76,7 +78,7 @@ exports.createSkill = asyncHandler(async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Skill created",
+      message: approved ? "Skill created and published!" : "Skill created! Awaiting admin approval.",
       data: skill,
     });
 

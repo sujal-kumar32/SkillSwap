@@ -4,10 +4,12 @@ import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../../src/utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
+import { useAuth } from "../../App";
 
 function WorkspaceHub() {
   const navigate = useNavigate();
-  const userName = localStorage.getItem("userName") || "User";
+  const { user, setUser } = useAuth();
+  const userName = user?.name || "User";
 
   const [isMentor, setIsMentor] = useState(false);
   const [appStatus, setAppStatus] = useState(null);
@@ -26,8 +28,7 @@ function WorkspaceHub() {
   const [mentorForm, setMentorForm] = useState({ skills: "", experience: "", bio: "", category: "", portfolioLink: "" });
 
   useEffect(() => {
-    const roles = JSON.parse(localStorage.getItem("roles") || "[]");
-    const mentorStatus = roles.includes("mentor") || localStorage.getItem("role") === "admin";
+    const mentorStatus = user?.roles?.includes("mentor") || user?.roles?.includes("admin");
     setIsMentor(mentorStatus);
 
     if (!mentorStatus) {
@@ -136,6 +137,14 @@ function WorkspaceHub() {
       showToast.info("Your application is pending admin approval");
       return;
     }
+    if (appStatus === "approved") {
+      if (user) {
+        setUser({ ...user, roles: [...(user.roles || []), "mentor"] });
+      }
+      setIsMentor(true);
+      navigate("/mentor");
+      return;
+    }
     if (appStatus === "rejected") {
       showToast.info("Your previous application was rejected. You can apply again.");
     }
@@ -156,15 +165,27 @@ function WorkspaceHub() {
       setApplying(true);
       const res = await Apiservices.applyForMentor(mentorForm);
       if (res.data.success) {
-        if (res.data.token) localStorage.setItem("token", res.data.token);
-        localStorage.setItem("role", "mentor");
-        localStorage.setItem("roles", JSON.stringify(res.data.data?.roles || ["learner", "mentor"]));
+        if (user) {
+          const profileRes = await Apiservices.getProfile().catch(() => null);
+          if (profileRes?.data?.success) setUser(profileRes.data.data);
+        }
         setIsMentor(true);
         setShowForm(false);
         showToast.success("You are now a mentor!");
         navigate("/mentor");
       } else {
-        showToast.warning(res.data.message);
+        if (res.data.message === "Already a mentor" && res.data.token) {
+          if (user) {
+            const profileRes = await Apiservices.getProfile().catch(() => null);
+            if (profileRes?.data?.success) setUser(profileRes.data.data);
+          }
+          setIsMentor(true);
+          setShowForm(false);
+          showToast.success("Welcome back! Redirecting to mentor dashboard.");
+          navigate("/mentor");
+        } else {
+          showToast.warning(res.data.message);
+        }
       }
     } catch (err) {
       showToast.error(err?.response?.data?.message || "Error submitting application");

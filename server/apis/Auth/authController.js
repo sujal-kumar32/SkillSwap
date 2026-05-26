@@ -224,6 +224,15 @@ exports.login = asyncHandler(async (req, res) => {
       expiresIn: TOKEN_EXPIRES_IN,
     });
 
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+
+    res.cookie("token", token, cookieOptions);
+
     res.send({
       success: true,
       message: "Login successful",
@@ -356,5 +365,39 @@ exports.deleteAccount = asyncHandler(async (req, res) => {
       success: true,
       message: "Your account has been deleted.",
     });
+
+});
+
+// GET CURRENT USER
+exports.getMe = asyncHandler(async (req, res) => {
+
+    const user = await User.findById(req.user.id).select("name email roles profileImage");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        roles: user.roles,
+        profileImage: user.profileImage,
+      },
+    });
+
+});
+
+// LOGOUT
+exports.logout = asyncHandler(async (req, res) => {
+
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    res.json({ success: true, message: "Logged out successfully" });
 
 });

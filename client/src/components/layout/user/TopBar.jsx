@@ -1,17 +1,15 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
+import { useAuth } from "../../../App";
 
 const TopBar = () => {
   const navigate = useNavigate();
-  const userName = localStorage.getItem("userName") || "User";
+  const { user, logout } = useAuth();
+  const userName = user?.name || "User";
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("roles");
-    localStorage.removeItem("userName");
-    window.dispatchEvent(new Event("authChange"));
+  const handleLogout = async () => {
+    await logout();
     showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };

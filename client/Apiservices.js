@@ -1,26 +1,13 @@
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+
 const baseUrl = "/api/";
 
 class Apiservices {
-  getAuthConfig(config = {}) {
-    const token = localStorage.getItem("token");
 
-    if (!token) {
-      return config;
-    }
-
-    return {
-      ...config,
-      headers: {
-        ...(config.headers || {}),
-        Authorization: `Bearer ${token}`,
-      },
-    };
-  }
-
-  getToken() {
-    return this.getAuthConfig();
+  logout() {
+    return axios.post(baseUrl + "auth/logout");
   }
 
   register(data) {
@@ -36,11 +23,11 @@ class Apiservices {
   }
 
   resendVerification() {
-    return axios.post(baseUrl + "auth/resend-verification", {}, this.getToken());
+    return axios.post(baseUrl + "auth/resend-verification");
   }
 
   deleteAccount(data) {
-    return axios.post(baseUrl + "auth/delete-account", data, this.getToken());
+    return axios.post(baseUrl + "auth/delete-account", data);
   }
 
   forgotPassword(data) {
@@ -52,57 +39,56 @@ class Apiservices {
   }
 
   AddSkill(data) {
-    return axios.post(baseUrl + "skills", data, this.getToken());
+    return axios.post(baseUrl + "skills", data);
   }
 
   getSkills(includeDeleted = false, extraParams = {}) {
     const config = { params: { ...extraParams } };
     if (includeDeleted) config.params.includeDeleted = true;
-    return axios.get(baseUrl + "skills", this.getAuthConfig(config));
+    return axios.get(baseUrl + "skills", config);
   }
 
   getSessions() {
-    return axios.get(baseUrl + "sessions", this.getAuthConfig());
+    return axios.get(baseUrl + "sessions");
   }
 
   fetchSessions(params = {}) {
-    return axios.get(baseUrl + "sessions", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "sessions", { params });
   }
 
   getMySessions(params = {}) {
-    return axios.get(baseUrl + "sessions/mentor/me", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "sessions/mentor/me", { params });
   }
 
   getSession(sessionId) {
-    return axios.get(baseUrl + `sessions/${sessionId}`, this.getAuthConfig());
+    return axios.get(baseUrl + `sessions/${sessionId}`);
   }
 
   fetchSessionDetails(sessionId) {
-    return axios.get(baseUrl + `sessions/${sessionId}`, this.getAuthConfig());
+    return axios.get(baseUrl + `sessions/${sessionId}`);
   }
 
   createSession(data) {
-    return axios.post(baseUrl + "sessions", data, this.getToken());
+    return axios.post(baseUrl + "sessions", data);
   }
 
   updateSession(sessionId, data) {
-    return axios.put(baseUrl + `sessions/${sessionId}`, data, this.getToken());
+    return axios.put(baseUrl + `sessions/${sessionId}`, data);
   }
 
   deleteSession(sessionId) {
-    return axios.delete(baseUrl + `sessions/${sessionId}`, this.getToken());
+    return axios.delete(baseUrl + `sessions/${sessionId}`);
   }
 
   updateSkillStatus(skillId, status) {
     return axios.put(
       baseUrl + `skills/${skillId}`,
       { status },
-      this.getToken(),
     );
   }
 
   deleteSkill(skillId) {
-    return axios.delete(baseUrl + `skills/${skillId}`, this.getToken());
+    return axios.delete(baseUrl + `skills/${skillId}`);
   }
 
   getCategories(params = {}) {
@@ -110,218 +96,215 @@ class Apiservices {
   }
 
   addCategory(data) {
-    return axios.post(baseUrl + "categories", data, this.getToken());
+    return axios.post(baseUrl + "categories", data);
   }
 
   updateCategory(id, data) {
-    return axios.put(baseUrl + `categories/${id}`, data, this.getToken());
+    return axios.put(baseUrl + `categories/${id}`, data);
   }
 
   deleteCategory(id) {
-    return axios.delete(baseUrl + `categories/${id}`, this.getToken());
+    return axios.delete(baseUrl + `categories/${id}`);
   }
 
   toggleCategory(id) {
-    return axios.patch(baseUrl + `categories/toggle/${id}`, {}, this.getToken());
+    return axios.patch(baseUrl + `categories/toggle/${id}`);
   }
 
   getUsers(config = {}) {
-    return axios.get(baseUrl + "users", this.getAuthConfig(config));
+    return axios.get(baseUrl + "users", config);
   }
 
   applyForMentor() {
-    return axios.post(baseUrl + "users/apply-mentor", {}, this.getToken());
+    return axios.post(baseUrl + "users/apply-mentor");
   }
 
   updateUserStatus(userId, status) {
     return axios.put(
       baseUrl + `users/${userId}/status`,
       { status },
-      this.getToken(),
     );
   }
 
   blockUser(userId) {
-    return axios.put(baseUrl + `users/${userId}/block`, {}, this.getToken());
+    return axios.put(baseUrl + `users/${userId}/block`);
   }
 
   unblockUser(userId) {
-    return axios.put(baseUrl + `users/${userId}/unblock`, {}, this.getToken());
+    return axios.put(baseUrl + `users/${userId}/unblock`);
   }
 
   approveUser(userId) {
-    return axios.put(baseUrl + `users/${userId}/approve`, {}, this.getToken());
+    return axios.put(baseUrl + `users/${userId}/approve`);
   }
 
   getRequests() {
-    return axios.get(baseUrl + "requests", this.getToken());
+    return axios.get(baseUrl + "requests");
   }
 
   bookSession(data) {
-    return axios.post(baseUrl + "requests/book", data, this.getToken());
+    return axios.post(baseUrl + "requests/book", data);
   }
 
   fetchBookings(params = {}) {
-    return axios.get(baseUrl + "requests/my-bookings", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "requests/my-bookings", { params });
   }
 
   fetchProgress() {
-    return axios.get(baseUrl + "progress", this.getToken());
+    return axios.get(baseUrl + "progress");
   }
 
   getAllProgress(params = {}) {
-    return axios.get(baseUrl + "progress/all", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "progress/all", { params });
   }
 
   fetchReviews(params = {}) {
-    return axios.get(baseUrl + "reviews", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "reviews", { params });
   }
 
   createReview(data) {
-    return axios.post(baseUrl + "reviews", data, this.getToken());
+    return axios.post(baseUrl + "reviews", data);
   }
 
   updateReview(reviewId, data) {
-    return axios.put(baseUrl + `reviews/${reviewId}`, data, this.getToken());
+    return axios.put(baseUrl + `reviews/${reviewId}`, data);
   }
 
   deleteReview(reviewId) {
-    return axios.delete(baseUrl + `reviews/${reviewId}`, this.getToken());
+    return axios.delete(baseUrl + `reviews/${reviewId}`);
   }
 
   downloadCertificate(skillName) {
     return axios.get(baseUrl + `certificates/download/${encodeURIComponent(skillName)}`, {
-      ...this.getToken(),
       responseType: "blob",
     });
   }
 
   updateProfile(data) {
-    return axios.put(baseUrl + "profile", data, this.getToken());
+    return axios.put(baseUrl + "profile", data);
   }
 
   getProfile() {
-    return axios.get(baseUrl + "profile", this.getToken());
+    return axios.get(baseUrl + "profile");
   }
 
   getProfileStats() {
-    return axios.get(baseUrl + "profile/stats", this.getToken());
+    return axios.get(baseUrl + "profile/stats");
   }
 
   fetchRecommendations() {
-    return axios.get(baseUrl + "ai/recommendations", this.getToken());
+    return axios.get(baseUrl + "ai/recommendations");
   }
 
   generateTitle(data) {
-    return axios.post(baseUrl + "ai/generate-title", data, this.getToken());
+    return axios.post(baseUrl + "ai/generate-title", data);
   }
 
   generateDescription(data) {
-    return axios.post(baseUrl + "ai/generate-description", data, this.getToken());
+    return axios.post(baseUrl + "ai/generate-description", data);
   }
 
   generateOutcomes(data) {
-    return axios.post(baseUrl + "ai/generate-outcomes", data, this.getToken());
+    return axios.post(baseUrl + "ai/generate-outcomes", data);
   }
 
   generateTags(data) {
-    return axios.post(baseUrl + "ai/generate-tags", data, this.getToken());
+    return axios.post(baseUrl + "ai/generate-tags", data);
   }
 
   generateRoadmap(data) {
-    return axios.post(baseUrl + "ai/generate-roadmap", data, this.getToken());
+    return axios.post(baseUrl + "ai/generate-roadmap", data);
   }
 
   mentorAssistant(data) {
-    return axios.post(baseUrl + "ai/mentor-assistant", data, this.getToken());
+    return axios.post(baseUrl + "ai/mentor-assistant", data);
   }
 
   chatAI(data) {
-    return axios.post(baseUrl + "ai/chat", data, this.getToken());
+    return axios.post(baseUrl + "ai/chat", data);
   }
 
   searchSessions(data) {
-    return axios.post(baseUrl + "ai/search", data, this.getToken());
+    return axios.post(baseUrl + "ai/search", data);
   }
 
   getMentorBookings(params = {}) {
-    return axios.get(baseUrl + "requests/mentor/bookings", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "requests/mentor/bookings", { params });
   }
 
   getMentorLearners(params = {}) {
-    return axios.get(baseUrl + "requests/mentor/learners", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "requests/mentor/learners", { params });
   }
 
   updateRequest(id, status) {
     return axios.put(
       baseUrl + `requests/${id}/status`,
       { status },
-      this.getToken(),
     );
   }
 
   createOrder(data) {
-    return axios.post(baseUrl + "payments/create-order", data, this.getToken());
+    return axios.post(baseUrl + "payments/create-order", data);
   }
 
   verifyPayment(data) {
-    return axios.post(baseUrl + "payments/verify-payment", data, this.getToken());
+    return axios.post(baseUrl + "payments/verify-payment", data);
   }
 
   processRefund(data) {
-    return axios.post(baseUrl + "payments/refund", data, this.getToken());
+    return axios.post(baseUrl + "payments/refund", data);
   }
 
   getSettings() {
-    return axios.get(baseUrl + "settings", this.getToken());
+    return axios.get(baseUrl + "settings");
   }
 
   updateSettings(data) {
-    return axios.put(baseUrl + "settings", data, this.getToken());
+    return axios.put(baseUrl + "settings", data);
   }
 
   applyForMentor(data) {
-    return axios.post(baseUrl + "mentor-applications/apply", data, this.getToken());
+    return axios.post(baseUrl + "mentor-applications/apply", data);
   }
 
   getMyApplication() {
-    return axios.get(baseUrl + "mentor-applications/my-application", this.getToken());
+    return axios.get(baseUrl + "mentor-applications/my-application");
   }
 
   getAllMentorApplications(params = {}) {
-    return axios.get(baseUrl + "mentor-applications/all", this.getAuthConfig({ params }));
+    return axios.get(baseUrl + "mentor-applications/all", { params });
   }
 
   approveMentorApplication(id, data = {}) {
-    return axios.put(baseUrl + `mentor-applications/${id}/approve`, data, this.getToken());
+    return axios.put(baseUrl + `mentor-applications/${id}/approve`, data);
   }
 
   rejectMentorApplication(id, data = {}) {
-    return axios.put(baseUrl + `mentor-applications/${id}/reject`, data, this.getToken());
+    return axios.put(baseUrl + `mentor-applications/${id}/reject`, data);
   }
 
   removeMentor(id) {
-    return axios.put(baseUrl + `mentor-applications/${id}/remove-mentor`, {}, this.getToken());
+    return axios.put(baseUrl + `mentor-applications/${id}/remove-mentor`);
   }
 
   unblockMentor(id) {
-    return axios.put(baseUrl + `mentor-applications/${id}/unblock`, {}, this.getToken());
+    return axios.put(baseUrl + `mentor-applications/${id}/unblock`);
   }
 
   deleteMentorApplication(id) {
-    return axios.delete(baseUrl + `mentor-applications/${id}`, this.getToken());
+    return axios.delete(baseUrl + `mentor-applications/${id}`);
   }
 
   calendarConnect() {
-    return axios.get(baseUrl + "calendar/connect", this.getToken());
+    return axios.get(baseUrl + "calendar/connect");
   }
 
   calendarStatus() {
-    return axios.get(baseUrl + "calendar/status", this.getToken());
+    return axios.get(baseUrl + "calendar/status");
   }
 
   calendarDisconnect() {
-    return axios.post(baseUrl + "calendar/disconnect", {}, this.getToken());
+    return axios.post(baseUrl + "calendar/disconnect");
   }
 }
 

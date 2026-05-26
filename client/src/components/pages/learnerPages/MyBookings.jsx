@@ -53,7 +53,7 @@ const MyBookings = () => {
       <PageHeader title="My Bookings" subtitle="Manage upcoming, pending, completed, and cancelled learning sessions." />
       {error && <div className="alert alert-danger rounded-4">{error}</div>}
       <div className="row g-4 mb-4">
-        <StatCard icon="fa-calendar-days" label="All Bookings" value={bookings.length} />
+        <StatCard icon="fa-calendar-alt" label="All Bookings" value={bookings.length} />
         <StatCard icon="fa-clock" label="Pending" value={bookings.filter((b) => b.requestStatus === "pending").length} tone="warning" />
         <StatCard icon="fa-video" label="Upcoming" value={bookings.filter((b) => b.requestStatus === "accepted").length} tone="success" />
         <StatCard icon="fa-circle-check" label="Completed" value={bookings.filter((b) => b.requestStatus === "completed").length} tone="info" />

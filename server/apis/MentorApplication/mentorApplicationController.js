@@ -14,7 +14,24 @@ exports.applyForMentor = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id);
 
     if (user.roles.includes("mentor")) {
-      return res.json({ success: false, message: "Already a mentor" });
+      const token = jwt.sign(
+        { id: user._id, roles: user.roles },
+        SECRET,
+        { expiresIn: TOKEN_EXPIRES_IN },
+      );
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      };
+      res.cookie("token", token, cookieOptions);
+      return res.json({
+        success: false,
+        message: "Already a mentor",
+        token,
+        data: { id: user._id, roles: user.roles },
+      });
     }
 
     const blocked = await MentorApplication.findOne({
@@ -59,6 +76,14 @@ exports.applyForMentor = asyncHandler(async (req, res) => {
       SECRET,
       { expiresIn: TOKEN_EXPIRES_IN },
     );
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
+    res.cookie("token", token, cookieOptions);
 
     res.json({
       success: true,

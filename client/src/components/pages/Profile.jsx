@@ -4,6 +4,7 @@ import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import { useAuth } from "../../App";
 
 const badge = (status) => {
   const m = { accepted: "success", pending: "warning", completed: "info", cancelled: "secondary", rejected: "danger", active: "success" };
@@ -11,8 +12,8 @@ const badge = (status) => {
 };
 
 const Profile = () => {
-  const roles = JSON.parse(localStorage.getItem("roles") || "[]");
-  const isMentor = roles.includes("mentor");
+  const { user } = useAuth();
+  const isMentor = user?.roles?.includes("mentor");
   const [profile, setProfile] = useState({ name: "", email: "", bio: "", interests: "", goals: "", skills: [], image: "", phone: "", timezone: "", linkedin: "", github: "", portfolio: "", youtube: "", twitter: "" });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -158,7 +159,7 @@ const Profile = () => {
               { id: "about", label: "About", icon: "fa-user" },
               { id: "skills", label: "Skills", icon: "fa-code" },
               { id: "journey", label: "Journey", icon: "fa-road" },
-              { id: "social", label: "Connect", icon: "fa-share-nodes" },
+              { id: "social", label: "Connect", icon: "fa-share-alt" },
             ].map((t) => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
                 className={`btn btn-sm rounded-top-3 fw-semibold px-4 py-2 ${activeTab === t.id ? "btn-primary" : "btn-outline-secondary border-0"}`}
@@ -388,7 +389,7 @@ const Profile = () => {
 
           {activeTab === "social" && (
             <div className="learner-card p-4">
-              <h5 className="fw-bold mb-4"><i className="fa fa-share-nodes text-primary" style={{ marginRight: 10 }} />Connect</h5>
+              <h5 className="fw-bold mb-4"><i className="fa fa-share-alt text-primary" style={{ marginRight: 10 }} />Connect</h5>
               <div className="d-flex flex-wrap gap-3">
                 {[
                   { key: "github", icon: "fab fa-github", label: "GitHub", color: "#333" },

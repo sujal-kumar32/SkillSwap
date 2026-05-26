@@ -1,9 +1,10 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../../utils/toastUtils";
+import { useAuth } from "../../../../App";
 
 const links = [
-  { to: "/mentor", label: "Dashboard", icon: "fa-gauge-high", end: true },
+  { to: "/mentor", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
   { to: "/mentor/create-skill", label: "Create Skill", icon: "fa-lightbulb" },
   { to: "/mentor/my-skills", label: "My Skills", icon: "fa-code" },
   { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
@@ -15,12 +16,10 @@ const links = [
 
 const MentorSidebar = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("roles");
-    window.dispatchEvent(new Event("authChange"));
+  const handleLogout = async () => {
+    await logout();
     showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
@@ -69,11 +68,8 @@ const MentorSidebar = () => {
         <button
           className="btn w-100 rounded-pill fw-semibold"
           style={{ background: "transparent", color: "#ef4444", border: "1px solid #fee2e2", fontSize: "0.85rem" }}
-          onClick={logout}
-          onMouseEnter={(e) => { e.target.style.background = "#fef2f2"; }}
-          onMouseLeave={(e) => { e.target.style.background = "transparent"; }}
+          onClick={handleLogout}
         >
-          <i className="fa fa-sign-out-alt" style={{ marginRight: 10 }} />
           Logout
         </button>
       </div>

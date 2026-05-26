@@ -214,7 +214,7 @@ const AIRecommendations = () => {
                 {insightLoading ? (
                   <><span className="spinner-border spinner-border-sm" role="status" /> Analyzing...</>
                 ) : (
-                  <><i className="fa fa-wand-magic-sparkles" /> Get Learning Insights</>
+                  <><i className="fa fa-magic" /> Get Learning Insights</>
                 )}
               </button>
             )}

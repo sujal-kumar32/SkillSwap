@@ -1,11 +1,13 @@
 import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
+import { useAuth } from "../../../App";
 
 const links = [
-  { to: "/admin", label: "Dashboard", icon: "fa-gauge-high", end: true },
-  { to: "/admin/manage-users", label: "Manage Users", icon: "fa-users-gear" },
+  { to: "/admin", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
+  { to: "/admin/manage-users", label: "Manage Users", icon: "fa-users-cog" },
   { to: "/admin/categories", label: "Categories", icon: "fa-tags" },
+  { to: "/admin/add-skill", label: "Add Skill", icon: "fa-plus-circle" },
   { to: "/admin/skill-approval", label: "Skill Approval", icon: "fa-clipboard-check" },
   { to: "/admin/manage-paid-sessions", label: "Manage Sessions", icon: "fa-video" },
   { to: "/admin/view-requests", label: "View Requests", icon: "fa-envelope" },
@@ -18,12 +20,10 @@ const links = [
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("roles");
-    window.dispatchEvent(new Event("authChange"));
+  const handleLogout = async () => {
+    await logout();
     showToast.success("Logged out successfully");
     navigate("/", { replace: true });
   };
@@ -34,7 +34,7 @@ const AdminSidebar = () => {
         <Link to="/" className="text-decoration-none">
           <div className="d-flex align-items-center gap-2">
             <div className="admin-brand-icon">
-              <i className="fa fa-shield-halved" />
+              <i className="fa fa-book-reader" />
             </div>
             <div>
               <h5 className="fw-bold mb-0" style={{ color: "#1e293b" }}>SkillSwap</h5>
@@ -64,11 +64,8 @@ const AdminSidebar = () => {
         <button
           className="btn w-100 rounded-pill fw-semibold"
           style={{ background: "transparent", color: "#ef4444", border: "1px solid #fee2e2", fontSize: "0.85rem" }}
-          onClick={logout}
-          onMouseEnter={(e) => { e.target.style.background = "#fef2f2"; }}
-          onMouseLeave={(e) => { e.target.style.background = "transparent"; }}
+          onClick={handleLogout}
         >
-          <i className="fa fa-sign-out-alt" style={{ marginRight: 10 }} />
           Logout
         </button>
       </div>
