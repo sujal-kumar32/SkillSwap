@@ -14,6 +14,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -54,9 +55,14 @@ function Login() {
       localStorage.setItem("userEmail", data.data?.email || "");
       window.dispatchEvent(new Event("authChange"));
 
-      return data; // return full user data
+      return data;
     } catch (error) {
-      showToast.error(error.response?.data?.message || "Login failed");
+      const msg = error.response?.data?.message || "Login failed";
+      if (msg.toLowerCase().includes("verify your email")) {
+        setVerificationSent(true);
+      } else {
+        showToast.error(msg);
+      }
       return null;
     }
   };
@@ -73,6 +79,11 @@ function Login() {
     if (isSignup) {
       if (!name || !confirmPassword) {
         showToast.error("Please fill all signup fields.");
+        return;
+      }
+
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        showToast.error("Please provide a valid email address.");
         return;
       }
 
@@ -97,18 +108,13 @@ function Login() {
           return;
         }
 
-        // Auto login after signup
-        const userData = await loginAndRedirect(email, password);
-
-        if (userData) {
-          showToast.success("Signup successful, logged in!");
-
-          if (userData.data?.roles?.includes("admin")) {
-            navigate("/admin");
-          } else {
-            navigate("/workspace");
-          }
-        }
+        showToast.success("Verification email sent! Please check your inbox.");
+        setIsSignup(false);
+        setVerificationSent(true);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       } catch (error) {
         setLoading(false);
         showToast.error(error.response?.data?.message || "Signup error");
@@ -320,6 +326,12 @@ padding: 0;
                   </p>
                 </div>
 
+                {verificationSent && (
+                  <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 14, color: "#856404" }}>
+                    <strong>Verify your email!</strong> We sent a verification link to your email. Please check your inbox and click the link to activate your account.
+                  </div>
+                )}
+
                 <form onSubmit={handleSubmit}>
                   {isSignup && (
                     <div className="mb-3">
@@ -381,7 +393,7 @@ padding: 0;
                       <span style={{ cursor: "pointer", color: "#4285F4", fontWeight: "600", textDecoration: "none", transition: "all 0.3s ease" }}
                         onMouseEnter={(e) => (e.target.style.color = "#3367D6")}
                         onMouseLeave={(e) => (e.target.style.color = "#4285F4")}
-                        onClick={() => setIsSignup(!isSignup)}>
+                        onClick={() => { setVerificationSent(false); setIsSignup(!isSignup); }}>
                         {isSignup ? "Login" : "Sign up"}
                       </span>
                     </p>

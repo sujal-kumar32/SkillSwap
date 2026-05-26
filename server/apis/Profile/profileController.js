@@ -1,10 +1,13 @@
 ﻿const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const User = require("../Users/userModel");
 const Session = require("../Session/sessionModel");
 const Request = require("../Request/requestModel");
 const Review = require("../Reviews/reviewModel");
 const Skill = require("../Skills/skillModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
+const { sendEmail } = require("../../utilities/emailService");
+const { emailVerification } = require("../../utilities/emailTemplates");
 const asyncHandler = require("../../utilities/asyncHandler");
 
 const toArray = (value) => {
@@ -76,7 +79,29 @@ exports.updateProfile = asyncHandler(async (req, res) => {
     } = req.body;
 
     if (name !== undefined) user.name = name.trim();
-    if (email !== undefined) user.email = email.trim().toLowerCase();
+
+    if (email !== undefined) {
+      const newEmail = email.trim().toLowerCase();
+      if (newEmail !== user.email) {
+        const existing = await User.findOne({ email: newEmail, _id: { $ne: user._id } });
+        if (existing) {
+          return res.status(400).json({ success: false, message: "Email already in use" });
+        }
+        user.email = newEmail;
+        user.isVerified = false;
+        const verificationToken = crypto.randomBytes(32).toString("hex");
+        const hash = crypto.createHash("sha256").update(verificationToken).digest("hex");
+        user.verificationToken = hash;
+        user.verificationTokenExpires = Date.now() + 86400000;
+        const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
+        sendEmail({
+          to: user.email,
+          subject: "Verify your new email - SkillSwap",
+          html: emailVerification(user.name, verifyLink),
+        }).catch((err) => console.error("Verification email failed:", err.message));
+      }
+    }
+
     if (bio !== undefined) user.bio = bio.trim();
 
     if (req.file) {

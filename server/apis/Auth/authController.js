@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const asyncHandler = require("../../utilities/asyncHandler");
 const { sendEmail } = require("../../utilities/emailService");
-const { welcomeEmail, passwordResetEmail } = require("../../utilities/emailTemplates");
+const { welcomeEmail, emailVerification, passwordResetEmail } = require("../../utilities/emailTemplates");
 
 const SECRET = process.env.JWT_SECRET;
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -40,31 +40,100 @@ exports.register = asyncHandler(async (req, res) => {
       email,
       password: hashedPassword,
       roles: ["learner"],
-      status: "active", // New users are active immediately
+      status: "active",
+      isVerified: false,
     });
 
-    const userData = await User.findById(user._id).select("-password");
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const hash = crypto.createHash("sha256").update(verificationToken).digest("hex");
 
-    const payload = {
-      id: user._id,
-      roles: user.roles,
-    };
-    const token = jwt.sign(payload, SECRET, {
-      expiresIn: TOKEN_EXPIRES_IN,
+    user.verificationToken = hash;
+    user.verificationTokenExpires = Date.now() + 86400000;
+    await user.save();
+
+    const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Verify your email - SkillSwap",
+      html: emailVerification(user.name, verifyLink),
     });
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
-      token,
-      data: userData,
+      message: "Registration successful! Verification email sent.",
     });
+
+});
+
+// VERIFY EMAIL
+exports.verifyEmail = asyncHandler(async (req, res) => {
+
+    const { token } = req.params;
+
+    const hash = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      verificationToken: hash,
+      verificationTokenExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification link is invalid or has expired.",
+      });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
 
     sendEmail({
       to: user.email,
       subject: "Welcome to SkillSwap!",
       html: welcomeEmail(user.name),
     }).catch((err) => console.error("Welcome email failed:", err.message));
+
+    res.json({
+      success: true,
+      message: "Email verified successfully! You can now log in.",
+    });
+
+});
+
+// RESEND VERIFICATION
+exports.resendVerification = asyncHandler(async (req, res) => {
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    if (user.isVerified !== false) {
+      return res.json({ success: true, message: "Your email is already verified." });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const hash = crypto.createHash("sha256").update(verificationToken).digest("hex");
+
+    user.verificationToken = hash;
+    user.verificationTokenExpires = Date.now() + 86400000;
+    await user.save();
+
+    const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
+
+    await sendEmail({
+      to: user.email,
+      subject: "Verify your email - SkillSwap",
+      html: emailVerification(user.name, verifyLink),
+    });
+
+    res.json({
+      success: true,
+      message: "Verification email sent. Please check your inbox.",
+    });
 
 });
 
@@ -135,6 +204,13 @@ exports.login = asyncHandler(async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "Your account is blocked",
+      });
+    }
+
+    if (user.isVerified === false) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email before logging in.",
       });
     }
 
@@ -226,6 +302,59 @@ exports.resetPassword = asyncHandler(async (req, res) => {
     res.json({
       success: true,
       message: "Password reset successful. You can now log in.",
+    });
+
+});
+
+// DELETE ACCOUNT
+exports.deleteAccount = asyncHandler(async (req, res) => {
+
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required to delete your account.",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect password.",
+      });
+    }
+
+    user.name = "Deleted User";
+    user.email = `deleted-${user._id}@skillswap.local`;
+    user.password = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10);
+    user.profileImage = "";
+    user.coverImage = "";
+    user.bio = "";
+    user.interests = [];
+    user.learningGoals = "";
+    user.skills = [];
+    user.phone = "";
+    user.timezone = "UTC";
+    user.socialLinks = {};
+    user.status = "deleted";
+    user.isVerified = false;
+    user.verificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Your account has been deleted.",
     });
 
 });

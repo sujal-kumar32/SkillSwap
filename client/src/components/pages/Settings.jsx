@@ -23,6 +23,15 @@ const Settings = () => {
   const [newSkill, setNewSkill] = useState("");
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [calendarConnected, setCalendarConnected] = useState(false);
+  const [calendarEmail, setCalendarEmail] = useState("");
+  const [calendarLoading, setCalendarLoading] = useState(true);
+  const [calendarBusy, setCalendarBusy] = useState(false);
+  const [verifySending, setVerifySending] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const roles = JSON.parse(localStorage.getItem("roles") || "[]");
   const isMentor = roles.includes("mentor");
 
@@ -44,6 +53,7 @@ const Settings = () => {
         };
         setProfile(data);
         setForm(data);
+        setIsVerified(u.isVerified !== false);
       } catch (e) {
         showToast.error("Failed to load profile");
       } finally {
@@ -51,7 +61,70 @@ const Settings = () => {
       }
     };
     load();
+    loadCalendarStatus();
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("calendar") === "connected") {
+      showToast.success("Google Calendar connected successfully!");
+      loadCalendarStatus();
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (params.get("calendar") === "error") {
+      showToast.error("Failed to connect Google Calendar. Please try again.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, []);
+
+  const loadCalendarStatus = async () => {
+    try {
+      const res = await Apiservices.calendarStatus();
+      setCalendarConnected(res.data.connected);
+      setCalendarEmail(res.data.email || "");
+    } catch {
+      setCalendarConnected(false);
+    } finally {
+      setCalendarLoading(false);
+    }
+  };
+
+  const handleConnectCalendar = async () => {
+    try {
+      setCalendarBusy(true);
+      const res = await Apiservices.calendarConnect();
+      if (res.data.url) {
+        window.open(res.data.url, "_blank", "width=600,height=700");
+      }
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to connect calendar");
+    } finally {
+      setCalendarBusy(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      setVerifySending(true);
+      await Apiservices.resendVerification();
+      showToast.success("Verification email sent! Check your inbox.");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to send verification email");
+    } finally {
+      setVerifySending(false);
+    }
+  };
+
+  const handleDisconnectCalendar = async () => {
+    try {
+      setCalendarBusy(true);
+      await Apiservices.calendarDisconnect();
+      setCalendarConnected(false);
+      setCalendarEmail("");
+      showToast.success("Calendar disconnected");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to disconnect");
+    } finally {
+      setCalendarBusy(false);
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -104,6 +177,24 @@ const Settings = () => {
       showToast.error(err.response?.data?.message || "Failed");
     } finally {
       setAiBioLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) { showToast.error("Enter your password to confirm."); return; }
+    try {
+      setDeleting(true);
+      await Apiservices.deleteAccount({ password: deletePassword });
+      showToast.success("Account deleted.");
+      localStorage.clear();
+      window.dispatchEvent(new Event("authChange"));
+      window.location.href = "/login";
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to delete account");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+      setDeletePassword("");
     }
   };
 
@@ -163,8 +254,8 @@ const Settings = () => {
                 </div>
                 <div className="col-md-6">
                   <label className="form-label fw-semibold small">Email</label>
-                  <input className="form-control rounded-pill" type="email" value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                  <input className="form-control rounded-pill" type="email" value={form.email} readOnly
+                    style={{ background: "#e9ecef", cursor: "not-allowed" }} />
                 </div>
                 <div className="col-12">
                   <div className="d-flex justify-content-between align-items-center mb-2">
@@ -236,7 +327,7 @@ const Settings = () => {
             </div>
 
             <div className="learner-card p-4 mb-4">
-              {sectionTitle("fa-share-nodes", "Social Links")}
+              {sectionTitle("fa-share-alt", "Social Links")}
               <div className="row g-3">
                 {[
                   ["github", "fab fa-github", "GitHub URL"],
@@ -282,12 +373,94 @@ const Settings = () => {
               </div>
             </div>
 
+            <div className="learner-card p-4 mb-4">
+              {sectionTitle("fa-envelope", "Email Verification")}
+              {isVerified ? (
+                <div className="d-flex align-items-center gap-2">
+                  <i className="fa fa-check-circle text-success" style={{ fontSize: "1.2rem" }} />
+                  <span className="small text-success fw-semibold">Verified</span>
+                </div>
+              ) : (
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                  <p className="mb-0 small text-muted">
+                    <i className="fa fa-exclamation-triangle text-warning me-1" />
+                    Your email is not verified. Please check your inbox or resend the verification email.
+                  </p>
+                  <LoadingButton className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={handleResendVerification} loading={verifySending}>
+                    <i className="fa fa-paper-plane me-2" />Resend Verification
+                  </LoadingButton>
+                </div>
+              )}
+            </div>
+
+            <div className="learner-card p-4 mb-4">
+              {sectionTitle("fa-calendar", "Calendar Sync")}
+              {calendarLoading ? (
+                <div className="text-center py-3"><span className="spinner-border spinner-border-sm text-primary" /></div>
+              ) : (
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                  <div>
+                    {calendarConnected ? (
+                      <p className="mb-0 small">
+                        <i className="fa fa-check-circle text-success me-1" />
+                        Connected as <strong>{calendarEmail}</strong>
+                      </p>
+                    ) : (
+                      <p className="text-muted small mb-0">
+                        <i className="fa fa-info-circle me-1" />
+                        Sync accepted bookings to your Google Calendar automatically.
+                      </p>
+                    )}
+                  </div>
+                  {calendarConnected ? (
+                    <LoadingButton className="btn btn-outline-danger rounded-pill px-4 fw-semibold" onClick={handleDisconnectCalendar}>
+                      Disconnect
+                    </LoadingButton>
+                  ) : (
+                    <LoadingButton className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={handleConnectCalendar}>
+                      <i className="fa fa-google me-2" />Connect Google Calendar
+                    </LoadingButton>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="learner-card p-4 mb-4" style={{ borderLeft: "4px solid #dc2626" }}>
+              {sectionTitle("fa-trash", "Danger Zone")}
+              <p className="small text-muted mb-3">
+                Once you delete your account, your profile and personal data will be permanently removed. Your reviews and session history will remain but be anonymized.
+              </p>
+              <button className="btn btn-outline-danger rounded-pill px-4 fw-semibold" onClick={() => setShowDeleteModal(true)}>
+                <i className="fa fa-trash me-2" />Delete My Account
+              </button>
+            </div>
+
             <div className="d-flex justify-content-center gap-3 mb-4">
               <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-5 py-2 fw-semibold">
                 <i className="fa fa-save" style={{ marginRight: 10 }} />Save Changes
               </LoadingButton>
             </div>
           </form>
+
+          {/* Delete Account Modal */}
+          {showDeleteModal && (
+            <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1050 }}
+              onClick={() => { setShowDeleteModal(false); setDeletePassword(""); }}>
+              <div style={{ background: "#fff", borderRadius: 20, padding: 32, maxWidth: 400, width: "90%", boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
+                onClick={(e) => e.stopPropagation()}>
+                <h5 className="fw-bold mb-2" style={{ color: "#dc2626" }}>Delete Account</h5>
+                <p className="small text-muted mb-3">This action is permanent. Enter your password to confirm.</p>
+                <input type="password" className="form-control rounded-pill mb-3" placeholder="Enter your password"
+                  value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
+                <div className="d-flex gap-2 justify-content-end">
+                  <button className="btn btn-secondary rounded-pill px-4" onClick={() => { setShowDeleteModal(false); setDeletePassword(""); }}>Cancel</button>
+                  <LoadingButton loading={deleting} className="btn btn-danger rounded-pill px-4 fw-semibold" onClick={handleDeleteAccount}>
+                    <i className="fa fa-trash me-2" />Delete
+                  </LoadingButton>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

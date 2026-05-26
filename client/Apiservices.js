@@ -31,6 +31,18 @@ class Apiservices {
     return axios.post(baseUrl + "auth/login", data);
   }
 
+  verifyEmail(token) {
+    return axios.get(baseUrl + `auth/verify/${token}`);
+  }
+
+  resendVerification() {
+    return axios.post(baseUrl + "auth/resend-verification", {}, this.getToken());
+  }
+
+  deleteAccount(data) {
+    return axios.post(baseUrl + "auth/delete-account", data, this.getToken());
+  }
+
   forgotPassword(data) {
     return axios.post(baseUrl + "auth/forgot-password", data);
   }
@@ -298,6 +310,18 @@ class Apiservices {
 
   deleteMentorApplication(id) {
     return axios.delete(baseUrl + `mentor-applications/${id}`, this.getToken());
+  }
+
+  calendarConnect() {
+    return axios.get(baseUrl + "calendar/connect", this.getToken());
+  }
+
+  calendarStatus() {
+    return axios.get(baseUrl + "calendar/status", this.getToken());
+  }
+
+  calendarDisconnect() {
+    return axios.post(baseUrl + "calendar/disconnect", {}, this.getToken());
   }
 }
 

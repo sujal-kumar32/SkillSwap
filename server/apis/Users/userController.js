@@ -56,7 +56,6 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const { status } = req.body;
 
-    // Validate status
     if (!["active", "blocked"].includes(status)) {
       return res.status(400).json({
         success: false,
@@ -64,11 +63,7 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
       });
     }
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { status },
-      { new: true },
-    ).select("-password");
+    const user = await User.findById(userId).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -76,6 +71,16 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
         message: "User not found",
       });
     }
+
+    if (user.status === "deleted") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot modify a deleted account.",
+      });
+    }
+
+    user.status = status;
+    await user.save();
 
     res.json({
       success: true,

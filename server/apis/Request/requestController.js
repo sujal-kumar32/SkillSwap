@@ -7,6 +7,8 @@ const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
 const { sendEmail } = require("../../utilities/emailService");
 const { bookingRequestMentorNotification, bookingStatusUpdateLearner } = require("../../utilities/emailTemplates");
+const CalendarToken = require("../Calendar/calendarTokenModel");
+const { createCalendarEvent, deleteCalendarEvent, refreshAccessToken } = require("../../utilities/calendarService");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -363,6 +365,55 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
           html: bookingStatusUpdateLearner(learner.name, session?.title || "Session", status),
         });
       }).catch((err) => console.error("Status notification failed:", err.message));
+    }
+
+    // Sync Google Calendar events
+    if (["accepted", "cancelled"].includes(status)) {
+      const sessionWithMeta = await Session.findById(request.sessionId)
+        .populate("mentorId", "name email")
+        .select("title date time duration description meetLink")
+        .lean()
+        .catch(() => null);
+
+      if (sessionWithMeta) {
+        const userIds = [request.learnerId, request.mentorId].filter(Boolean);
+        const userTokens = await CalendarToken.find({ userId: { $in: userIds } }).lean();
+
+        for (const token of userTokens) {
+          try {
+            if (status === "accepted") {
+              const startTime = sessionWithMeta.date
+                ? new Date(sessionWithMeta.date)
+                : new Date();
+              if (sessionWithMeta.time) {
+                const [h, m] = sessionWithMeta.time.split(":").map(Number);
+                startTime.setHours(h || 0, m || 0, 0, 0);
+              }
+              const endTime = new Date(startTime);
+              endTime.setMinutes(endTime.getMinutes() + (sessionWithMeta.duration || 60));
+
+              await createCalendarEvent({
+                accessToken: token.accessToken,
+                refreshToken: token.refreshToken,
+                summary: `SkillSwap: ${sessionWithMeta.title}`,
+                description: `${sessionWithMeta.description || "SkillSwap learning session"}\n\nMeeting: ${sessionWithMeta.meetLink || "TBD"}`,
+                startDateTime: startTime.toISOString(),
+                endDateTime: endTime.toISOString(),
+                timeZone: "UTC",
+                attendeeEmails: [sessionWithMeta.mentorId?.email].filter(Boolean),
+              });
+            } else if (status === "cancelled" && token.eventId) {
+              await deleteCalendarEvent({
+                accessToken: token.accessToken,
+                refreshToken: token.refreshToken,
+                eventId: token.eventId,
+              });
+            }
+          } catch (calErr) {
+            console.error("Calendar sync failed for user", token.userId, calErr.message);
+          }
+        }
+      }
     }
 
 });

@@ -157,4 +157,23 @@ function passwordResetEmail(name, resetLink) {
   `;
 }
 
-module.exports = { welcomeEmail, bookingRequestMentorNotification, bookingStatusUpdateLearner, mentorApplicationApproved, mentorApplicationRejected, certificateCompleted, passwordResetEmail };
+function emailVerification(name, verifyLink) {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+      <h2 style="color: #2563eb;">Verify Your Email Address</h2>
+      <p>Hi <strong>${name}</strong>,</p>
+      <p>Thanks for joining SkillSwap! Please verify your email address by clicking the button below. This link expires in 24 hours.</p>
+      <p style="margin-top: 24px;">
+        <a href="${verifyLink}"
+           style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;display:inline-block;">
+          Verify Email
+        </a>
+      </p>
+      <p style="margin-top: 16px;">If you didn't create an account, you can safely ignore this email.</p>
+      <hr style="margin: 24px 0; border: none; border-top: 1px solid #e5e7eb;" />
+      <small style="color: #9ca3af;">SkillSwap — Learn. Teach. Grow.</small>
+    </div>
+  `;
+}
+
+module.exports = { welcomeEmail, emailVerification, bookingRequestMentorNotification, bookingStatusUpdateLearner, mentorApplicationApproved, mentorApplicationRejected, certificateCompleted, passwordResetEmail };

@@ -25,6 +25,12 @@ module.exports = async () => {
 
     const existing = await userModel.findOne({ email: adminEmail });
     if (existing) {
+      if (!existing.isVerified) {
+        existing.isVerified = true;
+        existing.verificationToken = undefined;
+        existing.verificationTokenExpires = undefined;
+        await existing.save();
+      }
       console.log("Admin already exists");
     } else {
       const hashedPassword = await bcrypt.hash(adminPassword, 10);
@@ -34,7 +40,8 @@ module.exports = async () => {
         email: adminEmail,
         password: hashedPassword,
         roles: ["admin"],
-        status: "active", // Admin is always active
+        status: "active",
+        isVerified: true,
       });
 
       console.log("Admin created successfully");

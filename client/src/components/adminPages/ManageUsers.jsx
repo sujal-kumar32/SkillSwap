@@ -140,7 +140,7 @@ const ManageUsers = () => {
                 style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
             </div>
             <div className="col-md-6 text-md-end">
-              {["All", "active", "blocked"].map((s) => (
+              {["All", "active", "blocked", "deleted"].map((s) => (
                 <button key={s} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
                   style={{ fontSize: "0.8rem" }} onClick={() => { setFilter(s); setPage(1); }}>
                   {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -178,7 +178,7 @@ const ManageUsers = () => {
                         </td>
                         <td>{(user.roles || []).join(", ")}</td>
                         <td>
-                          <span className={`badge rounded-pill fw-medium ${user.status === "active" ? "bg-success" : "bg-danger"}`}
+                          <span className={`badge rounded-pill fw-medium ${user.status === "active" ? "bg-success" : user.status === "deleted" ? "bg-secondary" : "bg-danger"}`}
                             style={{ fontSize: "0.75rem" }}>{user.status}</span>
                         </td>
                         <td className="text-end">
@@ -187,6 +187,8 @@ const ManageUsers = () => {
                               style={{ fontSize: "0.8rem" }} onClick={() => handleBlock(user._id)}>
                               <i className="fa fa-ban me-1" /> Block
                             </LoadingButton>
+                          ) : user.status === "deleted" ? (
+                            <span className="text-muted small fw-semibold">User deleted their account</span>
                           ) : (
                             <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-success rounded-pill fw-semibold"
                               style={{ fontSize: "0.8rem" }} onClick={() => handleUnblock(user._id)}>

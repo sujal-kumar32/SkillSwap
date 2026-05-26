@@ -51,6 +51,7 @@ import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import Settings from "./components/pages/Settings";
+import VerifyEmail from "./components/pages/VerifyEmail";
 
 
 const isAdminLoggedIn = () =>
@@ -129,6 +130,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/verify-email/:token" element={<VerifyEmail />} />
           </Route>
 
           <Route

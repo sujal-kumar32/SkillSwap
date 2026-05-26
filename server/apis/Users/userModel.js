@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["active", "blocked"],
+      enum: ["active", "blocked", "deleted"],
       default: "active",
     },
 
@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema(
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+
+    isVerified: { type: Boolean, default: false },
+    verificationToken: String,
+    verificationTokenExpires: Date,
   },
   { timestamps: true },
 );
