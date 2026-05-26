@@ -110,10 +110,10 @@ const MyBookings = () => {
                           <h6 className="fw-bold mb-1">
                             {booking.sessionId?.title}
                             {booking._sessionState === "live" && booking.requestStatus === "accepted" && (
-                              <span className="badge bg-danger ms-2" style={{ fontSize: "0.65rem" }}>🔴 Live</span>
+                              <span style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }} className="ms-2">🔴 Live</span>
                             )}
                             {booking._sessionState === "upcoming" && booking.requestStatus === "accepted" && (
-                              <span className="badge bg-success ms-2" style={{ fontSize: "0.65rem" }}>Upcoming</span>
+                              <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }} className="ms-2">Upcoming</span>
                             )}
                           </h6>
                           <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>

@@ -7,8 +7,16 @@ import { LoadingState } from "../learner/LearnerUI";
 import { useAuth } from "../../App";
 
 const badge = (status) => {
-  const m = { accepted: "success", pending: "warning", completed: "info", cancelled: "secondary", rejected: "danger", active: "success" };
-  return <span className={`badge bg-${m[status] || "secondary"} rounded-pill`}>{status}</span>;
+  const bg = {
+    accepted: "linear-gradient(135deg, #16a34a, #15803d)",
+    active: "linear-gradient(135deg, #16a34a, #15803d)",
+    pending: "linear-gradient(135deg, #eab308, #ca8a04)",
+    completed: "linear-gradient(135deg, #0d6efd, #0a58ca)",
+    cancelled: "linear-gradient(135deg, #64748b, #475569)",
+    rejected: "linear-gradient(135deg, #dc2626, #b91c1c)",
+  };
+  const c = status === "pending" ? "#1e293b" : "white";
+  return <span style={{ background: bg[status] || "linear-gradient(135deg, #64748b, #475569)", color: c, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{status}</span>;
 };
 
 const Profile = () => {
@@ -23,14 +31,25 @@ const Profile = () => {
   const [mentorSessions, setMentorSessions] = useState([]);
   const [learnerSessions, setLearnerSessions] = useState([]);
   const [journeyLoading, setJourneyLoading] = useState(false);
+  const [earnedBadges, setEarnedBadges] = useState([]);
+  const [allBadges, setAllBadges] = useState([]);
+  const [showAllBadges, setShowAllBadges] = useState(false);
+  const [xpHistory, setXpHistory] = useState([]);
+  const [xpHistoryOpen, setXpHistoryOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [pRes, sRes] = await Promise.all([
+        const [pRes, sRes, badgeRes, allRes, xpRes] = await Promise.all([
           Apiservices.getProfile(),
           Apiservices.getProfileStats().catch(() => ({ data: { data: {} } })),
+          Apiservices.getMyBadges().catch(() => ({ data: { data: [] } })),
+          Apiservices.getAllBadges().catch(() => ({ data: { data: [] } })),
+          Apiservices.getXpHistory({ limit: 50 }).catch(() => ({ data: { data: [] } })),
         ]);
+        setEarnedBadges(badgeRes.data?.data || []);
+        setAllBadges(allRes.data?.data || []);
+        setXpHistory(xpRes.data?.data || []);
         const u = pRes.data.data || {};
         setProfile({
           name: u.name || "", email: u.email || "", bio: u.bio || "",
@@ -111,22 +130,56 @@ const Profile = () => {
 
         {/* Profile Header */}
         <div className="container" style={{ marginTop: -80 }}>
-          <div className="learner-card p-4 mb-4">
+          <div className="learner-card p-4 mb-4" style={{ position: "relative" }}>
+            <Link to="/settings" className="btn btn-outline-primary rounded-pill px-4 fw-semibold" style={{
+              position: "absolute", top: 16, right: 16, zIndex: 2,
+            }}>
+              <i className="fa fa-pen" style={{ marginRight: 10 }} />Edit Profile
+            </Link>
             <div className="d-flex flex-wrap align-items-end gap-4">
               <img src={profile.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=0d6efd&color=fff&size=128`}
                 alt="" className="rounded-circle border border-4 border-white shadow-sm" style={{ width: 120, height: 120, objectFit: "cover", marginTop: -60 }} />
               <div className="flex-grow-1">
-                <div className="d-flex flex-wrap align-items-center gap-2">
+                <div className="d-flex flex-wrap align-items-center" style={{ gap: "10px" }}>
                   <h2 className="fw-bold mb-0">{profile.name}</h2>
-                  {isMentor && <span className="badge bg-success rounded-pill">Mentor</span>}
-                  <span className="badge bg-primary rounded-pill">Learner</span>
+                  <span style={{ background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                    <i className="fa fa-graduation-cap" style={{ marginRight: 5 }} />Learner
+                  </span>
+                  {isMentor && <span style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                    <i className="fa fa-chalkboard" style={{ marginRight: 5 }} />Mentor
+                  </span>}
                 </div>
                 <p className="text-muted mb-1">{profile.email}</p>
-                {profile.bio && <p className="mb-0 small">{profile.bio}</p>}
+                <div className="d-flex align-items-center" style={{ gap: "16px", marginTop: "6px" }}>
+                  <div className="d-flex align-items-center" style={{ gap: "8px" }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8,
+                      background: "linear-gradient(135deg, #0d6efd20, #6610f220)",
+                      display: "grid", placeItems: "center", color: "#0d6efd", fontSize: "0.85rem",
+                    }}>
+                      <i className="fa fa-bolt" />
+                    </div>
+                    <div>
+                      <div className="fw-bold" style={{ fontSize: "0.9rem" }}>Lv.{user?.level || 1}</div>
+                      <small className="text-muted" style={{ fontSize: "0.65rem" }}>{(user?.xp || 0).toLocaleString()} XP</small>
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, maxWidth: 200 }}>
+                    <div style={{ height: 4, background: "#eef2f7", borderRadius: 999, overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", borderRadius: 999,
+                        width: `${Math.min(100, ((user?.xp || 0) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)) / (50 * (user?.level || 1) * ((user?.level || 1) + 1) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)) * 100)}%`,
+                        background: "linear-gradient(90deg, #0d6efd, #6610f2)",
+                        transition: "width 0.5s ease",
+                      }} />
+                    </div>
+                    <small className="text-muted" style={{ fontSize: "0.6rem" }}>
+                      {(user?.xp || 0) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)} / {50 * (user?.level || 1) * ((user?.level || 1) + 1) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)} XP
+                    </small>
+                  </div>
+                </div>
+                {profile.bio && <p className="mb-0 small" style={{ marginTop: "6px" }}>{profile.bio}</p>}
               </div>
-              <Link to="/settings" className="btn btn-outline-primary rounded-pill px-4 fw-semibold flex-shrink-0">
-                <i className="fa fa-pen" style={{ marginRight: 10 }} />Edit Profile
-              </Link>
             </div>
           </div>
 
@@ -208,7 +261,7 @@ const Profile = () => {
                         <h6 className="fw-bold mb-2">Interests</h6>
                         <div className="d-flex flex-wrap gap-2">
                           {profile.interests.split(",").map((i) => i.trim()).filter(Boolean).map((i) => (
-                            <span key={i} className="badge bg-light text-dark border rounded-pill px-3 py-2">{i}</span>
+                            <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{i}</span>
                           ))}
                         </div>
                       </div>
@@ -218,25 +271,89 @@ const Profile = () => {
               </div>
               <div className="col-lg-4">
                 <div className="learner-card p-4 mb-4">
-                  <div className="d-flex align-items-center mb-4">
+                  <div className="d-flex align-items-center mb-3">
                     <div style={{ width: 50, textAlign: "center", flexShrink: 0 }}>
-                      <i className="fa fa-crown text-warning" style={{ fontSize: "1.1rem" }} />
+                      <i className="fa fa-trophy text-warning" style={{ fontSize: "1.1rem" }} />
                     </div>
-                    <h5 className="fw-bold mb-0">Achievements</h5>
+                    <h5 className="fw-bold mb-0">Badges</h5>
                   </div>
-                  {[
-                    profile.skills.length >= 3 && { icon: "fa-star", color: "info", text: "Multi-Skilled" },
-                    isMentor && { icon: "fa-chalkboard", color: "success", text: "Mentor" },
-                    stats.sessions >= 5 && { icon: "fa-rocket", color: "warning", text: "Active Learner" },
-                    { icon: "fa-calendar-check", color: "secondary", text: `Joined ${new Date().toLocaleDateString()}` },
-                  ].filter(Boolean).map((a, i) => (
-                    <div key={i} className="d-flex align-items-center mb-2">
-                      <div style={{ width: 50, textAlign: "center", flexShrink: 0 }}>
-                        <i className={`fa ${a.icon} text-${a.color}`} style={{ fontSize: "1rem" }} />
-                      </div>
-                      <span className="fw-semibold small">{a.text}</span>
+
+                  <div>
+                    <p className="fw-semibold small text-muted mb-2">{earnedBadges.length} / {allBadges.length} badges earned</p>
+                    <div className="d-flex flex-wrap" style={{ gap: "10px", marginBottom: "12px" }}>
+                      {earnedBadges.slice(0, 6).map((b) => (
+                        <div key={b._id} className="text-center" title={b.description} style={{ cursor: "default" }}>
+                          <div style={{
+                            width: 42, height: 42, borderRadius: 12,
+                            background: `${b.color}18`, display: "grid", placeItems: "center",
+                            color: b.color, fontSize: "1rem", marginBottom: 2,
+                          }}>
+                            <i className={`fa ${b.icon}`} />
+                          </div>
+                          <small style={{ fontSize: "0.6rem", color: "#64748b", display: "block", lineHeight: 1.1 }}>{b.name}</small>
+                        </div>
+                      ))}
+                      {earnedBadges.length > 6 && (
+                        <div className="d-flex align-items-center">
+                          <small className="text-muted fw-semibold">+{earnedBadges.length - 6} more</small>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                    {earnedBadges.length === 0 && (
+                      <div className="text-center py-3">
+                        <div style={{ width: 48, height: 48, borderRadius: 14, margin: "0 auto 8px", background: "#f1f5f9", display: "grid", placeItems: "center", color: "#94a3b8", fontSize: "1.1rem" }}>
+                          <i className="fa fa-trophy" />
+                        </div>
+                        <p className="fw-semibold mb-0" style={{ fontSize: "0.8rem" }}>No badges earned yet</p>
+                        <small className="text-muted" style={{ fontSize: "0.7rem" }}>Complete sessions and reviews to earn badges</small>
+                      </div>
+                    )}
+                    <button
+                      className="btn btn-sm btn-outline-primary rounded-pill w-100 fw-semibold"
+                      onClick={() => setShowAllBadges(true)}
+                    >
+                      <i className="fa fa-list me-2" />View All Badges
+                    </button>
+                  </div>
+                </div>
+                <div className="learner-card p-4 mb-4">
+                  <div className="d-flex align-items-center justify-content-between" style={{ cursor: "pointer" }} onClick={() => setXpHistoryOpen(!xpHistoryOpen)}>
+                    <div className="d-flex align-items-center">
+                      <div style={{ width: 50, textAlign: "center", flexShrink: 0 }}>
+                        <i className="fa fa-history" style={{ fontSize: "1rem", color: "#0ea5e9" }} />
+                      </div>
+                      <h5 className="fw-bold mb-0">XP History</h5>
+                    </div>
+                    <i className={`fa fa-chevron-${xpHistoryOpen ? "up" : "down"} text-muted`} />
+                  </div>
+                  {xpHistoryOpen && (
+                    <div style={{ marginTop: 12 }}>
+                      {xpHistory.length > 0 ? (
+                        <div className="d-flex flex-column" style={{ gap: "8px" }}>
+                          {xpHistory.slice(0, 10).map((t) => (
+                            <div key={t._id} className="d-flex align-items-center" style={{ gap: "10px", padding: "8px 12px", background: "#f8fafc", borderRadius: 10 }}>
+                              <div style={{
+                                width: 28, height: 28, borderRadius: 8,
+                                background: "linear-gradient(135deg, #0d6efd15, #6610f215)",
+                                display: "grid", placeItems: "center", color: "#0d6efd", fontSize: "0.7rem", flexShrink: 0,
+                              }}>
+                                <i className="fa fa-bolt" />
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div className="fw-semibold" style={{ fontSize: "0.75rem", lineHeight: 1.2 }}>+{t.amount} XP</div>
+                                <small style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{t.reason}</small>
+                              </div>
+                              <small style={{ fontSize: "0.6rem", color: "#94a3b8", flexShrink: 0 }}>
+                                {new Date(t.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                              </small>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted small mb-0 text-center py-3">No XP history yet. Complete sessions to earn XP.</p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="learner-card p-4">
                   <h5 className="fw-bold mb-3"><i className="fa fa-robot text-info" style={{ marginRight: 10 }} />SwapMind AI</h5>
@@ -253,7 +370,7 @@ const Profile = () => {
                   <div className="learner-card p-4 h-100">
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <h6 className="fw-bold mb-0 text-capitalize">{s.name}</h6>
-                      <span className={`badge rounded-pill ${s.level === "advanced" ? "bg-success" : s.level === "intermediate" ? "bg-warning text-dark" : "bg-info text-dark"}`}>
+                      <span style={{ background: s.level === "advanced" ? "linear-gradient(135deg, #16a34a, #15803d)" : s.level === "intermediate" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #0d6efd, #0a58ca)", color: s.level === "intermediate" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                         {s.level}
                       </span>
                     </div>
@@ -416,6 +533,90 @@ const Profile = () => {
           )}
         </div>
       </div>
+
+      {/* All Badges Modal */}
+      {showAllBadges && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 20,
+        }} onClick={() => setShowAllBadges(false)}>
+          <div style={{
+            background: "#fff", borderRadius: 20, maxWidth: 600, width: "100%",
+            maxHeight: "85vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{
+              background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+              padding: "20px 24px", borderRadius: "20px 20px 0 0",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+            }}>
+              <div>
+                <h5 className="fw-bold mb-0 text-white">All Badges</h5>
+                <small className="text-white opacity-75">{earnedBadges.length} of {allBadges.length} earned</small>
+              </div>
+              <button
+                className="btn btn-sm rounded-circle"
+                style={{ width: 32, height: 32, background: "rgba(255,255,255,0.2)", color: "white", display: "grid", placeItems: "center", border: "none" }}
+                onClick={() => setShowAllBadges(false)}
+              >
+                <i className="fa fa-times" />
+              </button>
+            </div>
+            <div style={{ padding: 20 }}>
+              {["learner", "mentor", "general"].map((cat) => {
+                const items = allBadges.filter((b) => b.category === cat);
+                if (!items.length) return null;
+                const catLabel = cat === "learner" ? "Learner Badges" : cat === "mentor" ? "Mentor Badges" : "General Badges";
+                const catIcon = cat === "learner" ? "fa-graduation-cap" : cat === "mentor" ? "fa-chalkboard-teacher" : "fa-globe";
+                return (
+                  <div key={cat} style={{ marginBottom: 20 }}>
+                    <div className="d-flex align-items-center" style={{ gap: 8, marginBottom: 12 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "grid", placeItems: "center", color: "#64748b" }}>
+                        <i className={`fa ${catIcon}`} style={{ fontSize: "0.75rem" }} />
+                      </div>
+                      <h6 className="fw-bold mb-0" style={{ fontSize: "0.85rem" }}>{catLabel}</h6>
+                    </div>
+                    <div className="row g-2">
+                      {items.map((badge) => {
+                        const earned = earnedBadges.find((b) => b._id === badge._id);
+                        return (
+                          <div key={badge._id} className="col-6">
+                            <div style={{
+                              padding: "10px 12px", borderRadius: 12,
+                              background: earned ? "#fff" : "#f8fafc",
+                              border: earned ? `1px solid ${badge.color}30` : "1px solid #eef2f7",
+                              opacity: earned ? 1 : 0.5,
+                            }}>
+                              <div className="d-flex align-items-center" style={{ gap: 10 }}>
+                                <div style={{
+                                  width: 36, height: 36, borderRadius: 10,
+                                  background: earned ? `${badge.color}15` : "#f1f5f9",
+                                  display: "grid", placeItems: "center",
+                                  color: earned ? badge.color : "#94a3b8", fontSize: "0.85rem",
+                                  flexShrink: 0,
+                                }}>
+                                  <i className={`fa ${badge.icon}`} />
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                  <div className="fw-semibold" style={{ fontSize: "0.75rem", lineHeight: 1.2 }}>{badge.name}</div>
+                                  <small style={{ fontSize: "0.62rem", color: "#94a3b8", lineHeight: 1.1, display: "block" }}>
+                                    {earned ? `Earned ${new Date(earned.earnedAt).toLocaleDateString()}` : badge.description}
+                                  </small>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

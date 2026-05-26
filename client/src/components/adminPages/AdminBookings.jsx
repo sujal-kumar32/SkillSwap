@@ -45,11 +45,11 @@ const AdminBookings = () => {
   };
 
   const statusColors = {
-    pending: { bg: "bg-warning text-dark", color: "#d97706" },
-    accepted: { bg: "bg-success", color: "#198754" },
-    completed: { bg: "bg-primary", color: "#0891b2" },
-    rejected: { bg: "bg-danger", color: "#dc3545" },
-    cancelled: { bg: "bg-secondary", color: "#6c757d" },
+    pending: { gradient: "linear-gradient(135deg, #eab308, #ca8a04)", color: "#1e293b" },
+    accepted: { gradient: "linear-gradient(135deg, #16a34a, #15803d)", color: "white" },
+    completed: { gradient: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white" },
+    rejected: { gradient: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white" },
+    cancelled: { gradient: "linear-gradient(135deg, #374151, #1f2937)", color: "white" },
   };
 
   const stats = useMemo(() => ({
@@ -130,8 +130,7 @@ const AdminBookings = () => {
                         </small>
                         <small className="text-muted">{r.timeSlot || r.sessionId?.time || ""}</small>
                       </div>
-                      <span className={`badge rounded-pill fw-medium ${statusColors[r.requestStatus]?.bg || "bg-secondary"}`}
-                        style={{ fontSize: "0.7rem" }}>
+                      <span style={{ background: statusColors[r.requestStatus]?.gradient || "linear-gradient(135deg, #64748b, #475569)", color: statusColors[r.requestStatus]?.color || "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                         {statusLabels[r.requestStatus] || r.requestStatus}
                       </span>
                     </div>

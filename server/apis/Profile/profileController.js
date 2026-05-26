@@ -9,6 +9,7 @@ const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload
 const { sendEmail } = require("../../utilities/emailService");
 const { emailVerification } = require("../../utilities/emailTemplates");
 const asyncHandler = require("../../utilities/asyncHandler");
+const XpTransaction = require("../../models/XpTransaction");
 
 const toArray = (value) => {
   if (Array.isArray(value)) return value.map((item) => item.trim()).filter(Boolean);
@@ -188,5 +189,29 @@ exports.getProfileStats = asyncHandler(async (req, res) => {
     }
 
     res.json({ success: true, data: { sessions, reviews, skills } });
+
+});
+
+exports.getXpHistory = asyncHandler(async (req, res) => {
+
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [transactions, total] = await Promise.all([
+      XpTransaction.find({ userId: req.user.id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(),
+      XpTransaction.countDocuments({ userId: req.user.id }),
+    ]);
+
+    res.json({
+      success: true,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit)),
+      data: transactions,
+    });
 
 });

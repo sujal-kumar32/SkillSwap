@@ -6,6 +6,7 @@ import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader, LoadingState } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
+import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
 
 
 const avatarFor = (name = "Learner", image) =>
@@ -26,6 +27,7 @@ const Bookings = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const { badgeData, setBadgeData, handleXpResponse } = useXpCelebration();
 
   const fetchBookings = async () => {
     try {
@@ -59,7 +61,7 @@ const Bookings = () => {
   const handleStatus = async (bookingId, status) => {
     try {
       setUpdatingId(bookingId);
-      await Apiservices.updateRequest(bookingId, status);
+      const res = await Apiservices.updateRequest(bookingId, status);
       setBookings((prev) =>
         prev.map((booking) =>
           booking._id === bookingId
@@ -68,6 +70,9 @@ const Bookings = () => {
         ),
       );
       showToast.success(`Request ${status}`);
+      if (status === "completed" && res.data?.xp) {
+        handleXpResponse(res.data.xp.mentor);
+      }
     } catch (error) {
       console.log(error);
       showToast.error(error.response?.data?.message || "Failed to update request");
@@ -333,6 +338,7 @@ const Bookings = () => {
           }
         `}
       </style>
+      <BadgeUnlockModal badges={badgeData} onClose={() => setBadgeData(null)} />
     </>
   );
 };

@@ -178,8 +178,7 @@ const ManageUsers = () => {
                         </td>
                         <td>{(user.roles || []).join(", ")}</td>
                         <td>
-                          <span className={`badge rounded-pill fw-medium ${user.status === "active" ? "bg-success" : user.status === "deleted" ? "bg-secondary" : "bg-danger"}`}
-                            style={{ fontSize: "0.75rem" }}>{user.status}</span>
+                          <span style={{ background: user.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : user.status === "deleted" ? "linear-gradient(135deg, #374151, #1f2937)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{user.status}</span>
                         </td>
                         <td className="text-end">
                           {user.status === "active" ? (

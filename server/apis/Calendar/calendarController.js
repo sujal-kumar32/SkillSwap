@@ -65,7 +65,7 @@ exports.callback = asyncHandler(async (req, res) => {
         expiryDate: tokens.expiry_date ? new Date(tokens.expiry_date) : null,
         calendarEmail,
       },
-      { upsert: true, new: true },
+      { upsert: true, returnDocument: "after" },
     );
 
     res.redirect(`${clientUrl}/settings?calendar=connected`);

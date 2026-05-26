@@ -61,8 +61,13 @@ const MentorMySkills = () => {
   };
 
   const statusBadge = (status) => {
-    const map = { pending: "bg-warning text-dark", approved: "bg-success", rejected: "bg-danger" };
-    return <span className={`badge rounded-pill ${map[status] || "bg-secondary"}`}>{status}</span>;
+    const map = {
+      pending: { gradient: "linear-gradient(135deg, #eab308, #ca8a04)", color: "#1e293b" },
+      approved: { gradient: "linear-gradient(135deg, #16a34a, #15803d)", color: "white" },
+      rejected: { gradient: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white" },
+    };
+    const { gradient, color } = map[status] || { gradient: "linear-gradient(135deg, #64748b, #475569)", color: "white" };
+    return <span style={{ background: gradient, color, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{status}</span>;
   };
 
   const skillCard = (skill, showOwner) => (
@@ -78,7 +83,7 @@ const MentorMySkills = () => {
         </p>
         {skill.tags?.length > 0 && (
           <div className="d-flex flex-wrap gap-1 mb-2">
-            {skill.tags.map((t, i) => <span key={i} className="badge bg-light text-dark border rounded-pill px-2">{t}</span>)}
+            {skill.tags.map((t, i) => <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{t}</span>)}
           </div>
         )}
         <p className="text-muted small mb-3">{skill.description?.slice(0, 120)}</p>

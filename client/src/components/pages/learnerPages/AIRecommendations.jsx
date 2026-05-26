@@ -112,7 +112,7 @@ const AIRecommendations = () => {
       <div className="row g-4 mb-4">
         <div className="col-lg-8">
           <div className="learner-card p-4 h-100">
-            <span className="badge bg-info text-dark rounded-pill mb-3">Smart Suggestions</span>
+            <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }} className="mb-3">Smart Suggestions</span>
             <h4 className="fw-bold">Your next best learning moves</h4>
             <p className="text-muted mb-0">
               Sessions recommended by SwapMind AI based on your interests and activity.
@@ -128,7 +128,7 @@ const AIRecommendations = () => {
             </h5>
             <div className="d-flex flex-wrap gap-2 mt-3">
               {trendingSkills.map((skill) => (
-                <span className="badge bg-light text-primary border" key={skill}>{skill}</span>
+                <span style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }} key={skill}>{skill}</span>
               ))}
             </div>
           </div>
@@ -139,7 +139,7 @@ const AIRecommendations = () => {
         <div className="col-lg-6">
           <div className="learner-card p-4 h-100">
             <div className="d-flex align-items-center gap-2 mb-3">
-              <span className="badge bg-primary rounded-pill px-3 py-2">
+              <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                 <i className="fa fa-robot me-1" />SwapMind AI
               </span>
               <small className="text-muted">Ask me anything about learning</small>
@@ -187,7 +187,7 @@ const AIRecommendations = () => {
         <div className="col-lg-6">
           <div className="learner-card p-4 h-100">
             <div className="d-flex align-items-center gap-2 mb-3">
-              <span className="badge bg-success rounded-pill px-3 py-2">
+              <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                 <i className="fa fa-lightbulb me-1" />AI Learning Insights
               </span>
               <small className="text-muted">Personalized suggestions</small>

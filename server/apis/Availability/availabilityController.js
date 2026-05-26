@@ -27,7 +27,7 @@ exports.updateMyAvailability = asyncHandler(async (req, res) => {
   const availability = await Availability.findOneAndUpdate(
     { mentorId: req.user.id },
     { mentorId: req.user.id, slots, timezone: timezone || "UTC" },
-    { upsert: true, new: true, runValidators: true },
+    { upsert: true, returnDocument: "after", runValidators: true },
   );
   res.json({ success: true, data: availability });
 });

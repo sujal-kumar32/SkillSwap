@@ -10,14 +10,44 @@ const links = [
   { to: "/learner/bookings", label: "My Bookings", icon: "fa-calendar-check" },
   { to: "/learner/progress", label: "Learning Progress", icon: "fa-chart-line" },
   { to: "/learner/reviews", label: "Reviews", icon: "fa-star" },
+  { to: "/learner/leaderboard", label: "Leaderboard", icon: "fa-trophy" },
   { to: "/learner/history", label: "Booking History", icon: "fa-history" },
   { to: "/learner/ai", label: "AI Recommendations", icon: "fa-magic" },
   { to: "/learner/ai-roadmap", label: "Learning Roadmap", icon: "fa-road" },
 ];
 
+const XpWidget = ({ user }) => {
+  if (!user) return null;
+  const xp = user.xp || 0;
+  const level = user.level || 1;
+  const nextLevelXp = 50 * level * (level + 1);
+  const currentLevelXp = 50 * level * (level - 1);
+  const progress = nextLevelXp > currentLevelXp
+    ? Math.min(100, ((xp - currentLevelXp) / (nextLevelXp - currentLevelXp)) * 100)
+    : 0;
+  return (
+    <Link to="/profile" className="text-decoration-none">
+      <div className="mx-3 mb-2 p-3 rounded-4" style={{ background: "linear-gradient(135deg, #0d6efd08, #6610f208)", border: "1px solid #eef2f7" }}>
+        <div className="d-flex align-items-center justify-content-between mb-1">
+          <small className="fw-bold text-muted" style={{ fontSize: "0.67rem", letterSpacing: "0.3px" }}>LEVEL {level}</small>
+          <small className="fw-bold text-primary" style={{ fontSize: "0.7rem" }}>
+            <i className="fa fa-bolt me-1" />{xp} XP
+          </small>
+        </div>
+        <div style={{ height: 4, background: "#eef2f7", borderRadius: 999, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${Math.min(100, progress)}%`, background: "linear-gradient(90deg, #0d6efd, #6610f2)", borderRadius: 999, transition: "width 0.5s ease" }} />
+        </div>
+        <small className="text-muted" style={{ fontSize: "0.6rem", marginTop: 2, display: "block" }}>
+          {xp - currentLevelXp} / {nextLevelXp - currentLevelXp} XP to next level
+        </small>
+      </div>
+    </Link>
+  );
+};
+
 const LearnerSidebar = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -57,6 +87,7 @@ const LearnerSidebar = () => {
         ))}
       </nav>
 
+      <XpWidget user={user} />
       <div className="p-3" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>
         <Link
           to="/workspace"

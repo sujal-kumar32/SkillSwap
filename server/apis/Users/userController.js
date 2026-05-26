@@ -129,7 +129,7 @@ exports.blockUser = asyncHandler(async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { status: "blocked" },
-      { new: true },
+      { returnDocument: "after" },
     ).select("-password");
 
     if (!user) {
@@ -155,7 +155,7 @@ exports.unblockUser = asyncHandler(async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { status: "active" },
-      { new: true },
+      { returnDocument: "after" },
     ).select("-password");
 
     if (!user) {

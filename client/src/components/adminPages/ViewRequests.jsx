@@ -103,12 +103,12 @@ const ViewRequests = () => {
                         <td style={{ color: "#64748b" }}>{r.mentorId?.name}</td>
                         <td style={{ color: "#64748b" }}>{new Date(r.createdAt).toLocaleDateString()}</td>
                         <td>
-                          <span className={`badge rounded-pill fw-medium ${r.requestStatus === "accepted" ? "bg-success" : r.requestStatus === "pending" ? "bg-warning text-dark" : "bg-danger"}`}
-                            style={{ fontSize: "0.75rem" }}>{r.requestStatus}</span>
+                          <span style={{ background: r.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : r.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: r.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                            {r.requestStatus}</span>
                         </td>
                         <td className="text-end">
-                          <span className={`badge rounded-pill fw-medium ${r.paymentStatus === "paid" ? "bg-success" : "bg-secondary"}`}
-                            style={{ fontSize: "0.75rem" }}>{r.paymentStatus || "pending"}</span>
+                          <span style={{ background: r.paymentStatus === "paid" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #ca8a04, #a16207)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                            {r.paymentStatus || "pending"}</span>
                         </td>
                       </tr>
                     ))

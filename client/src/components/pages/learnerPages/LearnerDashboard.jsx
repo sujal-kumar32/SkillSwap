@@ -140,7 +140,7 @@ const LearnerDashboard = () => {
 
         <div className="col-xl-4">
           <div className="learner-card p-4 mb-4">
-            <span className="badge bg-info text-dark rounded-pill mb-3">AI Recommendations</span>
+            <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }} className="mb-3">AI Recommendations</span>
             <h5 className="fw-bold">Smart picks for your goals</h5>
             <p className="text-muted small">Based on your booked sessions and interests.</p>
             <Link to="/learner/ai" className="btn btn-outline-primary rounded-pill w-100">Open AI Picks</Link>

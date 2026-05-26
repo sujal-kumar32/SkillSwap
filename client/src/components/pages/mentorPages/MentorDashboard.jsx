@@ -97,7 +97,7 @@ const MentorDashboard = () => {
                       <h6 className="fw-bold mb-0 small">{b.sessionId?.title || "Session"}</h6>
                       <small className="text-muted">{b.learnerId?.name || "Learner"}</small>
                     </div>
-                    <span className={`badge rounded-pill ${b.requestStatus === "accepted" ? "bg-success" : b.requestStatus === "pending" ? "bg-warning text-dark" : "bg-secondary"}`}>
+                    <span style={{ background: b.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : b.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #64748b, #475569)", color: b.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                       {b.requestStatus}
                     </span>
                   </div>
@@ -128,7 +128,7 @@ const MentorDashboard = () => {
                       <h6 className="fw-bold mb-0 small">{s.title}</h6>
                       <small className="text-muted">{s.date || "Flexible"} • {s.duration || 60}min</small>
                     </div>
-                    <span className={`badge rounded-pill ${s.status === "active" ? "bg-success" : "bg-secondary"}`}>{s.status}</span>
+                    <span style={{ background: s.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{s.status}</span>
                   </div>
                 ))}
               </div>

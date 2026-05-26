@@ -61,18 +61,18 @@ export const EmptyState = ({ title, text, actionLabel, actionTo }) => (
 
 export const StatusBadge = ({ status }) => {
   const map = {
-    active: { cls: "success", label: "Active" },
-    accepted: { cls: "success", label: "Accepted" },
-    completed: { cls: "primary", label: "Completed" },
-    pending: { cls: "warning text-dark", label: "Pending" },
-    rejected: { cls: "danger", label: "Rejected" },
-    cancelled: { cls: "secondary", label: "Cancelled" },
+    active: { gradient: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", label: "Active" },
+    accepted: { gradient: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", label: "Accepted" },
+    completed: { gradient: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", label: "Completed" },
+    pending: { gradient: "linear-gradient(135deg, #eab308, #ca8a04)", color: "#1e293b", label: "Pending" },
+    rejected: { gradient: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", label: "Rejected" },
+    cancelled: { gradient: "linear-gradient(135deg, #374151, #1f2937)", color: "white", label: "Cancelled" },
   };
 
-  const { cls, label } = map[status] || { cls: "secondary", label: status || "Unknown" };
+  const { gradient, color, label } = map[status] || { gradient: "linear-gradient(135deg, #64748b, #475569)", color: "white", label: status || "Unknown" };
 
   return (
-    <span className={`badge rounded-pill bg-${cls}`} style={{ fontWeight: 500, fontSize: "0.75rem" }}>
+    <span style={{ background: gradient, color, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
       {label}
     </span>
   );

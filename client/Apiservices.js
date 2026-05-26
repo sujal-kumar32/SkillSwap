@@ -192,6 +192,10 @@ class Apiservices {
     return axios.get(baseUrl + "profile/stats");
   }
 
+  getXpHistory(params = {}) {
+    return axios.get(baseUrl + "profile/xp-history", { params });
+  }
+
   fetchRecommendations() {
     return axios.get(baseUrl + "ai/recommendations");
   }
@@ -321,6 +325,22 @@ class Apiservices {
 
   getBookedSlots(params = {}) {
     return axios.get(baseUrl + "availability/booked-slots", { params });
+  }
+
+  getAllBadges() {
+    return axios.get(baseUrl + "badges");
+  }
+
+  getMyBadges() {
+    return axios.get(baseUrl + "badges/mine");
+  }
+
+  getMentorLeaderboard(params = {}) {
+    return axios.get(baseUrl + "leaderboard/mentors", { params });
+  }
+
+  getLearnerLeaderboard(params = {}) {
+    return axios.get(baseUrl + "leaderboard/learners", { params });
   }
 }
 

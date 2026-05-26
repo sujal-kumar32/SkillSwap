@@ -63,6 +63,13 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
     verificationTokenExpires: Date,
+
+    xp: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    earnedBadges: [{
+      badgeId: { type: mongoose.Schema.Types.ObjectId, ref: "Badge" },
+      earnedAt: { type: Date, default: Date.now },
+    }],
   },
   { timestamps: true },
 );

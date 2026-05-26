@@ -129,7 +129,7 @@ const ExploreSessions = () => {
             </div>
             {aiKeywords && (
               <div className="mt-2 d-flex align-items-center gap-2">
-                <span className="badge bg-info text-dark rounded-pill px-3 py-2">
+                <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                   <i className="fa fa-magic me-1" />AI: {aiKeywords}
                 </span>
                 <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={clearAISearch}>Clear</button>

@@ -10,6 +10,7 @@ const { bookingRequestMentorNotification, bookingStatusUpdateLearner } = require
 const CalendarToken = require("../Calendar/calendarTokenModel");
 const { createCalendarEvent, deleteCalendarEvent, refreshAccessToken } = require("../../utilities/calendarService");
 const { ensureMeetLink } = require("../../utilities/meetLinkHelper");
+const { awardXP } = require("../../services/xpService");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -353,11 +354,28 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       }
     }
 
+    let xpResult = null;
+    if (status === "completed") {
+      try {
+        const [learnerXp, mentorXp] = await Promise.all([
+          awardXP(request.learnerId, 50, "Session completed", request._id, "Request"),
+          awardXP(request.mentorId, 30, "Mentored a session", request._id, "Request"),
+        ]);
+        xpResult = {
+          learner: { xpGained: learnerXp.xpGained, totalXp: learnerXp.xp, newBadges: learnerXp.newBadges },
+          mentor: { xpGained: mentorXp.xpGained, totalXp: mentorXp.xp, newBadges: mentorXp.newBadges },
+        };
+      } catch (xpErr) {
+        console.error("XP award failed:", xpErr.message);
+      }
+    }
+
     res.json({
       success: true,
       message: `Request ${status}`,
       data: request,
       refund: refundInfo,
+      ...(xpResult && { xp: xpResult }),
     });
 
     // Notify learner on accepted/rejected/cancelled

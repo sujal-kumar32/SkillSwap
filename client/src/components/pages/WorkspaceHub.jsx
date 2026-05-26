@@ -207,8 +207,8 @@ function WorkspaceHub() {
 
       <div className="container py-5 position-relative">
         {/* TOP SECTION */}
-        <div className="d-flex flex-wrap justify-content-between align-items-center mb-5">
-          <div className="d-flex align-items-center gap-4">
+          <div className="d-flex flex-wrap justify-content-between align-items-center mb-5">
+          <div className="d-flex align-items-center" style={{ gap: "10px" }}>
             <div className="avatar-wrapper">
               <img
                 src={profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=0d6efd&color=fff&size=100`}
@@ -219,11 +219,15 @@ function WorkspaceHub() {
               <span className="status-dot"></span>
             </div>
             <div>
-              <div className="d-flex align-items-center mb-2" style={{ gap: "24px" }}>
+              <div className="d-flex align-items-center mb-2" style={{ gap: "10px" }}>
                 <h1 className="fw-bold mb-0 greeting-text">{userName}</h1>
-                <span className="badge rounded-pill px-3 py-2 badge-learner">Learner</span>
+                <span style={{ background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "white", padding: "5px 16px", borderRadius: 999, fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                  <i className="fa fa-graduation-cap" style={{ marginRight: 5 }} />Learner
+                </span>
                 {isMentor && (
-                  <span className="badge rounded-pill px-3 py-2 badge-mentor">Mentor</span>
+                  <span style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", padding: "5px 16px", borderRadius: 999, fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                    <i className="fa fa-chalkboard" style={{ marginRight: 5 }} />Mentor
+                  </span>
                 )}
               </div>
               <p className="text-muted fs-5 mb-0 subtitle-text">
@@ -586,22 +590,6 @@ function WorkspaceHub() {
         .subtitle-text {
           color: #64748b !important;
           font-weight: 400;
-        }
-
-        .badge-learner {
-          background: linear-gradient(135deg, #0d6efd, #0a58ca);
-          color: white;
-          font-weight: 500;
-          font-size: 0.8rem;
-          box-shadow: 0 2px 8px rgba(13,110,253,0.3);
-        }
-
-        .badge-mentor {
-          background: linear-gradient(135deg, #198754, #146c43);
-          color: white;
-          font-weight: 500;
-          font-size: 0.8rem;
-          box-shadow: 0 2px 8px rgba(25,135,84,0.3);
         }
 
         .section-title {

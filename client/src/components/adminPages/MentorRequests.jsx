@@ -141,7 +141,7 @@ const MentorRequests = () => {
                     <td><small>{mentor.email}</small></td>
                     <td><small>{new Date(mentor.createdAt).toLocaleDateString()}</small></td>
                     <td>
-                      <span className={`badge rounded-pill ${mentor.status === "active" ? "bg-success" : "bg-danger"}`}>
+                      <span style={{ background: mentor.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                         {mentor.status}
                       </span>
                     </td>
@@ -230,7 +230,7 @@ const MentorRequests = () => {
                       <div className="col-12">
                         <small className="text-muted d-block fw-semibold small mb-1">Status</small>
                         <div>
-                          <span className={`badge rounded-pill px-3 py-2 ${appDetail.status === "approved" ? "bg-success" : "bg-secondary"}`}>{appDetail.status}</span>
+                          <span style={{ background: appDetail.status === "approved" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{appDetail.status}</span>
                         </div>
                       </div>
                     </div>

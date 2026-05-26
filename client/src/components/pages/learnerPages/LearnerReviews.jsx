@@ -5,6 +5,7 @@ import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
+import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
 
 const Modal = ({ children }) => (
   <div style={{
@@ -53,6 +54,7 @@ const LearnerReviews = () => {
   const [editingReview, setEditingReview] = useState(null);
   const [editForm, setEditForm] = useState({ rating: 5, comment: "" });
   const [error, setError] = useState("");
+  const { badgeData, setBadgeData, handleXpResponse } = useXpCelebration();
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -140,6 +142,9 @@ const LearnerReviews = () => {
       const response = await Apiservices.createReview(payload);
       setReviews((prev) => [response.data.data, ...prev]);
       showToast.success("Review submitted");
+      if (response.data?.xp) {
+        handleXpResponse(response.data.xp);
+      }
     } catch (error) {
       console.log(error);
       showToast.error(error.response?.data?.message || "Failed to submit review");
@@ -336,6 +341,7 @@ const LearnerReviews = () => {
           </form>
         </Modal>
       )}
+      <BadgeUnlockModal badges={badgeData} onClose={() => setBadgeData(null)} />
     </>
   );
 };

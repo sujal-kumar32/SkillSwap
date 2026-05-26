@@ -176,8 +176,7 @@ const AdminCategories = () => {
                           <td className="fw-semibold py-3">{cat.name}</td>
                           <td style={{ color: "#64748b" }} className="py-3">{cat.slug}</td>
                           <td className="py-3">
-                            <span className={`badge rounded-pill fw-medium ${cat.status === "active" ? "bg-success" : "bg-danger"}`}
-                              style={{ fontSize: "0.75rem" }}>{cat.status}</span>
+                            <span style={{ background: cat.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{cat.status}</span>
                           </td>
                           <td className="text-end py-3">
                             <div className="d-flex gap-3 justify-content-end">

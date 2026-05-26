@@ -26,6 +26,8 @@ const mentorApplicationRoutes = require("./routes/mentorApplicationRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
 const availabilityRoutes = require("./routes/availabilityRoutes");
+const badgeRoutes = require("./routes/badgeRoutes");
+const leaderboardRoutes = require("./routes/leaderboardRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -44,10 +46,12 @@ const authLimiter = rateLimit({
 const PORT = process.env.PORT || 3000;
 
 const adminSeeder = require("./config/seeder");
+const { seedBadges } = require("./apis/Badges/badgeSeeder");
 const cron = require("node-cron");
 const { checkSessionReminders, autoCompleteSessions } = require("./jobs/sessionReminder");
 
 adminSeeder();
+seedBadges();
 
 cron.schedule("* * * * *", () => {
   checkSessionReminders();
@@ -82,6 +86,8 @@ app.use("/api/mentor-applications", mentorApplicationRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/calendar", calendarRoutes);
 app.use("/api/availability", availabilityRoutes);
+app.use("/api/badges", badgeRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err.message);

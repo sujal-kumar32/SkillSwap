@@ -96,7 +96,7 @@ const SessionDetails = () => {
         title={session.title}
         subtitle={`${session.skillId?.name || "Skill"} • ${session.sessionType || "online"} session`}
         action={existingBooking ? (
-          <span className="badge bg-success rounded-pill px-4 py-2 fs-6 fw-semibold"><i className="fa fa-check me-1" />Already Booked</span>
+          <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}><i className="fa fa-check me-1" />Already Booked</span>
         ) : (
           <button className="btn btn-primary rounded-pill px-4" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
         )}
@@ -109,7 +109,7 @@ const SessionDetails = () => {
             <div className="p-4">
               <div className="d-flex flex-wrap gap-2 mb-3">
                 <StatusBadge status={session.status} />
-                <span className="badge bg-light text-primary">{session.skillId?.categoryId?.name || "Learning"}</span>
+                <span style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{session.skillId?.categoryId?.name || "Learning"}</span>
               </div>
               <h4 className="fw-bold">About this session</h4>
               <p className="text-muted">{session.description || "A practical learning session led by a SkillSwap mentor."}</p>

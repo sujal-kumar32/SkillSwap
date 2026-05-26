@@ -3,6 +3,7 @@ const Request = require("../Request/requestModel");
 const User = require("../Users/userModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
+const { awardXP } = require("../../services/xpService");
 
 const idsEqual = (left, right) => {
   return left && right && left.toString() === right.toString();
@@ -134,10 +135,22 @@ exports.createReview = asyncHandler(async (req, res) => {
       comment,
     });
 
+    let xpResult = null;
+    try {
+      xpResult = await awardXP(req.user.id, 10, "Wrote a review", review._id, "Review");
+    } catch (xpErr) {
+      console.error("XP award failed:", xpErr.message);
+    }
+
     res.status(201).json({
       success: true,
       message: "Review created",
       data: review,
+      ...(xpResult && { xp: {
+        xpGained: xpResult.xpGained,
+        totalXp: xpResult.xp,
+        newBadges: xpResult.newBadges,
+      }}),
     });
 
 });

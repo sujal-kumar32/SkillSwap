@@ -317,7 +317,7 @@ const Settings = () => {
                   </div>
                   <div className="d-flex flex-wrap gap-2">
                     {form.skills.map((s, i) => (
-                      <span key={i} className="badge bg-light border rounded-pill px-3 py-2 d-flex align-items-center gap-2">
+                      <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px", display: "flex", alignItems: "center", gap: "8px" }}>
                         {s.name}
                         <select className="border-0 bg-transparent small" style={{ fontSize: "0.7rem" }} value={s.level}
                           onChange={(e) => {
