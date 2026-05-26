@@ -87,7 +87,7 @@ exports.createSkill = asyncHandler(async (req, res) => {
 // GET ALL SKILLS
 exports.getSkills = asyncHandler(async (req, res) => {
 
-    const { search, sort, category, includeDeleted, level, tag } = req.query;
+    const { search, sort, category, includeDeleted, level, tag, createdBy } = req.query;
     const { page, limit, skip } = getPagination(req.query);
     const adminUser = isAdmin(req);
 
@@ -112,6 +112,10 @@ exports.getSkills = asyncHandler(async (req, res) => {
 
     if (tag) {
       filter.tags = { $in: [tag.toLowerCase()] };
+    }
+
+    if (createdBy) {
+      filter.createdBy = createdBy;
     }
 
     if (search) {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
@@ -7,6 +7,7 @@ import { PageHeader } from "../../learner/LearnerUI";
 
 const CreateSession = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [skills, setSkills] = useState([]);
   const [loadingSkills, setLoadingSkills] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -35,7 +36,12 @@ const CreateSession = () => {
       try {
         setLoadingSkills(true);
         const response = await Apiservices.getSkills();
-        setSkills(response.data.data || []);
+        const list = response.data.data || [];
+        setSkills(list);
+        const skillId = searchParams.get("skillId");
+        if (skillId && list.some((s) => s._id === skillId)) {
+          setForm((prev) => ({ ...prev, skillId }));
+        }
       } catch (error) {
         console.log(error);
         showToast.error("Failed to load skills");

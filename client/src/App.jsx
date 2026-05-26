@@ -47,6 +47,7 @@ import Profile from "./components/pages/Profile";
 import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
 import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
+import LearnerSkills from "./components/pages/learnerPages/LearnerSkills";
 import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import Settings from "./components/pages/Settings";
@@ -246,6 +247,7 @@ function App() {
             }
           >
             <Route index element={<LearnerDashboard />} />
+            <Route path="/learner/skills" element={<LearnerSkills />} />
             <Route path="/learner/explore" element={<ExploreSessions />} />
             <Route path="/learner/sessions/:id" element={<SessionDetails />} />
             <Route path="/learner/book/:id" element={<BookSession />} />

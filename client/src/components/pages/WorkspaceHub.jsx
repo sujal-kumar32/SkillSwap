@@ -399,44 +399,54 @@ function WorkspaceHub() {
         <>
           <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 1040 }} onClick={() => setShowForm(false)} />
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1050, width: "100%", maxWidth: 540, maxHeight: "90vh", overflowY: "auto" }}>
-            <div className="learner-card p-4">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                  <h5 className="fw-bold mb-1">Become a Mentor</h5>
-                  <small className="text-muted">Submit your application for admin review</small>
+            <div className="learner-card" style={{ overflow: "hidden" }}>
+              <div style={{ padding: "28px 24px",
+                background: "linear-gradient(135deg, #198754 0%, #146c43 100%)", color: "#fff" }}>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 className="fw-bold mb-1" style={{ color: "#fff" }}>Become a Mentor</h5>
+                    <small style={{ opacity: 0.85 }}>Submit your application for admin review</small>
+                  </div>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setShowForm(false)} />
                 </div>
-                <button type="button" className="btn-close" onClick={() => setShowForm(false)} />
               </div>
-              <form onSubmit={submitApplication}>
-                <div className="row g-3">
-                  <div className="col-12">
-                    <label className="form-label fw-semibold">Skills / Expertise *</label>
-                    <input className="form-control rounded-pill" placeholder="e.g. React, Node.js, Python" value={mentorForm.skills} onChange={(e) => setMentorForm({ ...mentorForm, skills: e.target.value })} required />
+              <div style={{ padding: "24px" }}>
+                <form onSubmit={submitApplication}>
+                  <div className="row g-3">
+                    <div className="col-12">
+                      <label className="form-label fw-semibold text-muted small">Skills / Expertise *</label>
+                      <input className="form-control" placeholder="e.g. React, Node.js, Python" value={mentorForm.skills} onChange={(e) => setMentorForm({ ...mentorForm, skills: e.target.value })} required
+                        style={{ borderRadius: 12, border: "1px solid #e2e8f0", padding: "10px 14px" }} />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-semibold text-muted small">Experience *</label>
+                      <textarea className="form-control" rows="3" placeholder="Describe your teaching/professional experience" value={mentorForm.experience} onChange={(e) => setMentorForm({ ...mentorForm, experience: e.target.value })} required
+                        style={{ borderRadius: 12, border: "1px solid #e2e8f0", resize: "vertical" }} />
+                    </div>
+                    <div className="col-12">
+                      <label className="form-label fw-semibold text-muted small">Bio</label>
+                      <textarea className="form-control" rows="2" placeholder="Short bio about yourself" value={mentorForm.bio} onChange={(e) => setMentorForm({ ...mentorForm, bio: e.target.value })}
+                        style={{ borderRadius: 12, border: "1px solid #e2e8f0", resize: "vertical" }} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-muted small">Category</label>
+                      <input className="form-control" placeholder="e.g. Web Development" value={mentorForm.category} onChange={(e) => setMentorForm({ ...mentorForm, category: e.target.value })}
+                        style={{ borderRadius: 12, border: "1px solid #e2e8f0", padding: "10px 14px" }} />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label fw-semibold text-muted small">Portfolio Link</label>
+                      <input className="form-control" placeholder="https://..." value={mentorForm.portfolioLink} onChange={(e) => setMentorForm({ ...mentorForm, portfolioLink: e.target.value })}
+                        style={{ borderRadius: 12, border: "1px solid #e2e8f0", padding: "10px 14px" }} />
+                    </div>
                   </div>
-                  <div className="col-12">
-                    <label className="form-label fw-semibold">Experience *</label>
-                    <textarea className="form-control rounded-4" rows="3" placeholder="Describe your teaching/professional experience" value={mentorForm.experience} onChange={(e) => setMentorForm({ ...mentorForm, experience: e.target.value })} required />
+                  <div className="d-flex justify-content-end align-items-center gap-3 mt-4 border-top pt-3" style={{ borderColor: "#eef2f7" }}>
+                    <button type="button" className="btn rounded-pill px-4" style={{ border: "1px solid #e2e8f0", color: "#64748b" }} onClick={() => setShowForm(false)}>Cancel</button>
+                    <LoadingButton loading={applying} type="submit" className="btn btn-success rounded-pill px-4 fw-semibold">
+                      {applying ? "Submitting..." : "Submit Application"}
+                    </LoadingButton>
                   </div>
-                  <div className="col-12">
-                    <label className="form-label fw-semibold">Bio</label>
-                    <textarea className="form-control rounded-4" rows="2" placeholder="Short bio about yourself" value={mentorForm.bio} onChange={(e) => setMentorForm({ ...mentorForm, bio: e.target.value })} />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">Category</label>
-                    <input className="form-control rounded-pill" placeholder="e.g. Web Development" value={mentorForm.category} onChange={(e) => setMentorForm({ ...mentorForm, category: e.target.value })} />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">Portfolio Link</label>
-                    <input className="form-control rounded-pill" placeholder="https://..." value={mentorForm.portfolioLink} onChange={(e) => setMentorForm({ ...mentorForm, portfolioLink: e.target.value })} />
-                  </div>
-                </div>
-                <div className="d-flex justify-content-end gap-2 mt-4">
-                  <button type="button" className="btn btn-outline-secondary rounded-pill px-4" onClick={() => setShowForm(false)}>Cancel</button>
-                  <LoadingButton loading={applying} type="submit" className="btn btn-success rounded-pill px-4 fw-semibold">
-                    {applying ? "Submitting..." : "Submit Application"}
-                  </LoadingButton>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           </div>
         </>

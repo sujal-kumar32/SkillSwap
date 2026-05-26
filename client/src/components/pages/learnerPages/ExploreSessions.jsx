@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
 import { showToast } from "../../../utils/toastUtils";
 import { EmptyState, LoadingState, PageHeader, SessionCard } from "../../learner/LearnerUI";
 
 const ExploreSessions = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const skillIdParam = searchParams.get("skillId");
   const [sessions, setSessions] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,12 @@ const ExploreSessions = () => {
     [categories],
   );
 
+  const skillName = useMemo(() => {
+    if (!skillIdParam) return null;
+    const s = sessions.find((s) => s.skillId?._id === skillIdParam);
+    return s?.skillId?.name || null;
+  }, [sessions, skillIdParam]);
+
   const filtered = useMemo(() => {
     const result = sessions.filter((session) => {
       const text = `${session.title} ${session.description} ${session.skillId?.name}`.toLowerCase();
@@ -49,7 +57,8 @@ const ExploreSessions = () => {
       const catMatch = category === "all" || session.categoryId?._id === category || session.categoryId === category || session.skillId?.categoryId?._id === category;
       const matchPrice = price === "all" || (price === "free" ? !session.price : session.price > 0);
       const matchType = type === "all" || session.sessionType === type;
-      return matchSearch && catMatch && matchPrice && matchType;
+      const matchSkill = !skillIdParam || session.skillId?._id === skillIdParam;
+      return matchSearch && catMatch && matchPrice && matchType && matchSkill;
     });
 
     if (sort === "price-low") return result.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -88,8 +97,19 @@ const ExploreSessions = () => {
 
   return (
     <>
-      <PageHeader title="Explore Sessions" subtitle="Search, filter, and book learning sessions from mentors." />
+      <PageHeader title="Explore Sessions" subtitle={skillName ? `Sessions for "${skillName}"` : "Search, filter, and book learning sessions from mentors."} />
       {error && <div className="alert alert-danger rounded-4">{error}</div>}
+
+      {skillIdParam && skillName && (
+        <div className="d-flex align-items-center gap-2 mb-4">
+          <span className="badge rounded-pill px-3 py-2" style={{ background: "rgba(13,110,253,0.1)", color: "#0d6efd", fontWeight: 600, fontSize: "0.88rem" }}>
+            <i className="fa fa-tag me-1" />{skillName}
+          </span>
+          <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={() => navigate("/learner/explore")}>
+            Clear
+          </button>
+        </div>
+      )}
 
       <div className="learner-card p-4 mb-4">
         <div className="row g-3">

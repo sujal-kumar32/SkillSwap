@@ -248,6 +248,30 @@ const Settings = () => {
             <div className="learner-card p-4 mb-4">
               <div className="row g-3">
                 {sectionTitle("fa-user", "Profile Information")}
+                <div className="col-12 mb-2">
+                  <div className="d-flex align-items-center" style={{ gap: "10px" }}>
+                    <div style={{ position: "relative", width: 80, height: 80, flexShrink: 0 }}>
+                      <img
+                        src={profileFile ? URL.createObjectURL(profileFile) : (form.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(form.name || "User")}&background=0d6efd&color=fff&size=128`)}
+                        alt="" className="rounded-circle border border-2 border-white shadow-sm"
+                        style={{ width: 80, height: 80, objectFit: "cover", background: "#eef2f7" }}
+                      />
+                      <label htmlFor="profileImageInput" style={{
+                        position: "absolute", bottom: -2, right: -2, width: 30, height: 30, borderRadius: "50%",
+                        background: "#0d6efd", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer", border: "2px solid #fff", fontSize: "0.75rem",
+                      }}>
+                        <i className="fas fa-camera" />
+                      </label>
+                      <input id="profileImageInput" type="file" accept="image/*" style={{ display: "none" }}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) setProfileFile(f); }} />
+                    </div>
+                    <div>
+                      <div className="fw-semibold" style={{ fontSize: "0.95rem" }}>{form.name || "Your Name"}</div>
+                      <small className="text-muted">Click the camera icon to change your profile picture</small>
+                    </div>
+                  </div>
+                </div>
                 <div className="col-md-6">
                   <label className="form-label fw-semibold small">Name</label>
                   <input className="form-control rounded-pill" value={form.name}

@@ -72,56 +72,106 @@ exports.downloadCertificate = asyncHandler(async (req, res) => {
 
   const pageWidth = doc.page.width;
   const pageHeight = doc.page.height;
+  const cx = pageWidth / 2;
 
   const gold = "#c9a848";
-  const dark = "#1e293b";
+  const goldLight = "#e8d48b";
+  const dark = "#0f172a";
   const muted = "#64748b";
+  const blue = "#0d6efd";
 
-  doc.rect(0, 0, pageWidth, pageHeight).fill("#faf9f6");
-  doc.lineWidth(2).rect(20, 20, pageWidth - 40, pageHeight - 40).stroke(gold);
-  doc.lineWidth(1).rect(28, 28, pageWidth - 56, pageHeight - 56).stroke(gold);
+  doc.rect(0, 0, pageWidth, pageHeight).fill("#fcf9f0");
+
+  doc.lineWidth(3).rect(18, 18, pageWidth - 36, pageHeight - 36).stroke(gold);
+  doc.lineWidth(1.5).rect(24, 24, pageWidth - 48, pageHeight - 48).stroke(goldLight);
+  doc.lineWidth(0.5).rect(28, 28, pageWidth - 56, pageHeight - 56).stroke(gold);
   doc.rect(30, 30, pageWidth - 60, pageHeight - 60).fill("#ffffff");
-  doc.rect(30, 30, pageWidth - 60, 100).fill("#1e293b");
 
-  doc.fontSize(28).font("Helvetica-Bold").fillColor(gold)
-    .text("SKILLSWAP", pageWidth / 2, 48, { align: "center" });
-  doc.fontSize(11).font("Helvetica").fillColor("#94a3b8")
-    .text("CERTIFICATE OF COMPLETION", pageWidth / 2, 82, { align: "center" });
-  doc.fontSize(10).font("Helvetica").fillColor("#94a3b8")
-    .text("SkillSwap Learning Platform", pageWidth / 2, 105, { align: "center" });
+  const ornSize = 18;
+  [
+    [30, 30], [pageWidth - 30 - ornSize, 30],
+    [30, pageHeight - 30 - ornSize], [pageWidth - 30 - ornSize, pageHeight - 30 - ornSize],
+  ].forEach(([x, y]) => {
+    doc.rect(x, y, ornSize, ornSize).fill(gold);
+  });
 
-  const centerX = pageWidth / 2;
+  for (let x = 30; x <= pageWidth - 30; x += 4) {
+    const waveY = 30 + 6 * Math.sin((x - 30) * Math.PI / 180);
+    doc.rect(x, 30 + 6, 2, waveY - 30 - 6 + 2).fill(gold);
+  }
+
+  doc.rect(30, 30, pageWidth - 60, 110).fill("#0f172a");
+
+  doc.lineWidth(2).moveTo(30, 140).lineTo(pageWidth - 30, 140).stroke(gold);
+
+  const emblemY = 80;
+  doc.circle(cx, emblemY, 24).fill(gold);
+  doc.circle(cx, emblemY, 20).fill("#0f172a");
+  doc.circle(cx, emblemY, 16).fill(gold);
+
+  const centerText = (text, x, y, opts = {}) => {
+    const w = opts.width || pageWidth;
+    doc.fontSize(opts.fontSize || 12)
+      .font(opts.font || "Helvetica")
+      .fillColor(opts.color || "#000")
+      .text(text, x - w / 2, y, { align: "center", width: w });
+  };
+
+  centerText("S", cx, emblemY - 10, { fontSize: 18, font: "Helvetica-Bold", color: "#0f172a", width: 30 });
+  centerText("SKILLSWAP", cx, 48, { fontSize: 24, font: "Helvetica-Bold", color: gold });
+  centerText("CERTIFICATE OF COMPLETION", cx, 115, { fontSize: 10, color: "#94a3b8" });
+
   let y = 170;
 
-  doc.fontSize(13).font("Helvetica").fillColor(muted)
-    .text("THIS CERTIFICATE IS PRESENTED TO", centerX, y, { align: "center" });
-  y += 35;
-  doc.fontSize(36).font("Helvetica-Bold").fillColor(dark)
-    .text(user.name, centerX, y, { align: "center" });
-  y += 55;
-  doc.fontSize(13).font("Helvetica").fillColor(muted)
-    .text("FOR SUCCESSFULLY COMPLETING THE SKILL", centerX, y, { align: "center" });
-  y += 35;
-  doc.fontSize(28).font("Helvetica-Bold").fillColor("#0d6efd")
-    .text(skillName, centerX, y, { align: "center" });
+  centerText("THIS CERTIFICATE IS PRESENTED TO", cx, y, { fontSize: 11, color: muted });
+  y += 32;
+  centerText(user.name, cx, y, { fontSize: 34, font: "Helvetica-Bold", color: dark });
+  y += 52;
+
+  doc.lineWidth(1).moveTo(pageWidth * 0.12, y - 10).lineTo(pageWidth * 0.35, y - 10).stroke(gold);
+  doc.lineWidth(1).moveTo(pageWidth * 0.65, y - 10).lineTo(pageWidth * 0.88, y - 10).stroke(gold);
+
+  centerText("FOR SUCCESSFULLY COMPLETING THE SKILL", cx, y, { fontSize: 11, color: muted });
+  y += 32;
+  centerText(skillName, cx, y, { fontSize: 26, font: "Helvetica-Bold", color: blue });
+  y += 48;
+
+  const badgeW = 260;
+  doc.roundedRect(cx - badgeW / 2, y, badgeW, 32, 16).fill("#f1f5f9");
+  centerText(`${completed}/${total} sessions completed`, cx, y + 9, { fontSize: 10, font: "Helvetica-Bold", color: dark, width: badgeW });
+
   y += 50;
-  doc.fontSize(11).font("Helvetica").fillColor(muted)
-    .text(`Completed ${completed} of ${total} sessions | ${completion}% completion`, centerX, y, { align: "center" });
-  y += 50;
-  doc.moveTo(pageWidth / 2 - 120, y).lineTo(pageWidth / 2 + 120, y).stroke(gold);
-  y += 20;
-  doc.fontSize(12).font("Helvetica").fillColor(dark)
-    .text(`Mentor: ${mentorName}`, centerX, y, { align: "center" });
-  y += 25;
+
+  doc.lineWidth(1.5).moveTo(cx - 100, y).lineTo(cx + 100, y).stroke(gold);
+  y += 18;
+
+  centerText(`Mentor: ${mentorName}`, cx, y, { fontSize: 11, color: dark });
+  y += 22;
+
   const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-  doc.fontSize(11).font("Helvetica").fillColor(muted)
-    .text(`Date: ${dateStr}`, centerX, y, { align: "center" });
-  y += 25;
+  centerText(`Issued: ${dateStr}`, cx, y, { fontSize: 10, color: muted });
+  y += 22;
+
   const certId = `SKL-${Date.now().toString(36).toUpperCase()}-${req.user.id.toString().slice(-6).toUpperCase()}`;
-  doc.fontSize(9).font("Helvetica").fillColor("#94a3b8")
-    .text(`Certificate ID: ${certId}`, centerX, y, { align: "center" });
-  doc.fontSize(8).font("Helvetica").fillColor("#cbd5e1")
-    .text("This certificate is digitally issued by SkillSwap. Verify authenticity at skillswap.app/verify", centerX, pageHeight - 45, { align: "center" });
+  centerText(`Certificate ID: ${certId}`, cx, y, { fontSize: 8, color: "#94a3b8" });
+
+  doc.lineWidth(1).moveTo(48, 160).lineTo(48, pageHeight - 60).stroke(goldLight);
+  doc.lineWidth(1).moveTo(pageWidth - 48, 160).lineTo(pageWidth - 48, pageHeight - 60).stroke(goldLight);
+
+  for (let x = 30; x <= pageWidth - 30; x += 4) {
+    const waveY = pageHeight - 38 + 4 * Math.sin((x - 30) * Math.PI / 60);
+    doc.rect(x, pageHeight - 38, 2, waveY - (pageHeight - 38) + 2).fill(gold);
+  }
+
+  const sealX = pageWidth - 85;
+  const sealY = pageHeight - 110;
+  doc.circle(sealX, sealY, 28).fill(gold);
+  doc.circle(sealX, sealY, 24).fill("#ffffff");
+  doc.circle(sealX, sealY, 22).stroke(gold);
+  centerText("SKILLSWAP", sealX, sealY - 3, { fontSize: 7, font: "Helvetica-Bold", color: gold, width: 44 });
+  centerText("VERIFIED", sealX, sealY + 5, { fontSize: 6, color: muted, width: 44 });
+
+  centerText("This certificate is digitally issued by SkillSwap. Verify authenticity at skillswap.app/verify", cx, pageHeight - 35, { fontSize: 7, color: "#cbd5e1" });
 
   doc.end();
 });

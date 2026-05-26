@@ -5,6 +5,7 @@ import { useAuth } from "../../../../App";
 
 const links = [
   { to: "/learner", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
+  { to: "/learner/skills", label: "Browse Skills", icon: "fa-layer-group" },
   { to: "/learner/explore", label: "Explore Sessions", icon: "fa-compass" },
   { to: "/learner/bookings", label: "My Bookings", icon: "fa-calendar-check" },
   { to: "/learner/progress", label: "Learning Progress", icon: "fa-chart-line" },

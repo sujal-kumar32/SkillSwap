@@ -176,50 +176,71 @@ const MentorRequests = () => {
         <>
           <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.5)", zIndex: 1040 }} onClick={() => setSelectedMentor(null)} />
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1050, width: "100%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto" }}>
-            <div className="learner-card p-4">
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="fw-bold mb-0">{selectedMentor.name}</h5>
-                <button type="button" className="btn-close" onClick={() => setSelectedMentor(null)} />
-              </div>
-
-              {detailLoading ? (
-                <div className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary" /></div>
-              ) : appDetail ? (
-                <div className="row g-3">
-                  <div className="col-12">
-                    <small className="text-muted d-block fw-semibold">Skills / Expertise</small>
-                    <p className="mb-0">{appDetail.skills}</p>
-                  </div>
-                  <div className="col-12">
-                    <small className="text-muted d-block fw-semibold">Experience</small>
-                    <p className="mb-0">{appDetail.experience}</p>
-                  </div>
-                  {appDetail.bio && (
-                    <div className="col-12">
-                      <small className="text-muted d-block fw-semibold">Bio</small>
-                      <p className="mb-0">{appDetail.bio}</p>
+            <div className="learner-card" style={{ overflow: "hidden" }}>
+              <div style={{ padding: "28px 24px",
+                background: "linear-gradient(135deg, #0d6efd 0%, #6610f2 100%)", color: "#fff" }}>
+                <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "10px" }}>
+                    <img
+                      src={selectedMentor.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedMentor.name)}&background=fff&color=0d6efd&size=64`}
+                      alt="" className="rounded-circle" width="44" height="44" style={{ objectFit: "cover", border: "2px solid rgba(255,255,255,0.4)" }}
+                    />
+                    <div>
+                      <h5 className="fw-bold mb-0" style={{ color: "#fff" }}>{selectedMentor.name}</h5>
+                      <small style={{ opacity: 0.85 }}>{selectedMentor.email}</small>
                     </div>
-                  )}
-                  {appDetail.category && (
-                    <div className="col-md-6">
-                      <small className="text-muted d-block fw-semibold">Category</small>
-                      <p className="mb-0">{appDetail.category}</p>
-                    </div>
-                  )}
-                  {appDetail.portfolioLink && (
-                    <div className="col-md-6">
-                      <small className="text-muted d-block fw-semibold">Portfolio</small>
-                      <p className="mb-0"><a href={appDetail.portfolioLink} target="_blank" rel="noopener noreferrer">{appDetail.portfolioLink}</a></p>
-                    </div>
-                  )}
-                  <div className="col-12">
-                    <small className="text-muted d-block fw-semibold">Status</small>
-                    <span className={`badge rounded-pill ${appDetail.status === "approved" ? "bg-success" : "bg-secondary"}`}>{appDetail.status}</span>
                   </div>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedMentor(null)} />
                 </div>
-              ) : (
-                <p className="text-muted mb-0">No application details found for this mentor.</p>
-              )}
+              </div>
+              <div style={{ padding: "24px" }}>
+                {detailLoading ? (
+                  <div className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary" /></div>
+                ) : appDetail ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div>
+                      <small className="text-muted d-block fw-semibold small mb-1">Skills / Expertise</small>
+                      <div style={{ background: "#f8faff", borderRadius: 12, padding: "12px 16px", border: "1px solid #e2e8f0", fontSize: "0.92rem" }}>{appDetail.skills}</div>
+                    </div>
+                    <div>
+                      <small className="text-muted d-block fw-semibold small mb-1">Experience</small>
+                      <div style={{ background: "#f8faff", borderRadius: 12, padding: "12px 16px", border: "1px solid #e2e8f0", fontSize: "0.92rem", whiteSpace: "pre-wrap" }}>{appDetail.experience}</div>
+                    </div>
+                    {appDetail.bio && (
+                      <div>
+                        <small className="text-muted d-block fw-semibold small mb-1">Bio</small>
+                        <div style={{ background: "#f8faff", borderRadius: 12, padding: "12px 16px", border: "1px solid #e2e8f0", fontSize: "0.92rem" }}>{appDetail.bio}</div>
+                      </div>
+                    )}
+                    <div className="row g-3">
+                      {appDetail.category && (
+                        <div className="col-md-6">
+                          <small className="text-muted d-block fw-semibold small mb-1">Category</small>
+                          <div style={{ background: "#f8faff", borderRadius: 12, padding: "10px 14px", border: "1px solid #e2e8f0", fontSize: "0.92rem" }}>{appDetail.category}</div>
+                        </div>
+                      )}
+                      {appDetail.portfolioLink && (
+                        <div className="col-md-6">
+                          <small className="text-muted d-block fw-semibold small mb-1">Portfolio</small>
+                          <div style={{ background: "#f8faff", borderRadius: 12, padding: "10px 14px", border: "1px solid #e2e8f0", fontSize: "0.92rem", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            <a href={appDetail.portfolioLink} target="_blank" rel="noopener noreferrer" style={{ color: "#0d6efd", textDecoration: "none" }}>{appDetail.portfolioLink}</a>
+                          </div>
+                        </div>
+                      )}
+                      <div className="col-12">
+                        <small className="text-muted d-block fw-semibold small mb-1">Status</small>
+                        <div>
+                          <span className={`badge rounded-pill px-3 py-2 ${appDetail.status === "approved" ? "bg-success" : "bg-secondary"}`}>{appDetail.status}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted mb-0">No application details found for this mentor.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </>

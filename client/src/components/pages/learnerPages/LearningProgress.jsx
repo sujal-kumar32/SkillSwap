@@ -75,7 +75,7 @@ const LearningProgress = () => {
       <div className="row g-4 mb-4">
         <StatCard icon="fa-chart-line" label="Average Progress" value={`${avg}%`} />
         <StatCard icon="fa-fire" label="Tracked Skills" value={items.length} tone="danger" />
-        <StatCard icon="fa-circle-check" label="Completed Sessions" value={completedSessions} tone="success" />
+        <StatCard icon="fa-check-circle" label="Completed Sessions" value={completedSessions} tone="success" />
         <StatCard icon="fa-certificate" label="Total Sessions" value={totalSessions} tone="warning" />
       </div>
 
