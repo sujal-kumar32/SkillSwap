@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
@@ -11,6 +11,7 @@ const SessionDetails = () => {
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [mentorSlots, setMentorSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -24,6 +25,12 @@ const SessionDetails = () => {
           Apiservices.fetchSessions(),
           Apiservices.fetchBookings().catch(() => ({ data: { data: [] } })),
         ]);
+        const mentorId = detailRes.data.data?.mentorId?._id || detailRes.data.data?.mentorId;
+        if (mentorId) {
+          Apiservices.getMentorAvailability(mentorId).then((avRes) => {
+            setMentorSlots(avRes.data.data?.slots || []);
+          }).catch(() => {});
+        }
         setSession(detailRes.data.data);
         setBookings(bookingRes.data.data || []);
         setRelated((relatedRes.data.data || []).filter((item) => item._id !== id));
@@ -48,6 +55,17 @@ const SessionDetails = () => {
 
     loadSession();
   }, [id]);
+
+  const availabilityText = useMemo(() => {
+    if (!mentorSlots.length) return null;
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const daySlots = mentorSlots.map((s) => {
+      const day = dayNames[s.dayOfWeek] || "?";
+      return `${day} ${s.startTime?.slice(0, 5)}–${s.endTime?.slice(0, 5)}`;
+    });
+    if (daySlots.length <= 3) return daySlots.join(", ");
+    return `${daySlots.slice(0, 3).join(", ")} +${daySlots.length - 3} more`;
+  }, [mentorSlots]);
 
   const existingBooking = bookings.find((b) => {
     const sId = b.sessionId?._id || b.sessionId;
@@ -125,6 +143,12 @@ const SessionDetails = () => {
                 <small className="text-muted">{session.mentorId?.email || "mentor@skillswap.com"}</small>
               </div>
             </div>
+            {availabilityText && (
+              <div className="mb-3 p-3 rounded-4" style={{ background: "#f1f5f9" }}>
+                <small className="fw-semibold text-muted text-uppercase" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>Weekly Availability</small>
+                <p className="small mb-0 mt-1">{availabilityText}</p>
+              </div>
+            )}
             <div className="list-group list-group-flush mb-3">
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Date</span><strong>{session.date || "Flexible"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Time</span><strong>{session.time || "Flexible"}</strong></div>

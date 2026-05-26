@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
@@ -30,6 +30,7 @@ const CreateSession = () => {
   });
 
   const [aiLoading, setAiLoading] = useState({ title: false, description: false, outcomes: false, tags: false, mentor: false });
+  const [bookedSlots, setBookedSlots] = useState([]);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -51,6 +52,25 @@ const CreateSession = () => {
     };
     fetchSkills();
   }, []);
+
+  useEffect(() => {
+    if (!form.date) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await Apiservices.getBookedSlots({ date: form.date });
+        if (!cancelled) setBookedSlots(res.data.data || []);
+      } catch {
+        if (!cancelled) setBookedSlots([]);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [form.date]);
+
+  const bookedTimes = useMemo(() => {
+    return bookedSlots.map((s) => s.time?.slice(0, 5)).filter(Boolean);
+  }, [bookedSlots]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -390,6 +410,16 @@ const CreateSession = () => {
                           value={form.time}
                           onChange={handleChange}
                         />
+                        {form.time && bookedTimes.includes(form.time) && (
+                          <div className="mt-2 text-danger small fw-semibold">
+                            <i className="fa fa-exclamation-circle me-1" />This time is already booked
+                          </div>
+                        )}
+                        {bookedTimes.length > 0 && (
+                          <div className="mt-2 text-muted small">
+                            <i className="fa fa-clock me-1" />Booked: {bookedTimes.join(", ")}
+                          </div>
+                        )}
                       </div>
 
                       <div className="col-md-4">

@@ -35,6 +35,7 @@ import MyLearners from "./components/pages/mentorPages/MyLearners";
 import MentorReviews from "./components/pages/mentorPages/MentorReviews";
 import MentorCreateSkill from "./components/pages/mentorPages/MentorCreateSkill";
 import MentorMySkills from "./components/pages/mentorPages/MentorMySkills";
+import MentorAvailability from "./components/pages/mentorPages/MentorAvailability";
 import LearnerMaster from "./components/layout/user/learner/LearnerMaster";
 import LearnerDashboard from "./components/pages/learnerPages/LearnerDashboard";
 import ExploreSessions from "./components/pages/learnerPages/ExploreSessions";
@@ -236,6 +237,7 @@ function App() {
             <Route path="/mentor/reviews" element={<MentorReviews />} />
             <Route path="/mentor/create-skill" element={<MentorCreateSkill />} />
             <Route path="/mentor/my-skills" element={<MentorMySkills />} />
+            <Route path="/mentor/availability" element={<MentorAvailability />} />
           </Route>
 
           <Route

@@ -25,6 +25,7 @@ const aiRoutes = require("./routes/aiRoutes");
 const mentorApplicationRoutes = require("./routes/mentorApplicationRoutes");
 const certificateRoutes = require("./routes/certificateRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
+const availabilityRoutes = require("./routes/availabilityRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -80,6 +81,7 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/mentor-applications", mentorApplicationRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/calendar", calendarRoutes);
+app.use("/api/availability", availabilityRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err.message);

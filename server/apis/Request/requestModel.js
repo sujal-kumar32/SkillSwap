@@ -36,6 +36,11 @@ const requestSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    calendarEventId: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

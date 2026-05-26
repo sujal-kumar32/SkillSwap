@@ -376,18 +376,16 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
     }
 
     // Sync Google Calendar events
-    if (["accepted", "cancelled"].includes(status)) {
-      const sessionWithMeta = await Session.findById(request.sessionId)
-        .populate("mentorId", "name email")
-        .select("title date time duration description meetLink")
-        .lean()
-        .catch(() => null);
+    if (["accepted", "cancelled"].includes(status) && request.mentorId) {
+      const token = await CalendarToken.findOne({ userId: request.mentorId }).lean();
+      if (token) {
+        const sessionWithMeta = await Session.findById(request.sessionId)
+          .populate("mentorId", "name email")
+          .select("title date time duration description meetLink")
+          .lean()
+          .catch(() => null);
 
-      if (sessionWithMeta) {
-        const userIds = [request.learnerId, request.mentorId].filter(Boolean);
-        const userTokens = await CalendarToken.find({ userId: { $in: userIds } }).lean();
-
-        for (const token of userTokens) {
+        if (sessionWithMeta) {
           try {
             if (status === "accepted") {
               const startTime = sessionWithMeta.date
@@ -400,7 +398,7 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
               const endTime = new Date(startTime);
               endTime.setMinutes(endTime.getMinutes() + (sessionWithMeta.duration || 60));
 
-              await createCalendarEvent({
+              const event = await createCalendarEvent({
                 accessToken: token.accessToken,
                 refreshToken: token.refreshToken,
                 summary: `SkillSwap: ${sessionWithMeta.title}`,
@@ -410,15 +408,19 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
                 timeZone: "UTC",
                 attendeeEmails: [sessionWithMeta.mentorId?.email].filter(Boolean),
               });
-            } else if (status === "cancelled" && token.eventId) {
+              if (event?.id) {
+                request.calendarEventId = event.id;
+                await request.save();
+              }
+            } else if (status === "cancelled" && request.calendarEventId) {
               await deleteCalendarEvent({
                 accessToken: token.accessToken,
                 refreshToken: token.refreshToken,
-                eventId: token.eventId,
+                eventId: request.calendarEventId,
               });
             }
           } catch (calErr) {
-            console.error("Calendar sync failed for user", token.userId, calErr.message);
+            console.error("Calendar sync failed for mentor", calErr.message);
           }
         }
       }

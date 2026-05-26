@@ -306,6 +306,22 @@ class Apiservices {
   calendarDisconnect() {
     return axios.post(baseUrl + "calendar/disconnect");
   }
+
+  getMyAvailability() {
+    return axios.get(baseUrl + "availability/me");
+  }
+
+  updateMyAvailability(data) {
+    return axios.put(baseUrl + "availability/me", data);
+  }
+
+  getMentorAvailability(mentorId) {
+    return axios.get(baseUrl + `availability/${mentorId}`);
+  }
+
+  getBookedSlots(params = {}) {
+    return axios.get(baseUrl + "availability/booked-slots", { params });
+  }
 }
 
 export default new Apiservices();
