@@ -3,7 +3,7 @@ const router = express.Router();
 const validate = require("../middleware/validate");
 const { session } = require("../validations");
 const protect = require("../middleware/authMiddleware");
-const upload = require("../middleware/upload");
+const { upload } = require("../middleware/upload");
 const {
   requireMentorOrAdmin,
 } = require("../middleware/roleMiddleware");

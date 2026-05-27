@@ -354,6 +354,18 @@ class Apiservices {
   getAdminAnalytics(period) {
     return axios.get(baseUrl + "admin/analytics", { params: { period } });
   }
+
+  getSessionMaterials(sessionId) {
+    return axios.get(baseUrl + `sessions/${sessionId}/materials`);
+  }
+
+  uploadSessionMaterial(sessionId, formData) {
+    return axios.post(baseUrl + `sessions/${sessionId}/materials`, formData);
+  }
+
+  deleteSessionMaterial(sessionId, materialId) {
+    return axios.delete(baseUrl + `sessions/${sessionId}/materials/${materialId}`);
+  }
 }
 
 export default new Apiservices();

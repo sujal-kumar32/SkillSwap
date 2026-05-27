@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { deleteConfirmAlert } from "../../../../src/utils/alertUtils";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
@@ -28,6 +28,7 @@ const stateBadge = (state) => {
 };
 
 const MySessions = () => {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
@@ -277,6 +278,14 @@ const MySessions = () => {
                         <i className="fa fa-trash"></i>
                       </LoadingButton>
                     </div>
+
+                    <button
+                      className="btn btn-outline-info rounded-pill w-100 py-2 mt-2 d-inline-flex align-items-center justify-content-center"
+                      style={{ gap: 6, fontSize: "0.85rem" }}
+                      onClick={() => navigate(`/mentor/sessions/${session._id}`)}
+                    >
+                      <i className="fa fa-folder-open" /> Manage Resources
+                    </button>
 
                     {session.sessionType === "online" && session.meetLink && (
                       session._state === "upcoming" ? (

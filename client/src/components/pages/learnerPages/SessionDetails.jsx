@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, SessionCard, StatusBadge } from "../../learner/LearnerUI";
+import SessionMaterials from "../../shared/SessionMaterials";
 
 const SessionDetails = () => {
   const { id } = useParams();
@@ -133,6 +134,12 @@ const SessionDetails = () => {
               <ul className="text-muted">
                 {outcomes.map((item) => <li key={item}>{item}</li>)}
               </ul>
+
+              {existingBooking && (
+                <div className="mt-4 p-3 rounded-4" style={{ background: "#f1f5f9" }}>
+                  <SessionMaterials sessionId={id} mode="view" />
+                </div>
+              )}
 
               <h5 className="fw-bold mt-4">Reviews</h5>
               {reviews.length ? reviews.map((review) => (

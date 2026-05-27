@@ -22,11 +22,11 @@ const uploadBuffer = (buffer, options = {}) => {
   });
 };
 
-const destroyImage = (publicId) => {
+const destroyImage = (publicId, options = {}) => {
   if (!publicId) {
     return Promise.resolve({ result: "skipped" });
   }
-  return cloudinary.uploader.destroy(publicId);
+  return cloudinary.uploader.destroy(publicId, options);
 };
 
 module.exports = { uploadBuffer, destroyImage };
