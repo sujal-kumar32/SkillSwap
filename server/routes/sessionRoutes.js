@@ -15,6 +15,7 @@ const {
   getSession,
   updateSession,
   deleteSession,
+  startSessionSession,
 } = require("../apis/Session/sessionController");
 
 router.post("/", protect, requireMentorOrAdmin, upload.single("thumbnail"), validate(session.create), createSession);
@@ -22,6 +23,7 @@ router.get("/mentor/me", protect, requireMentorOrAdmin, getMySessions);
 router.get("/", protect.optional, getSessions);
 router.get("/:id", protect.optional, getSession);
 router.put("/:id", protect, requireMentorOrAdmin, upload.single("thumbnail"), validate(session.update), updateSession);
+router.put("/:id/start", protect, requireMentorOrAdmin, startSessionSession);
 router.delete("/:id", protect, requireMentorOrAdmin, deleteSession);
 
 module.exports = router;

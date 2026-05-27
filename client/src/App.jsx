@@ -50,6 +50,8 @@ import LearnerReviews from "./components/pages/learnerPages/LearnerReviews";
 import Profile from "./components/pages/Profile";
 import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
+import LearnerWallet from "./components/pages/learnerPages/LearnerWallet";
+import MentorEarnings from "./components/pages/mentorPages/MentorEarnings";
 import Wishlist from "./components/pages/learnerPages/Wishlist";
 import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
 import LearnerSkills from "./components/pages/learnerPages/LearnerSkills";
@@ -253,6 +255,7 @@ function App() {
             <Route path="/mentor/availability" element={<MentorAvailability />} />
             <Route path="/mentor/leaderboard" element={<LearnerLeaderboard />} />
             <Route path="/mentor/sessions/:id" element={<SessionManage />} />
+            <Route path="/mentor/earnings" element={<MentorEarnings />} />
           </Route>
 
           <Route
@@ -275,6 +278,7 @@ function App() {
             <Route path="/learner/ai" element={<AIRecommendations />} />
             <Route path="/learner/ai-roadmap" element={<LearningRoadmap />} />
             <Route path="/learner/leaderboard" element={<LearnerLeaderboard />} />
+            <Route path="/learner/wallet" element={<LearnerWallet />} />
             <Route path="/learner/wishlist" element={<Wishlist />} />
           </Route>
         </Routes>

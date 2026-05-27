@@ -28,7 +28,7 @@ const requestSchema = new mongoose.Schema(
 
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed"],
+      enum: ["pending", "paid", "failed", "refunded"],
       default: "pending",
     },
 
@@ -39,6 +39,11 @@ const requestSchema = new mongoose.Schema(
 
     calendarEventId: {
       type: String,
+      default: null,
+    },
+
+    startedAt: {
+      type: Date,
       default: null,
     },
   },

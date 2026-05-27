@@ -1,5 +1,6 @@
 ﻿const Request = require("../Request/requestModel");
 const User = require("../Users/userModel");
+const Session = require("../Session/sessionModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
 
@@ -10,20 +11,29 @@ exports.getProgress = asyncHandler(async (req, res) => {
         path: "sessionId",
         select: "title skillId mentorId",
         populate: [
-          { path: "skillId", select: "name" },
+          {
+            path: "skillId",
+            select: "name level thumbnail categoryId",
+            populate: { path: "categoryId", select: "name icon" },
+          },
           { path: "mentorId", select: "name" },
         ],
       })
       .lean();
 
     const grouped = bookings.reduce((map, booking) => {
-      const skillName = booking.sessionId?.skillId?.name || "General Learning";
+      const skill = booking.sessionId?.skillId;
+      const skillName = skill?.name || "General Learning";
       const existing = map.get(skillName) || {
         skill: skillName,
+        category: skill?.categoryId?.name || "General",
+        categoryIcon: skill?.categoryId?.icon || "fa-star",
+        skillLevel: skill?.level || "all",
         sessions: 0,
         completedSessions: 0,
         mentor: booking.sessionId?.mentorId?.name || "SkillSwap Mentor",
         remark: "Keep learning consistently to improve your skill score.",
+        skillThumbnail: skill?.thumbnail || "",
       };
 
       existing.sessions += 1;
@@ -41,6 +51,8 @@ exports.getProgress = asyncHandler(async (req, res) => {
         ? Math.round((item.completedSessions / item.sessions) * 100)
         : 0,
     }));
+
+    data.sort((a, b) => b.completion - a.completion);
 
     const totalBookings = bookings.length;
     const completedBookings = bookings.filter(

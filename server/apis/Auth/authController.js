@@ -16,7 +16,8 @@ if (!SECRET) {
 // REGISTER
 exports.register = asyncHandler(async (req, res) => {
 
-    const { name, email, password } = req.body;
+    const { name, password } = req.body;
+    let email = req.body.email?.toLowerCase().trim();
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -181,7 +182,7 @@ exports.login = asyncHandler(async (req, res) => {
 
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
       return res.status(400).json({
@@ -245,9 +246,9 @@ exports.login = asyncHandler(async (req, res) => {
 // FORGOT PASSWORD
 exports.forgotPassword = asyncHandler(async (req, res) => {
 
-    const { email } = req.body;
+    const email = req.body.email?.toLowerCase().trim();
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const user = await User.findOne({ email });
     if (!user) {
       return res.json({
         success: true,

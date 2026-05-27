@@ -13,6 +13,7 @@ const links = [
   { to: "/mentor/bookings", label: "Bookings", icon: "fa-calendar-check" },
   { to: "/mentor/learners", label: "Learners", icon: "fa-users" },
   { to: "/mentor/reviews", label: "Reviews", icon: "fa-star" },
+  { to: "/mentor/earnings", label: "Earnings", icon: "fa-credit-card" },
 ];
 
 const XpWidget = ({ user }) => {

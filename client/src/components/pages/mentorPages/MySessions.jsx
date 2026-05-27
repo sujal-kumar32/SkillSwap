@@ -31,11 +31,12 @@ const MySessions = () => {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [tick, setTick] = useState(0);
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [startingSessionId, setStartingSessionId] = useState(null);
 
   const fetchSessions = async () => {
     try {
@@ -96,6 +97,21 @@ const MySessions = () => {
       );
     } finally {
       setUpdatingStatus(null);
+    }
+  };
+
+  const handleStartSessionClick = async (sessionId) => {
+    try {
+      setStartingSessionId(sessionId);
+      const res = await Apiservices.startSession(sessionId);
+      if (res.data?.data?.meetLink) {
+        window.open(res.data.data.meetLink, "_blank");
+      }
+      showToast.success("Session started!");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to start session");
+    } finally {
+      setStartingSessionId(null);
     }
   };
 
@@ -246,7 +262,7 @@ const MySessions = () => {
                     </div>
 
                     <div className="d-flex flex-wrap" style={{ gap: "8px" }}>
-                      {session.status === "active" && (
+                      {(session.status === "active" || session.status === "ongoing") && (
                         <>
                           <LoadingButton
                             loading={updatingStatus === session._id}
@@ -256,13 +272,15 @@ const MySessions = () => {
                             <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-check-circle"></i>
                             Complete</span>
                           </LoadingButton>
-                          <LoadingButton
-                            loading={updatingStatus === session._id}
-                            className="btn btn-outline-warning rounded-pill px-3 py-2"
-                            onClick={() => handleStatusChange(session._id, "cancelled")}
-                          >
-                            <i className="fa fa-ban"></i>
-                          </LoadingButton>
+                          {session.status === "active" && (
+                            <LoadingButton
+                              loading={updatingStatus === session._id}
+                              className="btn btn-outline-warning rounded-pill px-3 py-2"
+                              onClick={() => handleStatusChange(session._id, "cancelled")}
+                            >
+                              <i className="fa fa-ban"></i>
+                            </LoadingButton>
+                          )}
                         </>
                       )}
                       {session.status !== "active" && (
@@ -287,16 +305,8 @@ const MySessions = () => {
                       <i className="fa fa-folder-open" /> Manage Resources
                     </button>
 
-                    {session.sessionType === "online" && session.meetLink && (
-                      session._state === "upcoming" ? (
-                        <button
-                          className="btn btn-success rounded-pill w-100 py-2 mt-2"
-                          onClick={() => window.open(session.meetLink, "_blank")}
-                        >
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-video"></i>
-                          Start Session</span>
-                        </button>
-                      ) : session._state === "live" ? (
+                    {session.sessionType === "online" && session.meetLink && session._state === "live" && (
+                      session.status === "ongoing" ? (
                         <button
                           className="btn btn-outline-success rounded-pill w-100 py-2 mt-2"
                           onClick={() => window.open(session.meetLink, "_blank")}
@@ -304,7 +314,16 @@ const MySessions = () => {
                           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-video"></i>
                           Join Session</span>
                         </button>
-                      ) : null
+                      ) : (
+                        <LoadingButton
+                          loading={startingSessionId === session._id}
+                          className="btn btn-success rounded-pill w-100 py-2 mt-2"
+                          onClick={() => handleStartSessionClick(session._id)}
+                        >
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-video"></i>
+                          Start Session</span>
+                        </LoadingButton>
+                      )
                     )}
                   </div>
                 </div>

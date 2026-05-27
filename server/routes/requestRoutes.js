@@ -12,6 +12,7 @@ const {
   getMentorLearners,
   updateRequestStatus,
   deleteRequest,
+  startSession,
 } = require("../apis/Request/requestController");
 
 router.post("/", protect, validate(request.create), createRequest);
@@ -21,6 +22,7 @@ router.get("/mentor/learners", protect, getMentorLearners);
 router.get("/my-bookings", protect, getMyBookings);
 router.get("/", protect, getRequests);
 router.put("/:id/status", protect, validate(request.updateStatus), updateRequestStatus);
+router.put("/:id/start", protect, startSession);
 router.delete("/:id", protect, deleteRequest);
 
 module.exports = router;

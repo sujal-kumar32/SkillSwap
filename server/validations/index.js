@@ -226,4 +226,19 @@ const category = {
   }).min(1),
 };
 
-module.exports = { auth, profile, skill, session, request, payment, review, category, objectId };
+const wallet = {
+  addFunds: Joi.object({
+    amount: Joi.number().positive().required().messages({
+      "number.base": "Amount must be a number",
+      "number.positive": "Amount must be positive",
+      "any.required": "Amount is required",
+    }),
+  }),
+  verifyFunds: Joi.object({
+    orderId: Joi.string().required(),
+    razorpayPaymentId: Joi.string().required(),
+    razorpaySignature: Joi.string().required(),
+  }),
+};
+
+module.exports = { auth, profile, skill, session, request, payment, review, category, wallet, objectId };

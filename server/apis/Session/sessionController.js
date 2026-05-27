@@ -7,6 +7,8 @@ const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
 const Wishlist = require("../Wishlist/wishlistModel");
+const Wallet = require("../Wallet/walletModel");
+const Transaction = require("../Wallet/transactionModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
@@ -364,19 +366,75 @@ exports.updateSession = asyncHandler(async (req, res) => {
       session.thumbnailPublicId = result.public_id;
     }
 
+    if (req.body.status === "cancelled" && oldStatus === "ongoing") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel an ongoing session. It will auto-complete after its scheduled end time.",
+      });
+    }
+
     await session.save();
 
     if (session.status !== oldStatus) {
       if (session.status === "cancelled") {
-        await Request.updateMany(
-          { sessionId: session._id, requestStatus: { $in: ["pending", "accepted"] } },
-          { requestStatus: "cancelled" },
-        );
+        const activeRequests = await Request.find({
+          sessionId: session._id,
+          requestStatus: { $in: ["pending", "accepted"] },
+        }).lean();
+
+        for (const req of activeRequests) {
+          await Request.findByIdAndUpdate(req._id, { requestStatus: "cancelled" });
+
+          if (req.paymentStatus === "paid" && session.price > 0) {
+            let wallet = await Wallet.findOne({ userId: req.learnerId });
+            if (!wallet) wallet = await Wallet.create({ userId: req.learnerId });
+            await Transaction.create({
+              walletId: wallet._id,
+              userId: req.learnerId,
+              type: "refund",
+              amount: session.price,
+              balanceBefore: wallet.balance,
+              balanceAfter: wallet.balance + session.price,
+              reference: String(req._id),
+              referenceModel: "Request",
+              description: "Refund — session cancelled by mentor",
+              status: "completed",
+            });
+            wallet.balance += session.price;
+            await wallet.save();
+            await Request.findByIdAndUpdate(req._id, { paymentStatus: "refunded" });
+          }
+        }
       } else if (session.status === "completed") {
-        await Request.updateMany(
-          { sessionId: session._id, requestStatus: { $in: ["pending", "accepted"] } },
-          { requestStatus: "completed" },
-        );
+        const paidRequests = await Request.find({
+          sessionId: session._id,
+          requestStatus: { $in: ["pending", "accepted"] },
+        }).lean();
+
+        for (const req of paidRequests) {
+          req.requestStatus = "completed";
+          await Request.findByIdAndUpdate(req._id, { requestStatus: "completed" });
+
+          if (req.paymentStatus === "paid" && session.price > 0) {
+            let wallet = await Wallet.findOne({ userId: req.mentorId });
+            if (!wallet) wallet = await Wallet.create({ userId: req.mentorId });
+            await Transaction.create({
+              walletId: wallet._id,
+              userId: req.mentorId,
+              type: "earning",
+              amount: session.price,
+              balanceBefore: wallet.balance,
+              balanceAfter: wallet.balance + session.price,
+              reference: String(req._id),
+              referenceModel: "Request",
+              description: `Earnings from session completion`,
+              status: "completed",
+            });
+            wallet.balance += session.price;
+            wallet.totalEarned += session.price;
+            await wallet.save();
+          }
+        }
       }
     }
 
@@ -410,8 +468,41 @@ exports.deleteSession = asyncHandler(async (req, res) => {
       });
     }
 
+    if (session.status === "ongoing") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete an ongoing session. It will auto-complete after its scheduled end time.",
+      });
+    }
+
     if (session.thumbnailPublicId) {
       await destroyImage(session.thumbnailPublicId).catch(() => {});
+    }
+
+    const pendingRequests = await Request.find({
+      sessionId: session._id,
+      requestStatus: { $in: ["pending", "accepted"] },
+    }).lean();
+
+    for (const req of pendingRequests) {
+      if (req.paymentStatus === "paid" && session.price > 0) {
+        let wallet = await Wallet.findOne({ userId: req.learnerId });
+        if (!wallet) wallet = await Wallet.create({ userId: req.learnerId });
+        await Transaction.create({
+          walletId: wallet._id,
+          userId: req.learnerId,
+          type: "refund",
+          amount: session.price,
+          balanceBefore: wallet.balance,
+          balanceAfter: wallet.balance + session.price,
+          reference: String(req._id),
+          referenceModel: "Request",
+          description: "Refund — session deleted by mentor",
+          status: "completed",
+        });
+        wallet.balance += session.price;
+        await wallet.save();
+      }
     }
 
     await session.deleteOne();
@@ -422,4 +513,63 @@ exports.deleteSession = asyncHandler(async (req, res) => {
     });
 
 
+});
+
+exports.startSessionSession = asyncHandler(async (req, res) => {
+  const session = await Session.findById(req.params.id);
+  if (!session) {
+    return res.status(404).json({ success: false, message: "Session not found" });
+  }
+
+  if (!idsEqual(session.mentorId, req.user.id)) {
+    return res.status(403).json({ success: false, message: "Only the session mentor can start this session" });
+  }
+
+  if (session.status !== "active") {
+    return res.status(400).json({ success: false, message: "Session can only be started from active status" });
+  }
+
+  const now = new Date();
+  const startTime = session.date ? new Date(session.date) : null;
+  if (session.time && startTime) {
+    const [h, m] = session.time.split(":").map(Number);
+    startTime.setHours(h || 0, m || 0, 0, 0);
+  }
+
+  if (startTime) {
+    const endTime = new Date(startTime.getTime() + (session.duration || 60) * 60000);
+    const graceBefore = 5 * 60 * 1000;
+    if (now < new Date(startTime.getTime() - graceBefore)) {
+      return res.status(400).json({
+        success: false,
+        message: `Session can only be started within 5 minutes before the scheduled time (${startTime.toLocaleString()})`,
+      });
+    }
+    if (now > endTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Session time has already passed.",
+      });
+    }
+  }
+
+  await Session.findByIdAndUpdate(session._id, { status: "ongoing" });
+
+  const accepted = await Request.find({
+    sessionId: session._id,
+    requestStatus: "accepted",
+  });
+
+  for (const req of accepted) {
+    if (!req.startedAt) {
+      req.startedAt = now;
+      await req.save();
+    }
+  }
+
+  res.json({
+    success: true,
+    message: "Session started",
+    data: { status: "ongoing", meetLink: session.meetLink, startedCount: accepted.length },
+  });
 });

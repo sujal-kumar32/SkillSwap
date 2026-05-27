@@ -247,6 +247,14 @@ class Apiservices {
     );
   }
 
+  startBooking(id) {
+    return axios.put(baseUrl + `requests/${id}/start`);
+  }
+
+  startSession(sessionId) {
+    return axios.put(baseUrl + `sessions/${sessionId}/start`);
+  }
+
   createOrder(data) {
     return axios.post(baseUrl + "payments/create-order", data);
   }
@@ -365,6 +373,38 @@ class Apiservices {
 
   deleteSessionMaterial(sessionId, materialId) {
     return axios.delete(baseUrl + `sessions/${sessionId}/materials/${materialId}`);
+  }
+
+  getWallet() {
+    return axios.get(baseUrl + "wallet");
+  }
+
+  addWalletFunds(amount) {
+    return axios.post(baseUrl + "wallet/add-funds", { amount });
+  }
+
+  verifyWalletFunds(data) {
+    return axios.post(baseUrl + "wallet/verify-funds", data);
+  }
+
+  getWalletTransactions(params = {}) {
+    return axios.get(baseUrl + "wallet/transactions", { params });
+  }
+
+  payWithWallet(requestId) {
+    return axios.post(baseUrl + "wallet/pay", { requestId });
+  }
+
+  getEarnings() {
+    return axios.get(baseUrl + "earnings");
+  }
+
+  getEarningTransactions(params = {}) {
+    return axios.get(baseUrl + "earnings/transactions", { params });
+  }
+
+  withdrawEarnings(amount) {
+    return axios.post(baseUrl + "earnings/withdraw", { amount });
   }
 }
 

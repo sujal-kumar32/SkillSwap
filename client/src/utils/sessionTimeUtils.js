@@ -23,7 +23,8 @@ export function getSessionState(session) {
 
   const now = new Date();
 
-  if (now < times.start) return "upcoming";
-  if (now >= times.start && now <= times.end) return "live";
+  const graceBefore = 5 * 60 * 1000;
+  if (now < new Date(times.start.getTime() - graceBefore)) return "upcoming";
+  if (now <= times.end) return "live";
   return "completed";
 }

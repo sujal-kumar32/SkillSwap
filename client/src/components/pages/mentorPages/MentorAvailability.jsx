@@ -255,8 +255,8 @@ const MentorAvailability = () => {
                         </small>
                       </div>
                     </div>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: slot.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #eab308, #ca8a04)", color: slot.requestStatus === "accepted" ? "white" : "#1e293b", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                      <i className={`fa ${slot.requestStatus === "accepted" ? "fa-check-circle" : "fa-clock"}`} />
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: slot.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : slot.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #eab308, #ca8a04)", color: slot.requestStatus === "accepted" || slot.requestStatus === "completed" ? "white" : "#1e293b", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                      <i className={`fa ${slot.requestStatus === "accepted" ? "fa-check-circle" : slot.requestStatus === "completed" ? "fa-check" : "fa-clock"}`} />
                       {slot.requestStatus}
                     </span>
                   </div>

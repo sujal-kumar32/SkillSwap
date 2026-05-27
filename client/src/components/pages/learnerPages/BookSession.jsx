@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
@@ -8,12 +8,15 @@ import { useAuth } from "../../../App";
 
 const BookSession = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [session, setSession] = useState(null);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [insufficientFunds, setInsufficientFunds] = useState(false);
+  const [requiredAmount, setRequiredAmount] = useState(0);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -34,20 +37,12 @@ const BookSession = () => {
     loadSession();
   }, [id]);
 
-  const loadRazorpayScript = () => new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true);
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-
   const submitBooking = async (event) => {
     event.preventDefault();
 
     try {
       setSubmitting(true);
+      setInsufficientFunds(false);
 
       const payload = { sessionId: session._id };
       if (note.trim()) payload.note = note.trim();
@@ -60,100 +55,31 @@ const BookSession = () => {
       };
 
       if (session.price && session.price > 0) {
-        const ready = await loadRazorpayScript();
-        if (!ready) {
-          showToast.error("Payment system unavailable");
-          await cancelRequest();
-          setSubmitting(false);
-          return;
-        }
-
-        let orderRes;
         try {
-          orderRes = await Apiservices.createOrder({ requestId });
-        } catch {
-          showToast.error("Failed to initiate payment. Booking cancelled.");
-          await cancelRequest();
-          setSubmitting(false);
-          return;
-        }
-        const { orderId, amount, currency, keyId } = orderRes.data.data;
-
-        const cancelRequest = async () => {
-          try { await Apiservices.updateRequest(requestId, "cancelled"); } catch {}
-        };
-
-        const options = {
-          key: keyId,
-          amount,
-          currency,
-          name: "SkillSwap",
-          description: session.title,
-          image: session.thumbnail || undefined,
-          order_id: orderId,
-          handler: async (response) => {
-            try {
-              await Apiservices.verifyPayment({
-                requestId,
-                orderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              });
-              showToast.success("Payment successful! Booking confirmed.");
-              setSuccess(true);
-            } catch {
-              showToast.error("Payment verification failed. Contact support.");
-              await cancelRequest();
-              setSubmitting(false);
-            }
-          },
-          modal: {
-            ondismiss: async () => {
-              await cancelRequest();
-              showToast.warning("Booking cancelled — payment was not completed.");
-              setSubmitting(false);
-            },
-          },
-          prefill: {
-            name: user?.name || "",
-            email: user?.email || "",
-            contact: user?.phone || "",
-          },
-          notes: {
-            requestId: requestId,
-            sessionTitle: session.title,
-          },
-          theme: { color: "#2878eb" },
-          config: {
-            display: {
-              sequence: ["block.banks", "block.cards", "block.upi", "block.wallet"],
-              preferences: { show_default_blocks: true },
-            },
-            payments: { method: { upi: true, card: true, netbanking: true, wallet: true } },
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", async (response) => {
-          const code = response.error?.code || "";
-          const desc = response.error?.description || "Payment failed";
-          await cancelRequest();
-          if (code === "BAD_REQUEST_ERROR" && desc.includes("UPI")) {
-            showToast.error("UPI is unavailable in test mode. Try using a test card or netbanking.");
-          } else if (code === "CANCELLED") {
-            showToast.warning("Payment cancelled");
+          await Apiservices.payWithWallet(requestId);
+          showToast.success("Payment successful! Booking confirmed.");
+          setSuccess(true);
+        } catch (payErr) {
+          const msg = payErr.response?.data?.message || "";
+          if (msg.includes("Insufficient wallet balance")) {
+            setRequiredAmount(payErr.response.data.required || session.price);
+            setInsufficientFunds(true);
+            showToast.warning("Insufficient wallet balance. Add funds to continue.");
+            await cancelRequest();
           } else {
-            showToast.error(desc);
+            showToast.error(msg || "Payment failed");
+            await cancelRequest();
           }
           setSubmitting(false);
-        });
-        rzp.open();
+        }
       } else {
-        showToast.success("Booking request submitted");
+        showToast.success("Session booked successfully!");
         setSuccess(true);
       }
     } catch (error) {
-      showToast.error(error.response?.data?.message || "Failed to book session");
+      console.log(error);
+      showToast.error(error.response?.data?.message || "Booking failed");
+    } finally {
       setSubmitting(false);
     }
   };
@@ -222,10 +148,20 @@ const BookSession = () => {
                 style={{ border: "1px solid #eef2f7", padding: "12px 16px", resize: "vertical" }} />
             </div>
 
-            <div className="alert alert-info rounded-4">
-              {session.price ? "Paid session: you will be redirected to Razorpay for secure payment." : "This is a free session. No payment required."}
-            </div>
-            <LoadingButton loading={submitting} className="btn btn-primary rounded-pill px-4" disabled={submitting}>
+            {insufficientFunds ? (
+              <div className="alert alert-warning rounded-4 d-flex align-items-center" style={{ gap: 8 }}>
+                <i className="fa fa-exclamation-triangle" />
+                <div>
+                  Insufficient wallet balance. Required: <strong>₹{requiredAmount}</strong>.{" "}
+                  <Link to="/learner/wallet" className="alert-link">Add funds to your SkillWallet</Link> to continue.
+                </div>
+              </div>
+            ) : (
+              <div className="alert alert-info rounded-4">
+                {session.price ? "Payment will be deducted from your SkillWallet balance." : "This is a free session. No payment required."}
+              </div>
+            )}
+            <LoadingButton loading={submitting} className="btn btn-primary rounded-pill px-4" disabled={submitting || success}>
               {session.price ? `Pay ₹${session.price} & Book` : "Confirm Free Booking"}
             </LoadingButton>
           </form>

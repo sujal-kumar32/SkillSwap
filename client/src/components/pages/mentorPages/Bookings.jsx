@@ -25,6 +25,7 @@ const Bookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [startingId, setStartingId] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { badgeData, setBadgeData, handleXpResponse } = useXpCelebration();
@@ -57,6 +58,51 @@ const Bookings = () => {
     }),
     [bookings],
   );
+
+  const canStart = (booking) => {
+    const session = booking.sessionId;
+    if (!session?.date) return true;
+    const startTime = new Date(session.date);
+    if (session.time) {
+      const [h, m] = session.time.split(":").map(Number);
+      startTime.setHours(h || 0, m || 0, 0, 0);
+    }
+    const now = new Date();
+    const graceBefore = 5 * 60 * 1000;
+    const endTime = new Date(startTime.getTime() + (session.duration || 60) * 60000);
+    return now >= new Date(startTime.getTime() - graceBefore) && now <= endTime;
+  };
+
+  const getStartWindowLabel = (booking) => {
+    const session = booking.sessionId;
+    if (!session?.date) return "";
+    const startTime = new Date(session.date);
+    if (session.time) {
+      const [h, m] = session.time.split(":").map(Number);
+      startTime.setHours(h || 0, m || 0, 0, 0);
+    }
+    const now = new Date();
+    const graceBefore = 5 * 60 * 1000;
+    const endTime = new Date(startTime.getTime() + (session.duration || 60) * 60000);
+    if (now < new Date(startTime.getTime() - graceBefore)) return `Starts ${startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    if (now > endTime) return "Session time passed";
+    return "";
+  };
+
+  const handleStartClick = async (bookingId) => {
+    try {
+      setStartingId(bookingId);
+      const res = await Apiservices.startBooking(bookingId);
+      if (res.data?.data?.meetLink) {
+        window.open(res.data.data.meetLink, "_blank");
+      }
+      showToast.success("Session started!");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to start session");
+    } finally {
+      setStartingId(null);
+    }
+  };
 
   const handleStatus = async (bookingId, status) => {
     try {
@@ -203,7 +249,7 @@ const Bookings = () => {
 
                     {/* STATUS */}
                     <div className="mb-4">
-                      <span style={{ background: status === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : status === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: status === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                      <span style={{ background: status === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : status === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : status === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: status === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                         {status}
                       </span>
                     </div>
@@ -234,15 +280,29 @@ const Bookings = () => {
                       </div>
                     )}
 
-                    {status === "accepted" && booking.sessionId?.meetLink && (
-                      <div className="mt-3">
-                        <button
-                          className="btn btn-success rounded-pill w-100 py-2"
-                          onClick={() => window.open(booking.sessionId.meetLink, "_blank")}
+                    {status === "accepted" && (
+                      <div className="mt-3 d-flex" style={{ gap: "10px" }}>
+                        {booking.sessionId?.meetLink && (
+                          <LoadingButton
+                            loading={startingId === booking._id}
+                            className={`btn rounded-pill flex-fill py-2 ${canStart(booking) ? "btn-success" : "btn-secondary"}`}
+                            onClick={() => canStart(booking) && handleStartClick(booking._id)}
+                            disabled={!canStart(booking) || startingId === booking._id}
+                          >
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}>
+                              <i className="fa fa-video"></i>
+                              {getStartWindowLabel(booking) || "Start Session"}
+                            </span>
+                          </LoadingButton>
+                        )}
+                        <LoadingButton
+                          loading={updatingId === booking._id}
+                          className="btn btn-outline-primary rounded-pill flex-fill py-2"
+                          onClick={() => handleStatus(booking._id, "completed")}
                         >
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-video"></i>
-                          Start Session</span>
-                        </button>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>
+                          Complete</span>
+                        </LoadingButton>
                       </div>
                     )}
                   </div>

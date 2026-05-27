@@ -356,11 +356,21 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       }
     }
 
+    if ((status === "rejected" || status === "cancelled") && request.paymentStatus === "paid") {
+      const sessionDoc = await Session.findById(request.sessionId).select("status date duration").lean();
+      if (sessionDoc?.status === "ongoing") {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot cancel or reject — session is already ongoing. The session will auto-complete after its scheduled end time.",
+        });
+      }
+    }
+
     request.requestStatus = status;
     await request.save();
 
     let refundInfo = null;
-    if (status === "rejected" && request.paymentStatus === "paid") {
+    if ((status === "rejected" || status === "cancelled") && request.paymentStatus === "paid") {
       try {
         const payment = await Payment.findOne({ requestId: request._id, paymentStatus: "success" });
         if (payment && payment.razorpayPaymentId) {
@@ -391,12 +401,39 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
           await request.save();
           refundInfo = { refundStatus: "processed", note: "No Razorpay ID — marked refunded" };
         }
+
+        if (!payment) {
+          const Wallet = require("../Wallet/walletModel");
+          const Transaction = require("../Wallet/transactionModel");
+          const sesh = await Session.findById(request.sessionId);
+          const price = sesh?.price || 0;
+          let wallet = await Wallet.findOne({ userId: request.learnerId });
+          if (!wallet) wallet = await Wallet.create({ userId: request.learnerId });
+          await Transaction.create({
+            walletId: wallet._id,
+            userId: request.learnerId,
+            type: "refund",
+            amount: price,
+            balanceBefore: wallet.balance,
+            balanceAfter: wallet.balance + price,
+            reference: String(request._id),
+            referenceModel: "Request",
+            description: "Refund for rejected booking",
+            status: "completed",
+          });
+          wallet.balance += price;
+          await wallet.save();
+          request.paymentStatus = "refunded";
+          await request.save();
+          refundInfo = { refundStatus: "processed", method: "wallet" };
+        }
       } catch (refundErr) {
         console.error("Auto-refund failed:", refundErr.message);
       }
     }
 
     let xpResult = null;
+    let walletResult = null;
     if (status === "completed") {
       try {
         const [learnerXp, mentorXp] = await Promise.all([
@@ -410,6 +447,39 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       } catch (xpErr) {
         console.error("XP award failed:", xpErr.message);
       }
+
+      if (request.paymentStatus === "paid") {
+        try {
+          const Session = require("../Session/sessionModel");
+          const Wallet = require("../Wallet/walletModel");
+          const Transaction = require("../Wallet/transactionModel");
+          const sessionDoc = await Session.findById(request.sessionId);
+          const price = sessionDoc?.price || 0;
+          if (price > 0) {
+            let wallet = await Wallet.findOne({ userId: request.mentorId });
+            if (!wallet) wallet = await Wallet.create({ userId: request.mentorId });
+            await Transaction.create({
+              walletId: wallet._id,
+              userId: request.mentorId,
+              type: "earning",
+              amount: price,
+              balanceBefore: wallet.balance,
+              balanceAfter: wallet.balance + price,
+              reference: String(request._id),
+              referenceModel: "Request",
+              description: `Earnings from session completion`,
+              status: "completed",
+            });
+            wallet.balance += price;
+            wallet.totalEarned += price;
+            await wallet.save();
+            walletResult = { amount: price };
+          }
+        } catch (walletErr) {
+          console.error("Wallet credit failed for request", request._id, ":", walletErr.message);
+          walletResult = { error: walletErr.message };
+        }
+      }
     }
 
     res.json({
@@ -418,6 +488,7 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       data: request,
       refund: refundInfo,
       ...(xpResult && { xp: xpResult }),
+      ...(walletResult && { wallet: walletResult }),
     });
 
     // Notify learner on accepted/rejected/cancelled
@@ -517,4 +588,57 @@ exports.deleteRequest = asyncHandler(async (req, res) => {
       message: "Request deleted",
     });
 
+});
+
+exports.startSession = asyncHandler(async (req, res) => {
+  const request = await Request.findById(req.params.id).populate("sessionId");
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  if (!idsEqual(request.mentorId, req.user.id)) {
+    return res.status(403).json({ success: false, message: "Only the session mentor can start the session" });
+  }
+
+  if (request.requestStatus !== "accepted") {
+    return res.status(400).json({ success: false, message: "Session can only be started after the request is accepted" });
+  }
+
+  if (request.startedAt) {
+    return res.status(400).json({ success: false, message: "Session already started" });
+  }
+
+  const session = request.sessionId;
+  const now = new Date();
+  const startTime = session.date ? new Date(session.date) : null;
+  if (session.time && startTime) {
+    const [h, m] = session.time.split(":").map(Number);
+    startTime.setHours(h || 0, m || 0, 0, 0);
+  }
+
+  if (startTime) {
+    const endTime = new Date(startTime.getTime() + (session.duration || 60) * 60000);
+    const graceBefore = 5 * 60 * 1000;
+    if (now < new Date(startTime.getTime() - graceBefore)) {
+      return res.status(400).json({
+        success: false,
+        message: `Session can only be started within 5 minutes before the scheduled time (${startTime.toLocaleString()})`,
+      });
+    }
+    if (now > endTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Session time has already passed. Please contact support if you still need to conduct this session.",
+      });
+    }
+  }
+
+  request.startedAt = now;
+  await request.save();
+
+  res.json({
+    success: true,
+    message: "Session started",
+    data: { startedAt: request.startedAt, meetLink: session.meetLink },
+  });
 });

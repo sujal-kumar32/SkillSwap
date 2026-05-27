@@ -27,6 +27,8 @@ const certificateRoutes = require("./routes/certificateRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
 const availabilityRoutes = require("./routes/availabilityRoutes");
 const sessionMaterialRoutes = require("./routes/sessionMaterialRoutes");
+const walletRoutes = require("./routes/walletRoutes");
+const earningsRoutes = require("./routes/earningsRoutes");
 const badgeRoutes = require("./routes/badgeRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
@@ -89,20 +91,23 @@ app.use("/api/certificates", certificateRoutes);
 app.use("/api/calendar", calendarRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/sessions/:sessionId/materials", sessionMaterialRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/earnings", earningsRoutes);
 app.use("/api/badges", badgeRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {
-  console.error("Unhandled Error:", err.message);
-  if (err.code === 11000) {
+  const message = err?.error?.description || err?.message || "Internal server error";
+  console.error("Unhandled Error:", message);
+  if (err?.code === 11000) {
     return res.status(409).json({ success: false, message: "A record with this value already exists" });
   }
-  const statusCode = err.statusCode || 500;
+  const statusCode = err?.statusCode || 500;
   res.status(statusCode).json({
     success: false,
-    message: err.expose ? err.message : "Internal server error",
+    message,
   });
 });
 

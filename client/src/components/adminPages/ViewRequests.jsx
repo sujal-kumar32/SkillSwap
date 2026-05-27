@@ -105,7 +105,7 @@ const ViewRequests = () => {
                         <td style={{ color: "#64748b" }}>{r.mentorId?.name}</td>
                         <td style={{ color: "#64748b" }}>{new Date(r.createdAt).toLocaleDateString()}</td>
                         <td>
-                          <span style={{ background: r.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : r.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: r.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                          <span style={{ background: r.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : r.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : r.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: r.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                             {r.requestStatus}</span>
                         </td>
                         <td className="text-end">

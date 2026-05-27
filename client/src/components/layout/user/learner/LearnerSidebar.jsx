@@ -14,6 +14,7 @@ const links = [
   { to: "/learner/history", label: "Booking History", icon: "fa-history" },
   { to: "/learner/ai", label: "AI Recommendations", icon: "fa-magic" },
   { to: "/learner/ai-roadmap", label: "Learning Roadmap", icon: "fa-road" },
+  { to: "/learner/wallet", label: "SkillWallet", icon: "fa-wallet" },
 ];
 
 const XpWidget = ({ user }) => {
