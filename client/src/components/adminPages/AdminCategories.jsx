@@ -138,9 +138,9 @@ const AdminCategories = () => {
                   <textarea className="cat-textarea" rows="3" value={description} onChange={(e) => setDescription(e.target.value)}
                     placeholder="Brief description of this category" />
                 </div>
-                <div className="d-flex gap-3 pt-2">
+                <div className="d-flex align-items-center pt-2" style={{ gap: 10 }}>
                   <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-4 fw-semibold" style={{ padding: "10px 24px" }}>
-                    <i className={`fa ${editingId ? "fa-pen" : "fa-plus"}`} style={{ marginRight: 10 }} />{editingId ? "Update" : "Create"}
+                    <i className={`fa ${editingId ? "fa-pen" : "fa-plus"}`} /> {editingId ? "Update" : "Create"}
                   </LoadingButton>
                   {editingId && (
                     <button type="button" className="btn btn-outline-secondary rounded-pill px-4 fw-semibold" style={{ padding: "10px 24px" }}

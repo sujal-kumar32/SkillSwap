@@ -104,16 +104,16 @@ const MyBookings = () => {
                 {paginated.map((booking) => (
                   <tr key={booking._id}>
                     <td>
-                      <div className="d-flex align-items-center gap-3">
+                      <div className="d-flex align-items-center" style={{ gap: 10 }}>
                         <img src={booking.sessionId?.thumbnail} alt="" className="rounded-3" width="72" height="54" style={{ objectFit: "cover" }} />
                         <div>
-                          <h6 className="fw-bold mb-1">
+                          <h6 className="fw-bold mb-1 d-flex align-items-center" style={{ gap: 8 }}>
                             {booking.sessionId?.title}
                             {booking._sessionState === "live" && booking.requestStatus === "accepted" && (
-                              <span style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }} className="ms-2">🔴 Live</span>
+                              <span style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }}>🔴 Live</span>
                             )}
                             {booking._sessionState === "upcoming" && booking.requestStatus === "accepted" && (
-                              <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }} className="ms-2">Upcoming</span>
+                              <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }}>Upcoming</span>
                             )}
                           </h6>
                           <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>
@@ -124,7 +124,7 @@ const MyBookings = () => {
                     <td>{booking.paymentStatus}</td>
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">
-                      <div className="d-flex gap-3 justify-content-end">
+                      <div className="d-flex justify-content-end" style={{ gap: 8 }}>
                         <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold">Details</Link>
                         {(booking._sessionState === "live" || booking._sessionState === "upcoming") && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
                           <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"
@@ -170,12 +170,12 @@ const MyBookings = () => {
           {totalPages > 1 && (
             <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
               <small className="text-muted">Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} of {filtered.length}</small>
-              <div className="d-flex gap-3">
-                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}><i className="fa fa-chevron-left" style={{ marginRight: 10 }} />Prev</button>
+              <div className="d-flex align-items-center" style={{ gap: 8 }}>
+                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}><i className="fa fa-chevron-left" /> Prev</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                   <button key={p} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${p === page ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(p)}>{p}</button>
                 ))}
-                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next<i className="fa fa-chevron-right ms-2" /></button>
+                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next <i className="fa fa-chevron-right" /></button>
               </div>
             </div>
           )}

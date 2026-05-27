@@ -49,7 +49,7 @@ const MentorReviews = () => {
           {reviews.map((review) => (
             <div className="col-md-6" key={review._id}>
               <div className="learner-card p-4 h-100">
-                <div className="d-flex justify-content-between align-items-start gap-3">
+                <div className="d-flex justify-content-between align-items-start" style={{ gap: "10px" }}>
                   <div>
                     <div className="d-flex align-items-center gap-2 mb-1">
                       <img

@@ -124,8 +124,8 @@ const MySessions = () => {
             to="/mentor/create-session"
             className="btn btn-primary rounded-pill px-4 py-2 fw-semibold"
           >
-            <i className="fa fa-plus-circle" style={{ marginRight: 10 }}></i>
-            Create Session
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-plus-circle"></i>
+            Create Session</span>
           </Link>
         }
       />
@@ -136,12 +136,12 @@ const MySessions = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-primary">
                       <i className="fa fa-video"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.total}</h3>
 
                       <small className="text-muted">Total Sessions</small>
@@ -154,12 +154,12 @@ const MySessions = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-success">
                       <i className="fa fa-users"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.learners}</h3>
 
                       <small className="text-muted">Total Learners</small>
@@ -172,12 +172,12 @@ const MySessions = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-warning">
                       <i className="fa fa-star"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.active}</h3>
 
                       <small className="text-muted">Active Sessions</small>
@@ -217,7 +217,7 @@ const MySessions = () => {
                     <h5 className="fw-bold mt-2 mb-3">{session.title}</h5>
 
                     <div className="session-detail mb-2">
-                      <i className="fa fa-calendar-alt text-primary" style={{ marginRight: 10 }}></i>
+                      <i className="fa fa-calendar-alt text-primary"></i>
 
                       <span>
                         {formatDate(session.date)}
@@ -226,20 +226,20 @@ const MySessions = () => {
                     </div>
 
                     <div className="session-detail mb-2">
-                      <i className="fa fa-users text-success" style={{ marginRight: 10 }}></i>
+                      <i className="fa fa-users text-success"></i>
 
                       <span>{session.bookings || 0} Bookings</span>
                     </div>
 
                     {session.maxLearners > 0 && (
                       <div className="session-detail mb-2">
-                        <i className="fa fa-layer-group" style={{ color: "#7c3aed", marginRight: 10 }}></i>
+                        <i className="fa fa-layer-group" style={{ color: "#7c3aed" }}></i>
                         <span>Group • {session.spotsFilled || 0}/{session.maxLearners} spots filled</span>
                       </div>
                     )}
 
                     <div className="session-detail mb-4">
-                      <i className="fa fa-wallet text-warning" style={{ marginRight: 10 }}></i>
+                      <i className="fa fa-wallet text-warning"></i>
 
                       <span>{session.price ? `₹${session.price}` : "Free"}</span>
                     </div>
@@ -252,8 +252,8 @@ const MySessions = () => {
                             className="btn btn-outline-success rounded-pill flex-fill py-2"
                             onClick={() => handleStatusChange(session._id, "completed")}
                           >
-                            <i className="fa fa-check-circle" style={{ marginRight: 6 }}></i>
-                            Complete
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-check-circle"></i>
+                            Complete</span>
                           </LoadingButton>
                           <LoadingButton
                             loading={updatingStatus === session._id}
@@ -284,16 +284,16 @@ const MySessions = () => {
                           className="btn btn-success rounded-pill w-100 py-2 mt-2"
                           onClick={() => window.open(session.meetLink, "_blank")}
                         >
-                          <i className="fa fa-video" style={{ marginRight: 6 }}></i>
-                          Start Session
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-video"></i>
+                          Start Session</span>
                         </button>
                       ) : session._state === "live" ? (
                         <button
                           className="btn btn-outline-success rounded-pill w-100 py-2 mt-2"
                           onClick={() => window.open(session.meetLink, "_blank")}
                         >
-                          <i className="fa fa-video" style={{ marginRight: 6 }}></i>
-                          Join Session
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-video"></i>
+                          Join Session</span>
                         </button>
                       ) : null
                     )}
@@ -388,6 +388,7 @@ const MySessions = () => {
           .session-detail {
             display: flex;
             align-items: center;
+            gap: 10px;
             color: #64748b;
             font-size: 14px;
           }

@@ -137,13 +137,13 @@ const MentorAvailability = () => {
             <div className="p-4">
               <div className="d-flex flex-wrap" style={{ gap: "10px", marginBottom: "16px" }}>
                 <button className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" onClick={() => setPreset("business")}>
-                  <i className="fa fa-briefcase" style={{ marginRight: "10px" }} />M-F 9-5
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-briefcase" />M-F 9-5</span>
                 </button>
                 <button className="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold" onClick={() => setPreset("full")}>
-                  <i className="fa fa-calendar-week" style={{ marginRight: "10px" }} />Full Week
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-calendar-week" />Full Week</span>
                 </button>
                 <button className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" onClick={() => setPreset("clear")}>
-                  <i className="fa fa-eraser" style={{ marginRight: "10px" }} />Clear
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-eraser" />Clear</span>
                 </button>
               </div>
 
@@ -191,9 +191,9 @@ const MentorAvailability = () => {
                 disabled={saving}
               >
                 {saving ? (
-                  <><span className="spinner-border spinner-border-sm" style={{ marginRight: "10px" }} />Saving...</>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><span className="spinner-border spinner-border-sm" />Saving...</span>
                 ) : (
-                  <><i className="fa fa-save" style={{ marginRight: "10px" }} />Save Schedule</>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-save" />Save Schedule</span>
                 )}
               </button>
             </div>
@@ -202,8 +202,8 @@ const MentorAvailability = () => {
 
         <div className="col-lg-7">
           <div className="learner-card p-4" style={{ marginBottom: "16px" }}>
-            <h5 className="fw-bold mb-3">
-              <i className="fa fa-calendar-alt text-primary" style={{ marginRight: "10px" }} />Calendar
+            <h5 className="fw-bold mb-3" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <i className="fa fa-calendar-alt text-primary" />Calendar
             </h5>
             <Calendar
               onChange={setSelectedDate}
@@ -250,13 +250,13 @@ const MentorAvailability = () => {
                       }} />
                       <div>
                         <div className="fw-semibold" style={{ fontSize: "0.88rem", lineHeight: 1.3 }}>{slot.title}</div>
-                        <small className="text-muted" style={{ fontSize: "0.78rem" }}>
-                          <i className="fa fa-user me-1" />{slot.learnerName}
+                        <small className="text-muted" style={{ fontSize: "0.78rem", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <i className="fa fa-user" />{slot.learnerName}
                         </small>
                       </div>
                     </div>
-                    <span style={{ background: slot.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #eab308, #ca8a04)", color: slot.requestStatus === "accepted" ? "white" : "#1e293b", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                      <i className={`fa ${slot.requestStatus === "accepted" ? "fa-check-circle" : "fa-clock"} me-1`} />
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: slot.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #eab308, #ca8a04)", color: slot.requestStatus === "accepted" ? "white" : "#1e293b", padding: "4px 14px", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                      <i className={`fa ${slot.requestStatus === "accepted" ? "fa-check-circle" : "fa-clock"}`} />
                       {slot.requestStatus}
                     </span>
                   </div>

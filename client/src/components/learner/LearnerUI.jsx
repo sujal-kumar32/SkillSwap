@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 export const PageHeader = ({ title, subtitle, action }) => (
-  <div className="learner-page-header d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+  <div className="learner-page-header d-flex flex-column flex-lg-row justify-content-between mb-4" style={{ gap: 10 }}>
     <div>
       <span className="text-primary fw-semibold small text-uppercase" style={{ letterSpacing: "0.5px" }}>
         SkillSwap Learner
@@ -105,8 +105,8 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
             {category}
           </span>
           {session.maxLearners > 0 && (
-            <span className="badge rounded-pill" style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", fontWeight: 600, fontSize: "0.7rem" }}>
-              <i className="fa fa-users me-1" />Group
+            <span className="badge rounded-pill d-inline-flex align-items-center" style={{ gap: 5, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", fontWeight: 600, fontSize: "0.7rem" }}>
+              <i className="fa fa-users" />Group
             </span>
           )}
           {session.isTrending && <span className="badge rounded-pill bg-danger">Trending</span>}
@@ -122,26 +122,26 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
           <h5 className="card-title mb-0">{session.title}</h5>
           <StatusBadge status={session.status} />
         </div>
-        <p className="text-muted small mb-3">
-          <i className="fa fa-user-tie text-primary" style={{ marginRight: 5 }} />
+        <p className="text-muted small mb-3 d-flex align-items-center" style={{ gap: 6 }}>
+          <i className="fa fa-user-tie text-primary" />
           {mentor}
         </p>
-        <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: "15px" }}>
-          {session.rating ? <span>
-            <i className="fa fa-star text-warning" style={{ marginRight: 5 }} />
+        <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: 8 }}>
+          {session.rating ? <span className="d-flex align-items-center" style={{ gap: 5 }}>
+            <i className="fa fa-star text-warning" />
             {session.rating} <small className="text-muted">({session.reviewCount || 0})</small>
           </span> : null}
-          {session.learners > 0 && <span>
-            <i className="fa fa-users text-success" style={{ marginRight: 5 }} />
+          {session.learners > 0 && <span className="d-flex align-items-center" style={{ gap: 5 }}>
+            <i className="fa fa-users text-success" />
             {session.learners} learners
           </span>}
-          {session.duration && <span>
-            <i className="fa fa-clock text-primary" style={{ marginRight: 5 }} />
+          {session.duration && <span className="d-flex align-items-center" style={{ gap: 5 }}>
+            <i className="fa fa-clock text-primary" />
             {session.duration} min
           </span>}
           {session.maxLearners > 0 && (
-            <span>
-              <i className="fa fa-users" style={{ color: "#7c3aed", marginRight: 5 }} />
+            <span className="d-flex align-items-center" style={{ gap: 5 }}>
+              <i className="fa fa-users" style={{ color: "#7c3aed" }} />
               {session.spotsFilled || 0}/{session.maxLearners} filled
             </span>
           )}
@@ -171,8 +171,8 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
           </div>
         </div>
         <div className="mt-3">
-          <span className="badge rounded-pill" style={{ background: "#f1f5f9", color: "#64748b", fontWeight: 500 }}>
-            <i className="fa fa-tag me-1" />
+          <span className="badge rounded-pill d-inline-flex align-items-center" style={{ gap: 6, background: "#f1f5f9", color: "#64748b", fontWeight: 500 }}>
+            <i className="fa fa-tag" />
             {skill}
           </span>
         </div>

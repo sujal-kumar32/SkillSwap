@@ -60,7 +60,7 @@ const ManagePaidSessions = () => {
   const StatCard = ({ label, value, icon, color }) => (
     <div className="col-md-4 mb-3">
       <div className="admin-card p-4 h-100">
-        <div className="d-flex align-items-center gap-3">
+        <div className="d-flex align-items-center" style={{ gap: 10 }}>
           <div className="admin-stat-icon" style={{ background: `${color}15`, color }}>
             <i className={`fa ${icon}`} />
           </div>
@@ -76,15 +76,15 @@ const ManagePaidSessions = () => {
   return (
     <div>
       <div className="admin-page-header mb-4">
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div className="d-flex flex-wrap justify-content-between align-items-center" style={{ gap: 10 }}>
           <div>
             <h1 className="fw-bold mb-1">Manage Sessions</h1>
             <p className="text-muted mb-0">Monitor, edit and control all sessions — paid and free.</p>
           </div>
-          <div className="d-flex gap-2">
+          <div className="d-flex align-items-center" style={{ gap: 8 }}>
             <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }}>Export</button>
             <button className="btn btn-outline-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={fetchSessions}>
-              <i className="fa fa-refresh me-1" /> Refresh
+              <i className="fa fa-refresh" /> Refresh
             </button>
           </div>
         </div>

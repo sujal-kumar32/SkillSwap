@@ -70,12 +70,14 @@ const ViewRequests = () => {
                 style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
             </div>
             <div className="col-md-6 text-md-end">
-              {["All", "pending", "accepted", "rejected", "completed", "cancelled"].map((s) => (
-                <button key={s} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
-                  style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </button>
-              ))}
+              <div className="d-flex align-items-center justify-content-md-end flex-wrap" style={{ gap: 8 }}>
+                {["All", "pending", "accepted", "rejected", "completed", "cancelled"].map((s) => (
+                  <button key={s} className={`btn btn-sm rounded-pill fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                    style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

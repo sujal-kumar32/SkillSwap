@@ -350,6 +350,10 @@ class Apiservices {
   getWishlist(params = {}) {
     return axios.get(baseUrl + "wishlist", { params });
   }
+
+  getAdminAnalytics(period) {
+    return axios.get(baseUrl + "admin/analytics", { params: { period } });
+  }
 }
 
 export default new Apiservices();

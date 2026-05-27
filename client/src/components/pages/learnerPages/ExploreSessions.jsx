@@ -118,7 +118,7 @@ const ExploreSessions = () => {
       {skillIdParam && skillName && (
         <div className="d-flex align-items-center gap-2 mb-4">
           <span className="badge rounded-pill px-3 py-2" style={{ background: "rgba(13,110,253,0.1)", color: "#0d6efd", fontWeight: 600, fontSize: "0.88rem" }}>
-            <i className="fa fa-tag me-1" />{skillName}
+            <i className="fa fa-tag" style={{ marginRight: 6 }} />{skillName}
           </span>
           <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={() => navigate("/learner/explore")}>
             Clear
@@ -129,7 +129,7 @@ const ExploreSessions = () => {
       <div className="learner-card p-4 mb-4">
         <div className="row g-3">
           <div className="col-lg-4">
-            <div className="d-flex" style={{ gap: "5px" }}>
+            <div className="d-flex" style={{ gap: 8 }}>
               <div className="position-relative flex-grow-1">
                 <input className="form-control rounded-pill" placeholder="Search skills, mentors, sessions..." value={query} onChange={(e) => { setQuery(e.target.value); if (aiSearch) clearAISearch(); }} />
               </div>
@@ -145,7 +145,7 @@ const ExploreSessions = () => {
             {aiKeywords && (
               <div className="mt-2 d-flex align-items-center gap-2">
                 <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                  <i className="fa fa-magic me-1" />AI: {aiKeywords}
+                  <i className="fa fa-magic" style={{ marginRight: 6 }} />AI: {aiKeywords}
                 </span>
                 <button className="btn btn-sm btn-outline-secondary rounded-pill" onClick={clearAISearch}>Clear</button>
               </div>
@@ -193,10 +193,10 @@ const ExploreSessions = () => {
             ))}
           </div>
           <div className="d-flex justify-content-center mt-5">
-            <div className="d-flex gap-3">
-              <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((prev) => prev - 1)}><i className="fa fa-chevron-left" style={{ marginRight: 10 }} />Prev</button>
+            <div className="d-flex align-items-center" style={{ gap: 8 }}>
+              <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((prev) => prev - 1)}><i className="fa fa-chevron-left" /> Prev</button>
               <button className="btn btn-primary rounded-pill px-4 py-2 fw-semibold">Page {page} / {pages}</button>
-              <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === pages} onClick={() => setPage((prev) => prev + 1)}>Next<i className="fa fa-chevron-right ms-2" /></button>
+              <button className="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === pages} onClick={() => setPage((prev) => prev + 1)}>Next <i className="fa fa-chevron-right" /></button>
             </div>
           </div>
         </>

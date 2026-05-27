@@ -222,11 +222,11 @@ function WorkspaceHub() {
               <div className="d-flex align-items-center mb-2" style={{ gap: "10px" }}>
                 <h1 className="fw-bold mb-0 greeting-text">{userName}</h1>
                 <span style={{ background: "linear-gradient(135deg, #0891b2, #0e7490)", color: "white", padding: "5px 16px", borderRadius: 999, fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                  <i className="fa fa-graduation-cap" style={{ marginRight: 5 }} />Learner
+                  <i className="fa fa-graduation-cap" />Learner
                 </span>
                 {isMentor && (
                   <span style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", padding: "5px 16px", borderRadius: 999, fontSize: "0.78rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                    <i className="fa fa-chalkboard" style={{ marginRight: 5 }} />Mentor
+                    <i className="fa fa-chalkboard" />Mentor
                   </span>
                 )}
               </div>
@@ -328,9 +328,9 @@ function WorkspaceHub() {
                     </div>
                     <h3 className="fw-bold text-white mb-3">Learner Workspace</h3>
                     <ul className="list-unstyled text-white-50 mb-4 workspace-features">
-                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Explore Sessions</li>
-                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Continue Learning</li>
-                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Track Progress</li>
+                      <li style={{ display: "flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>Explore Sessions</li>
+                      <li style={{ display: "flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>Continue Learning</li>
+                      <li style={{ display: "flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>Track Progress</li>
                     </ul>
                     <Link to="/learner" className="btn btn-light rounded-pill px-4 py-2 fw-bold w-100 workspace-btn">
                       Enter Learner Workspace
@@ -348,9 +348,9 @@ function WorkspaceHub() {
                     </div>
                     <h3 className="fw-bold text-white mb-3">Mentor Workspace</h3>
                     <ul className="list-unstyled text-white-50 mb-4 workspace-features">
-                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Create Sessions</li>
-                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Manage Learners</li>
-                      <li><i className="fa fa-check-circle" style={{ marginRight: 10 }}></i>Track Bookings</li>
+                      <li style={{ display: "flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>Create Sessions</li>
+                      <li style={{ display: "flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>Manage Learners</li>
+                      <li style={{ display: "flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check-circle"></i>Track Bookings</li>
                     </ul>
                     <LoadingButton
                       onClick={handleMentorEntry}
@@ -443,7 +443,7 @@ function WorkspaceHub() {
                         style={{ borderRadius: 12, border: "1px solid #e2e8f0", padding: "10px 14px" }} />
                     </div>
                   </div>
-                  <div className="d-flex justify-content-end align-items-center gap-3 mt-4 border-top pt-3" style={{ borderColor: "#eef2f7" }}>
+                  <div className="d-flex justify-content-end align-items-center mt-4 border-top pt-3" style={{ borderColor: "#eef2f7", gap: "10px" }}>
                     <button type="button" className="btn rounded-pill px-4" style={{ border: "1px solid #e2e8f0", color: "#64748b" }} onClick={() => setShowForm(false)}>Cancel</button>
                     <LoadingButton loading={applying} type="submit" className="btn btn-success rounded-pill px-4 fw-semibold">
                       {applying ? "Submitting..." : "Submit Application"}

@@ -139,8 +139,8 @@ const AIRecommendations = () => {
         <div className="col-lg-6">
           <div className="learner-card p-4 h-100">
             <div className="d-flex align-items-center gap-2 mb-3">
-              <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                <i className="fa fa-robot me-1" />SwapMind AI
+              <span className="d-inline-flex align-items-center" style={{ gap: 6, background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                <i className="fa fa-robot" />SwapMind AI
               </span>
               <small className="text-muted">Ask me anything about learning</small>
             </div>
@@ -187,8 +187,8 @@ const AIRecommendations = () => {
         <div className="col-lg-6">
           <div className="learner-card p-4 h-100">
             <div className="d-flex align-items-center gap-2 mb-3">
-              <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                <i className="fa fa-lightbulb me-1" />AI Learning Insights
+              <span className="d-inline-flex align-items-center" style={{ gap: 6, background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
+                <i className="fa fa-lightbulb" />AI Learning Insights
               </span>
               <small className="text-muted">Personalized suggestions</small>
             </div>
@@ -220,7 +220,7 @@ const AIRecommendations = () => {
             )}
             {!profile.interests.trim() && (
               <Link to="/profile" className="btn btn-outline-primary rounded-pill w-100 fw-semibold">
-                <i className="fa fa-pen" style={{ marginRight: 10 }} />Add Interests in Profile
+<span className="d-inline-flex align-items-center" style={{ gap: 8 }}><i className="fa fa-pen" />Add Interests in Profile</span>
               </Link>
             )}
             {insight && (

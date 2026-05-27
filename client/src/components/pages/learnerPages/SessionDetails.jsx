@@ -111,7 +111,7 @@ const SessionDetails = () => {
         title={session.title}
         subtitle={`${session.skillId?.name || "Skill"} • ${session.sessionType || "online"} session`}
         action={existingBooking ? (
-          <span style={{ background: existingBooking.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}><i className="fa fa-check me-1" />{existingBooking.requestStatus === "completed" ? "Completed" : "Already Booked"}</span>
+          <span className="d-inline-flex align-items-center" style={{ gap: 6, background: existingBooking.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}><i className="fa fa-check" />{existingBooking.requestStatus === "completed" ? "Completed" : "Already Booked"}</span>
         ) : (
           <button className="btn btn-primary rounded-pill px-4" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
         )}
@@ -177,27 +177,27 @@ const SessionDetails = () => {
               )}
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
             </div>
-            <div className="d-flex flex-column" style={{ gap: "10px" }}>
+            <div className="d-flex flex-column" style={{ gap: 10 }}>
               {!existingBooking ? (
-                <button className="btn btn-primary rounded-pill" onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
+                <button className="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
               ) : existingBooking.requestStatus === "completed" ? (
                 <>
-                  <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "10px 14px", borderRadius: 999, fontSize: "0.85rem", fontWeight: 600, textAlign: "center" }}>
-                    <i className="fa fa-check-circle" style={{ marginRight: 5 }} />Completed
+                  <span className="d-inline-flex align-items-center justify-content-center" style={{ gap: 6, background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "10px 14px", borderRadius: 999, fontSize: "0.85rem", fontWeight: 600 }}>
+                    <i className="fa fa-check-circle" />Completed
                   </span>
-                  <button className="btn btn-outline-warning rounded-pill" onClick={() => navigate(`/learner/reviews?session=${session._id}`)}>
-                    <i className="fa fa-star" style={{ marginRight: 5 }} />Leave a Review
+                  <button className="btn btn-outline-warning rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigate(`/learner/reviews?session=${session._id}`)}>
+                    <i className="fa fa-star" />Leave a Review
                   </button>
                 </>
               ) : (
-                <button className="btn btn-success rounded-pill" disabled><i className="fa fa-check me-1" />Already Booked</button>
+                <button className="btn btn-success rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} disabled><i className="fa fa-check" />Already Booked</button>
               )}
               {(!existingBooking || existingBooking.requestStatus !== "completed") && (
-                <button className="btn btn-outline-secondary rounded-pill" onClick={() => handleToggleSave(session)}>
-                  <i className={`fa ${saved ? "fa-heart" : "fa-heart-o"}`} style={{ marginRight: 5, color: saved ? "#dc2626" : undefined }} />{saved ? "Saved" : "Save / Wishlist"}
+                <button className="btn btn-outline-secondary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => handleToggleSave(session)}>
+                  <i className={`fa ${saved ? "fa-heart" : "fa-heart-o"}`} style={{ color: saved ? "#dc2626" : undefined }} />{saved ? "Saved" : "Save / Wishlist"}
                 </button>
               )}
-              <button className="btn btn-outline-primary rounded-pill" onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" style={{ marginRight: 5 }} />Share</button>
+              <button className="btn btn-outline-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" />Share</button>
             </div>
           </div>
         </div>

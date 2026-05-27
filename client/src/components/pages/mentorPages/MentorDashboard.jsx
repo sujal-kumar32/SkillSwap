@@ -46,14 +46,14 @@ const MentorDashboard = () => {
 
   return (
     <>
-      <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3 mb-4">
+      <div className="d-flex flex-column flex-lg-row justify-content-between align-items-start mb-4" style={{ gap: "10px" }}>
         <div>
           <span className="text-primary fw-semibold small text-uppercase" style={{ letterSpacing: "0.5px" }}>SkillSwap Mentor</span>
           <h1 className="fw-bold mb-1">Welcome back, {userName}</h1>
           <p className="text-muted mb-0">Manage your sessions, learners, and track your impact.</p>
         </div>
         <Link to="/mentor/create-session" className="btn btn-primary rounded-pill px-4 fw-semibold flex-shrink-0">
-          <i className="fa fa-plus" style={{ marginRight: 10 }} />Create Session
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-plus" />Create Session</span>
         </Link>
       </div>
 

@@ -77,6 +77,12 @@ const TopBar = () => {
           }}>3</span>
         </button>
 
+        <Link to="/leaderboard" style={btnStyle}
+          onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
+          onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
+          <i className="fa fa-trophy" /> Leaderboard
+        </Link>
+
         <Link to="/settings" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>

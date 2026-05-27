@@ -66,12 +66,12 @@ const Learners = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-primary">
                       <i className="fa fa-users"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.total}</h3>
 
                       <small className="text-muted">Total Learners</small>
@@ -84,12 +84,12 @@ const Learners = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-success">
                       <i className="fa fa-chart-line"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.avgProgress}%</h3>
 
                       <small className="text-muted">Avg Progress</small>
@@ -102,12 +102,12 @@ const Learners = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-warning">
                       <i className="fa fa-star"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.sessions}</h3>
 
                       <small className="text-muted">Joined Sessions</small>
@@ -143,13 +143,13 @@ const Learners = () => {
 
                     {/* DETAILS */}
                     <div className="small text-muted mb-3">
-                      <div className="mb-2">
-                        <i className="fa fa-video text-primary" style={{ marginRight: 10 }}></i>
+                      <div className="mb-2" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <i className="fa fa-video text-primary"></i>
                         {learner.sessions} Sessions Joined
                       </div>
 
-                      <div>
-                        <i className="fa fa-chart-line text-success" style={{ marginRight: 10 }}></i>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <i className="fa fa-chart-line text-success"></i>
                         Progress: {learner.progress}%
                       </div>
                     </div>
@@ -163,15 +163,15 @@ const Learners = () => {
                     </div>
 
                     {/* BUTTONS */}
-                    <div className="d-flex gap-3 mt-3">
+                    <div className="d-flex mt-3" style={{ gap: "10px" }}>
                       <button className="btn btn-primary rounded-pill flex-fill py-2" disabled>
-                        <i className="fa fa-user" style={{ marginRight: 10 }}></i>
-                        Profile
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-user"></i>
+                        Profile</span>
                       </button>
 
                       <button className="btn btn-outline-dark rounded-pill flex-fill py-2" disabled>
-                        <i className="fa fa-envelope" style={{ marginRight: 10 }}></i>
-                        Message
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-envelope"></i>
+                        Message</span>
                       </button>
                     </div>
                   </div>

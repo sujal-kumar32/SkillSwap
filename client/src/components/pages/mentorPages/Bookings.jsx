@@ -96,12 +96,12 @@ const Bookings = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-primary">
                       <i className="fa fa-envelope"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.total}</h3>
 
                       <small className="text-muted">Total Requests</small>
@@ -114,12 +114,12 @@ const Bookings = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-success">
                       <i className="fa fa-check"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.accepted}</h3>
 
                       <small className="text-muted">Approved</small>
@@ -132,12 +132,12 @@ const Bookings = () => {
             <div className="col-md-4">
               <div className="card border-0 shadow-sm stats-card">
                 <div className="card-body">
-                  <div className="d-flex align-items-center">
+                  <div className="d-flex align-items-center" style={{ gap: "16px" }}>
                     <div className="stats-icon bg-warning">
                       <i className="fa fa-clock"></i>
                     </div>
 
-                    <div className="ms-3">
+                    <div>
                       <h3 className="fw-bold mb-0">{stats.pending}</h3>
 
                       <small className="text-muted">Pending</small>
@@ -169,7 +169,7 @@ const Bookings = () => {
                           className="learner-image"
                         />
 
-                      <div className="ms-3">
+                      <div style={{ marginLeft: "16px" }}>
                         <h5 className="fw-bold mb-1">{learnerName}</h5>
 
                         <small className="text-muted">
@@ -180,13 +180,13 @@ const Bookings = () => {
 
                     {/* SESSION */}
                     <div className="booking-detail mb-2">
-                      <i className="fa fa-video text-primary" style={{ marginRight: 10 }}></i>
+                      <i className="fa fa-video text-primary"></i>
 
                       <span>{booking.sessionId?.title || "Session"}</span>
                     </div>
 
                     <div className="booking-detail mb-2">
-                      <i className="fa fa-calendar text-success" style={{ marginRight: 10 }}></i>
+                      <i className="fa fa-calendar text-success"></i>
 
                       <span>
                         {formatDate(booking.date || booking.sessionId?.date)}
@@ -196,7 +196,7 @@ const Bookings = () => {
 
                     {booking.sessionId?.maxLearners > 0 && (
                       <div className="booking-detail mb-4">
-                        <i className="fa fa-users" style={{ color: "#7c3aed", marginRight: 10 }}></i>
+                        <i className="fa fa-users" style={{ color: "#7c3aed" }}></i>
                         <span>Group session • up to {booking.sessionId.maxLearners} learners</span>
                       </div>
                     )}
@@ -210,14 +210,14 @@ const Bookings = () => {
 
                     {/* BUTTONS - only for pending requests */}
                     {status === "pending" && (
-                      <div className="d-flex gap-3 mt-3">
+                      <div className="d-flex mt-3" style={{ gap: "10px" }}>
                         <LoadingButton
                           loading={updatingId === booking._id}
                           className="btn btn-success flex-fill rounded-pill py-2"
                           onClick={() => handleStatus(booking._id, "accepted")}
                         >
-                          <i className="fa fa-check" style={{ marginRight: 10 }}></i>
-                          Approve
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-check"></i>
+                          Approve</span>
                         </LoadingButton>
 
                         <LoadingButton
@@ -228,8 +228,8 @@ const Bookings = () => {
                             if (confirmed) handleStatus(booking._id, "rejected");
                           }}
                         >
-                          <i className="fa fa-times" style={{ marginRight: 10 }}></i>
-                          Reject
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-times"></i>
+                          Reject</span>
                         </LoadingButton>
                       </div>
                     )}
@@ -240,8 +240,8 @@ const Bookings = () => {
                           className="btn btn-success rounded-pill w-100 py-2"
                           onClick={() => window.open(booking.sessionId.meetLink, "_blank")}
                         >
-                          <i className="fa fa-video" style={{ marginRight: 10 }}></i>
-                          Start Session
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-video"></i>
+                          Start Session</span>
                         </button>
                       </div>
                     )}
@@ -328,6 +328,7 @@ const Bookings = () => {
           .booking-detail {
             display: flex;
             align-items: center;
+            gap: 10px;
             color: #64748b;
             font-size: 14px;
           }

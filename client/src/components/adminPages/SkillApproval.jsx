@@ -120,15 +120,15 @@ const SkillApproval = () => {
   return (
     <div>
       <div className="admin-page-header mb-4">
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div className="d-flex flex-wrap justify-content-between align-items-center" style={{ gap: 10 }}>
           <div>
             <h1 className="fw-bold mb-1">Skill Approval</h1>
             <p className="text-muted mb-0">Review, approve or reject user-submitted skills.</p>
           </div>
-          <div className="d-flex gap-2">
+          <div className="d-flex align-items-center" style={{ gap: 8 }}>
             <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }}>Export</button>
             <button className="btn btn-outline-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={() => fetchSkills(filter === "deleted")}>
-              <i className="fa fa-refresh me-1" /> Refresh
+              <i className="fa fa-refresh" /> Refresh
             </button>
           </div>
         </div>
@@ -154,12 +154,14 @@ const SkillApproval = () => {
                   style={{ background: "#f8faff", border: "1px solid #eef2f7", padding: "10px 16px" }} />
               </div>
               <div className="col-md-6 text-md-end">
-                {["All", "approved", "pending", "rejected", "deleted"].map((s) => (
-                  <button key={s} className={`btn btn-sm rounded-pill mx-2 fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
-                    style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
-                  </button>
-                ))}
+                <div className="d-flex align-items-center justify-content-md-end flex-wrap" style={{ gap: 8 }}>
+                  {["All", "approved", "pending", "rejected", "deleted"].map((s) => (
+                    <button key={s} className={`btn btn-sm rounded-pill fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
+                      style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 

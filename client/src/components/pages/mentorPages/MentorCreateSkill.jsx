@@ -310,7 +310,7 @@ const MentorCreateSkill = () => {
                 <div className="col-12 pt-2">
                   <LoadingButton loading={submitting} type="submit" className="btn btn-primary rounded-pill px-5 py-3 fw-semibold"
                     style={{ fontSize: "1rem" }}>
-                    <i className="fa fa-lightbulb" style={{ marginRight: 10 }} />Submit Skill
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-lightbulb" />Submit Skill</span>
                   </LoadingButton>
                   <small className="text-muted d-block mt-3">Skills require admin approval before appearing publicly.</small>
                 </div>

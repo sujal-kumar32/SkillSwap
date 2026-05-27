@@ -37,6 +37,7 @@ import MentorCreateSkill from "./components/pages/mentorPages/MentorCreateSkill"
 import MentorMySkills from "./components/pages/mentorPages/MentorMySkills";
 import MentorAvailability from "./components/pages/mentorPages/MentorAvailability";
 import LearnerLeaderboard from "./components/pages/learnerPages/LearnerLeaderboard";
+import LeaderboardPage from "./components/pages/LeaderboardPage";
 import LearnerMaster from "./components/layout/user/learner/LearnerMaster";
 import LearnerDashboard from "./components/pages/learnerPages/LearnerDashboard";
 import ExploreSessions from "./components/pages/learnerPages/ExploreSessions";
@@ -192,6 +193,15 @@ function App() {
             element={
               <RequireUser>
                 <Settings />
+              </RequireUser>
+            }
+          />
+
+          <Route
+            path="/leaderboard"
+            element={
+              <RequireUser>
+                <LeaderboardPage />
               </RequireUser>
             }
           />

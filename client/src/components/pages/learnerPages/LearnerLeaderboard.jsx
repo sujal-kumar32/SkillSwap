@@ -56,13 +56,13 @@ const LearnerLeaderboard = () => {
             className={`btn rounded-pill px-4 fw-semibold ${tab === "mentors" ? "btn-primary" : "btn-outline-secondary"}`}
             onClick={() => { setTab("mentors"); setPage(1); }}
           >
-            <i className="fa fa-chalkboard-teacher me-2" />Mentors
+<span className="d-inline-flex align-items-center" style={{ gap: 8 }}><i className="fa fa-chalkboard-teacher" />Mentors</span>
           </button>
           <button
             className={`btn rounded-pill px-4 fw-semibold ${tab === "learners" ? "btn-primary" : "btn-outline-secondary"}`}
             onClick={() => { setTab("learners"); setPage(1); }}
           >
-            <i className="fa fa-graduation-cap me-2" />Learners
+<span className="d-inline-flex align-items-center" style={{ gap: 8 }}><i className="fa fa-graduation-cap" />Learners</span>
           </button>
           {tab === "mentors" && (
             <>
@@ -149,12 +149,12 @@ const LearnerLeaderboard = () => {
 
       {pages > 1 && (
         <div className="d-flex justify-content-center align-items-center" style={{ gap: "10px", marginTop: "20px" }}>
-          <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-            <i className="fa fa-chevron-left me-2" />Prev
+          <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 6 }} disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+            <i className="fa fa-chevron-left" />Prev
           </button>
           <span className="fw-semibold text-muted" style={{ fontSize: "0.85rem" }}>Page {page} of {pages}</span>
-          <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-semibold" disabled={page === pages} onClick={() => setPage((p) => p + 1)}>
-            Next<i className="fa fa-chevron-right ms-2" />
+          <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 6 }} disabled={page === pages} onClick={() => setPage((p) => p + 1)}>
+            Next<i className="fa fa-chevron-right" />
           </button>
         </div>
       )}

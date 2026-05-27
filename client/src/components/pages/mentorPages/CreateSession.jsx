@@ -412,12 +412,12 @@ const CreateSession = () => {
                         />
                         {form.time && bookedTimes.includes(form.time) && (
                           <div className="mt-2 text-danger small fw-semibold">
-                            <i className="fa fa-exclamation-circle me-1" />This time is already booked
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-exclamation-circle" />This time is already booked</span>
                           </div>
                         )}
                         {bookedTimes.length > 0 && (
                           <div className="mt-2 text-muted small">
-                            <i className="fa fa-clock me-1" />Booked: {bookedTimes.join(", ")}
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-clock" />Booked: {bookedTimes.join(", ")}</span>
                           </div>
                         )}
                       </div>
@@ -446,13 +446,13 @@ const CreateSession = () => {
                             className={`px-4 py-2 fw-semibold rounded-pill border-0 ${!form.price || Number(form.price) === 0 ? "btn btn-success" : "btn btn-outline-secondary"}`}
                             style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
                             onClick={() => setForm((prev) => ({ ...prev, price: "0" }))}>
-                            <i className="fa fa-gift" style={{ marginRight: 10 }}></i>Free
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><i className="fa fa-gift"></i>Free</span>
                           </button>
                           <button type="button"
                             className={`px-4 py-2 fw-semibold rounded-pill border-0 ${Number(form.price) > 0 ? "btn btn-primary" : "btn btn-outline-secondary"}`}
                             style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
                             onClick={() => setForm((prev) => ({ ...prev, price: prev.price > 0 ? prev.price : "99" }))}>
-                            <i className="fa fa-credit-card" style={{ marginRight: 10 }}></i>Paid
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><i className="fa fa-credit-card"></i>Paid</span>
                           </button>
                         </div>
                         {Number(form.price) > 0 && (
@@ -583,14 +583,14 @@ const CreateSession = () => {
                       </div>
 
                       <div className="col-12 mt-4">
-                        <div className="d-flex flex-wrap gap-3">
+                        <div className="d-flex flex-wrap" style={{ gap: "10px" }}>
                           <LoadingButton
                             type="submit"
                             className="publish-btn"
                             loading={submitting}
                           >
-                            <i className="fa fa-rocket" style={{ marginRight: 10 }}></i>
-                            {submitting ? "Publishing..." : "Publish Session"}
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><i className="fa fa-rocket"></i>
+                            {submitting ? "Publishing..." : "Publish Session"}</span>
                           </LoadingButton>
                           <button
                             type="button"
@@ -607,11 +607,11 @@ const CreateSession = () => {
               </div>
             </div>
 
-            <div className="col-lg-4 d-flex flex-column gap-4">
+            <div className="col-lg-4 d-flex flex-column" style={{ gap: "10px" }}>
               <div className="ai-card">
                 <div className="d-flex align-items-center mb-4" style={{ gap: 10 }}>
                   <span className="ai-badge">
-                    <i className="fa fa-microchip" style={{ marginRight: 10 }} />AI Powered
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><i className="fa fa-microchip" />AI Powered</span>
                   </span>
                 </div>
 

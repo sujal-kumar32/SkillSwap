@@ -285,10 +285,10 @@ const Settings = () => {
                 <div className="col-12">
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <label className="form-label fw-semibold small mb-0">Bio</label>
-                    <button type="button" className="btn rounded-pill fw-semibold border-0 d-flex align-items-center gap-2"
+                    <button type="button" className="btn rounded-pill fw-semibold border-0 d-inline-flex align-items-center"
                       onClick={generateBio} disabled={aiBioLoading}
                       style={{
-                        background: "linear-gradient(135deg, #0d6efd, #6610f2)", color: "white",
+                        gap: 8, background: "linear-gradient(135deg, #0d6efd, #6610f2)", color: "white",
                         padding: "8px 20px", fontSize: "0.85rem", opacity: aiBioLoading ? 0.7 : 1,
                       }}>
                       {aiBioLoading ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-magic" /> AI Generate</>}
@@ -309,7 +309,7 @@ const Settings = () => {
                 </div>
                 <div className="col-12">
                   <label className="form-label fw-semibold small">Skills</label>
-                  <div className="d-flex gap-3 mb-3">
+                  <div className="d-flex mb-3" style={{ gap: 8 }}>
                     <input className="form-control rounded-pill" placeholder="Add a skill..." value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }} />
@@ -317,7 +317,7 @@ const Settings = () => {
                   </div>
                   <div className="d-flex flex-wrap gap-2">
                     {form.skills.map((s, i) => (
-                      <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px", display: "flex", alignItems: "center", gap: 8 }}>
                         {s.name}
                         <select className="border-0 bg-transparent small" style={{ fontSize: "0.7rem" }} value={s.level}
                           onChange={(e) => {
@@ -362,7 +362,7 @@ const Settings = () => {
                   ["twitter", "fab fa-twitter", "Twitter URL"],
                 ].map(([k, icon, ph]) => (
                   <div className="col-md-6" key={k}>
-                    <label className="form-label fw-semibold small"><i className={`${icon} me-1`} />{k.charAt(0).toUpperCase() + k.slice(1)}</label>
+                    <label className="form-label fw-semibold small d-flex align-items-center" style={{ gap: 5 }}><i className={icon} />{k.charAt(0).toUpperCase() + k.slice(1)}</label>
                     <input className="form-control rounded-pill" placeholder={ph} value={form[k]}
                       onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
                   </div>
@@ -401,20 +401,20 @@ const Settings = () => {
             <div className="learner-card p-4 mb-4">
               {sectionTitle("fa-envelope", "Email Verification")}
               {isVerified ? (
-                <div className="d-flex align-items-center gap-2">
+                <div className="d-flex align-items-center" style={{ gap: 8 }}>
                   <i className="fa fa-check-circle text-success" style={{ fontSize: "1.2rem" }} />
                   <span className="small text-success fw-semibold">Verified</span>
                 </div>
               ) : (
-                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                  <p className="mb-0 small text-muted">
-                    <i className="fa fa-exclamation-triangle text-warning me-1" />
-                    Your email is not verified. Please check your inbox or resend the verification email.
-                  </p>
-                  <LoadingButton className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={handleResendVerification} loading={verifySending}>
-                    <i className="fa fa-paper-plane me-2" />Resend Verification
-                  </LoadingButton>
-                </div>
+              <div className="d-flex align-items-center justify-content-between flex-wrap" style={{ gap: 10 }}>
+                <p className="mb-0 small text-muted d-flex align-items-center" style={{ gap: 6 }}>
+                  <i className="fa fa-exclamation-triangle text-warning" />
+                  Your email is not verified. Please check your inbox or resend the verification email.
+                </p>
+                <LoadingButton className="btn btn-outline-primary rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }} onClick={handleResendVerification} loading={verifySending}>
+                  <i className="fa fa-paper-plane" />Resend Verification
+                </LoadingButton>
+              </div>
               )}
             </div>
 
@@ -423,16 +423,16 @@ const Settings = () => {
               {calendarLoading ? (
                 <div className="text-center py-3"><span className="spinner-border spinner-border-sm text-primary" /></div>
               ) : (
-                <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div className="d-flex align-items-center justify-content-between flex-wrap" style={{ gap: 10 }}>
                   <div>
                     {calendarConnected ? (
-                      <p className="mb-0 small">
-                        <i className="fa fa-check-circle text-success me-1" />
+                      <p className="mb-0 small d-flex align-items-center" style={{ gap: 6 }}>
+                        <i className="fa fa-check-circle text-success" />
                         Connected as <strong>{calendarEmail}</strong>
                       </p>
                     ) : (
-                      <p className="text-muted small mb-0">
-                        <i className="fa fa-info-circle me-1" />
+                      <p className="text-muted small mb-0 d-flex align-items-center" style={{ gap: 6 }}>
+                        <i className="fa fa-info-circle" />
                         Sync accepted bookings to your Google Calendar automatically.
                       </p>
                     )}
@@ -442,8 +442,8 @@ const Settings = () => {
                       Disconnect
                     </LoadingButton>
                   ) : (
-                    <LoadingButton className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={handleConnectCalendar}>
-                      <i className="fa fa-google me-2" />Connect Google Calendar
+                    <LoadingButton className="btn btn-outline-primary rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }} onClick={handleConnectCalendar}>
+                      <i className="fa fa-google" />Connect Google Calendar
                     </LoadingButton>
                   )}
                 </div>
@@ -455,14 +455,14 @@ const Settings = () => {
               <p className="small text-muted mb-3">
                 Once you delete your account, your profile and personal data will be permanently removed. Your reviews and session history will remain but be anonymized.
               </p>
-              <button className="btn btn-outline-danger rounded-pill px-4 fw-semibold" onClick={() => setShowDeleteModal(true)}>
-                <i className="fa fa-trash me-2" />Delete My Account
+              <button className="btn btn-outline-danger rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }} onClick={() => setShowDeleteModal(true)}>
+                <i className="fa fa-trash" />Delete My Account
               </button>
             </div>
 
-            <div className="d-flex justify-content-center gap-3 mb-4">
-              <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-5 py-2 fw-semibold">
-                <i className="fa fa-save" style={{ marginRight: 10 }} />Save Changes
+            <div className="d-flex justify-content-center mb-4" style={{ gap: 10 }}>
+              <LoadingButton loading={saving} type="submit" className="btn btn-primary rounded-pill px-5 py-2 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }}>
+                <i className="fa fa-save" />Save Changes
               </LoadingButton>
             </div>
           </form>
@@ -479,8 +479,8 @@ const Settings = () => {
                   value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
                 <div className="d-flex gap-2 justify-content-end">
                   <button className="btn btn-secondary rounded-pill px-4" onClick={() => { setShowDeleteModal(false); setDeletePassword(""); }}>Cancel</button>
-                  <LoadingButton loading={deleting} className="btn btn-danger rounded-pill px-4 fw-semibold" onClick={handleDeleteAccount}>
-                    <i className="fa fa-trash me-2" />Delete
+                  <LoadingButton loading={deleting} className="btn btn-danger rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }} onClick={handleDeleteAccount}>
+                    <i className="fa fa-trash" />Delete
                   </LoadingButton>
                 </div>
               </div>

@@ -99,7 +99,7 @@ const LearningProgress = () => {
         </div>
         <div className="col-lg-4">
           <div className="learner-card p-4 mb-4">
-            <h5 className="fw-bold"><i className="fa fa-chart-pie text-primary me-2" />Skill Growth</h5>
+            <h5 className="fw-bold d-flex align-items-center" style={{ gap: 8 }}><i className="fa fa-chart-pie text-primary" />Skill Growth</h5>
             <div className="mt-3">
               {items.length
                 ? items.slice(0, 5).map((item) => (
@@ -115,11 +115,11 @@ const LearningProgress = () => {
             </div>
           </div>
           <div className="learner-card p-4">
-            <h5 className="fw-bold"><i className="fa fa-certificate text-warning me-2" />Certificates</h5>
+            <h5 className="fw-bold d-flex align-items-center" style={{ gap: 8 }}><i className="fa fa-certificate text-warning" />Certificates</h5>
             {completedSkills.length > 0 ? (
               <div>
                 <p className="text-success small fw-semibold mb-2">
-                  <i className="fa fa-check-circle me-1" />{completedSkills.length} skill{completedSkills.length > 1 ? "s" : ""} completed!
+                  <i className="fa fa-check-circle" /> {completedSkills.length} skill{completedSkills.length > 1 ? "s" : ""} completed!
                 </p>
                 {completedSkills.slice(0, 3).map((item) => (
                   <div key={item.skill} className="d-flex align-items-center justify-content-between gap-2 mb-2 p-2 rounded-3" style={{ background: "#f0fdf4" }}>

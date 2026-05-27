@@ -1,49 +1,81 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Apiservices from "../../../Apiservices";
+import {
+  PeriodTabs, ChangeBadge, SpinnerCard,
+} from "./AnalyticsCharts";
+import DashboardCharts from "./DashboardCharts";
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({ users: 0, sessions: 0, skills: 0, requests: 0 });
+  const [analytics, setAnalytics] = useState(null);
+  const [period, setPeriod] = useState("6mo");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const [usersRes, sessionsRes, skillsRes, requestsRes] = await Promise.all([
-          Apiservices.getUsers().catch(() => ({ data: { data: [] } })),
-          Apiservices.getSessions().catch(() => ({ data: { data: [] } })),
-          Apiservices.getSkills().catch(() => ({ data: { data: [] } })),
-          Apiservices.getRequests().catch(() => ({ data: { data: [] } })),
-        ]);
-        setStats({
-          users: (usersRes.data.data || []).length,
-          sessions: (sessionsRes.data.data || []).length,
-          skills: (skillsRes.data.data || []).length,
-          requests: (requestsRes.data.data || []).filter(r => r.status === "pending").length,
-        });
-      } catch (err) {
-        console.log(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
+  const fetchAnalytics = useCallback(async (p) => {
+    try {
+      setLoading(true);
+      const res = await Apiservices.getAdminAnalytics(p);
+      setAnalytics(res.data.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchAnalytics(period);
+  }, [period, fetchAnalytics]);
+
+  const s = analytics?.summary;
+  const c = analytics?.changes;
+  const ready = !loading && analytics;
+
   const cards = [
-    { label: "Total Users", value: stats.users, icon: "fa-users", color: "#0d6efd", to: "/admin/manage-users" },
-    { label: "Total Sessions", value: stats.sessions, icon: "fa-video", color: "#198754", to: "/admin/manage-paid-sessions" },
-    { label: "Skills Listed", value: stats.skills, icon: "fa-book", color: "#6c2bd9", to: "/admin/skill-approval" },
-    { label: "Pending Requests", value: stats.requests, icon: "fa-envelope", color: "#d97706", to: "/admin/view-requests" },
+    {
+      label: "New Users", value: s?.newUsers, icon: "fa-user-plus", color: "#0d6efd",
+      change: c?.users, to: "/admin/manage-users",
+      sub: `${s?.newLearners || 0} learners · ${s?.newMentors || 0} mentors`,
+    },
+    {
+      label: "Revenue", value: `₹${(s?.periodRevenue || 0).toLocaleString()}`, icon: "fa-rupee-sign", color: "#198754",
+      change: c?.revenue, to: "/admin/manage-paid-sessions",
+      sub: `${s?.periodTransactions || 0} transactions`,
+    },
+    {
+      label: "Completion Rate", value: `${s?.completionRate || 0}%`, icon: "fa-check-circle", color: "#6c2bd9",
+      change: c?.completed, to: "/admin/bookings",
+      sub: `${s?.completedRequests || 0} of ${s?.totalRequests || 0} bookings`,
+    },
+    {
+      label: "Active Sessions", value: s?.activeSessions, icon: "fa-video", color: "#0891b2",
+      to: "/admin/manage-paid-sessions",
+      sub: `${s?.approvedSkills || 0} skills approved`,
+    },
   ];
 
   return (
     <>
-      <div className="admin-page-header mb-4">
-        <span className="text-primary fw-semibold small text-uppercase" style={{ letterSpacing: "0.5px" }}>SkillSwap Admin</span>
-        <h1 className="fw-bold mb-1">Admin Dashboard</h1>
-        <p className="text-muted mb-0">Overview of your platform activity.</p>
+      <div className="d-flex flex-wrap align-items-center justify-content-between mb-4">
+        <div>
+          <span className="text-primary fw-semibold small text-uppercase" style={{ letterSpacing: "0.5px" }}>SkillSwap Admin</span>
+          <h1 className="fw-bold mb-1">Dashboard</h1>
+        </div>
+        <div className="d-flex align-items-center gap-3">
+          {s?.pendingApplications > 0 && (
+            <Link to="/admin/mentor-requests" className="text-decoration-none">
+              <span style={{
+                background: "#fef2f2", color: "#dc2626", padding: "6px 14px", borderRadius: 999,
+                fontSize: "0.8rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 8,
+                border: "1px solid #fecaca",
+              }}>
+                <i className="fa fa-handshake" />
+                {s.pendingApplications} pending {s.pendingApplications === 1 ? "application" : "applications"}
+              </span>
+            </Link>
+          )}
+          <PeriodTabs value={period} onChange={setPeriod} />
+        </div>
       </div>
 
       <div className="row g-4 mb-4">
@@ -51,10 +83,10 @@ const AdminDashboard = () => {
           <div className="col-sm-6 col-xl-3" key={card.label}>
             <Link to={card.to} className="text-decoration-none">
               <div className="admin-card p-4 h-100" style={{ cursor: "pointer" }}>
-                <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center justify-content-between mb-1">
                   <div>
                     <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>{card.label}</p>
-                    <h3 className="fw-bold mb-0" style={{ fontSize: "1.8rem" }}>
+                    <h3 className="fw-bold mb-0" style={{ fontSize: "1.6rem" }}>
                       {loading ? <span className="spinner-border spinner-border-sm text-primary" /> : card.value}
                     </h3>
                   </div>
@@ -62,14 +94,31 @@ const AdminDashboard = () => {
                     <i className={`fa ${card.icon}`} />
                   </div>
                 </div>
+                <div className="d-flex align-items-center gap-2 mt-2">
+                  {card.change && <ChangeBadge pct={card.change.pct} up={card.change.up} />}
+                  <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{card.sub}</span>
+                </div>
               </div>
             </Link>
           </div>
         ))}
       </div>
 
+      {ready ? <DashboardCharts analytics={analytics} /> : (
+        <div className="row g-4 mb-4">
+          <div className="col-md-6"><SpinnerCard /></div>
+          <div className="col-md-6"><SpinnerCard /></div>
+          <div className="col-md-5"><SpinnerCard /></div>
+          <div className="col-md-3"><SpinnerCard /></div>
+          <div className="col-md-4"><SpinnerCard /></div>
+          <div className="col-md-6"><SpinnerCard /></div>
+          <div className="col-md-3"><SpinnerCard /></div>
+          <div className="col-md-3"><SpinnerCard /></div>
+        </div>
+      )}
+
       <div className="row g-4">
-        <div className="col-lg-8">
+        <div className="col-12">
           <div className="admin-card p-4">
             <h5 className="fw-bold mb-1">Quick Actions</h5>
             <p className="text-muted small mb-4">Common admin tasks</p>
@@ -79,33 +128,24 @@ const AdminDashboard = () => {
                 { label: "Skill Approval", icon: "fa-clipboard-check", to: "/admin/skill-approval", color: "#198754" },
                 { label: "Add Skill", icon: "fa-plus-circle", to: "/admin/add-skill", color: "#6c2bd9" },
                 { label: "Paid Sessions", icon: "fa-credit-card", to: "/admin/manage-paid-sessions", color: "#d97706" },
+                { label: "Mentor Applications", icon: "fa-handshake", to: "/admin/mentor-requests", color: "#0891b2" },
+                { label: "All Bookings", icon: "fa-calendar", to: "/admin/bookings", color: "#dc2626" },
               ].map((item) => (
-                <div className="col-sm-6" key={item.label}>
+                <div className="col-sm-4 col-lg-2" key={item.label}>
                   <Link to={item.to} className="text-decoration-none">
-                    <div className="d-flex align-items-center gap-3 p-3 rounded-4" style={{ background: "#f8faff", border: "1px solid #eef2f7", transition: "all 0.3s ease" }}
+                    <div className="d-flex flex-column align-items-center gap-2 p-3 rounded-4 text-center" style={{ background: "#f8faff", border: "1px solid #eef2f7", transition: "all 0.3s ease", height: "100%" }}
                       onMouseEnter={(e) => { e.currentTarget.style.background = "#f0f4ff"; e.currentTarget.style.borderColor = item.color; }}
                       onMouseLeave={(e) => { e.currentTarget.style.background = "#f8faff"; e.currentTarget.style.borderColor = "#eef2f7"; }}
                     >
-                      <div className="admin-stat-icon" style={{ width: 44, height: 44, background: `${item.color}12`, color: item.color }}>
+                      <div className="admin-stat-icon" style={{ width: 40, height: 40, background: `${item.color}12`, color: item.color }}>
                         <i className={`fa ${item.icon}`} />
                       </div>
-                      <span className="fw-semibold" style={{ color: "#1e293b", fontSize: "0.9rem" }}>{item.label}</span>
+                      <span className="fw-semibold" style={{ color: "#1e293b", fontSize: "0.8rem" }}>{item.label}</span>
                     </div>
                   </Link>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-        <div className="col-lg-4">
-          <div className="admin-card p-4" style={{ background: "linear-gradient(135deg, #1e293b, #2d1b69)", color: "white" }}>
-            <div className="admin-stat-icon mb-3" style={{ width: 48, height: 48, background: "rgba(255,255,255,0.15)", color: "white" }}>
-              <i className="fa fa-shield-alt" />
-            </div>
-            <h5 className="fw-bold mb-2" style={{ color: "white" }}>Admin Access</h5>
-            <p className="mb-0" style={{ color: "rgba(255,255,255,0.65)", fontSize: "0.9rem" }}>
-              You have full platform access. Use the sidebar to navigate between sections.
-            </p>
           </div>
         </div>
       </div>

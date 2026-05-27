@@ -33,17 +33,17 @@ const SessionView = () => {
   return (
     <div>
       <div className="admin-page-header mb-4">
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div className="d-flex flex-wrap justify-content-between align-items-center" style={{ gap: 10 }}>
           <div>
             <h1 className="fw-bold mb-1">Session Details</h1>
             <p className="text-muted mb-0">Review the paid session details.</p>
           </div>
-          <div className="d-flex gap-2">
+          <div className="d-flex align-items-center" style={{ gap: 8 }}>
             <button className="btn btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={() => navigate(-1)}>
-              <i className="fa fa-arrow-left me-1" /> Back
+              <i className="fa fa-arrow-left" /> Back
             </button>
             <button className="btn btn-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.85rem" }} onClick={() => navigate(`/admin/session/${id}/edit`)}>
-              <i className="fa fa-edit me-1" /> Edit Session
+              <i className="fa fa-edit" /> Edit Session
             </button>
           </div>
         </div>

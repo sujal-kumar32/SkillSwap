@@ -84,7 +84,7 @@ const ManageUsers = () => {
   const StatCard = ({ label, value, icon, color }) => (
     <div className="col-sm-6 mb-3">
       <div className="admin-card p-4 h-100">
-        <div className="d-flex align-items-center gap-3">
+        <div className="d-flex align-items-center" style={{ gap: 10 }}>
           <div className="admin-stat-icon" style={{ background: `${color}15`, color }}>
             <i className={`fa ${icon}`} />
           </div>
@@ -99,12 +99,12 @@ const ManageUsers = () => {
 
   const Pagination = () => totalPages > 1 ? (
     <div className="d-flex justify-content-center mt-5">
-      <div className="d-flex gap-3">
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left" style={{ marginRight: 10 }} />Prev</button>
+      <div className="d-flex align-items-center" style={{ gap: 8 }}>
+        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left" /> Prev</button>
         {Array.from({ length: totalPages }, (_, i) => (
           <button key={i + 1} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${page === i + 1 ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
         ))}
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next<i className="fa fa-chevron-right ms-2" /></button>
+        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next <i className="fa fa-chevron-right" /></button>
       </div>
     </div>
   ) : null;
@@ -112,7 +112,7 @@ const ManageUsers = () => {
   return (
     <div>
       <div className="admin-page-header mb-4">
-        <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div className="d-flex flex-wrap justify-content-between align-items-center" style={{ gap: 10 }}>
           <div>
             <h1 className="fw-bold mb-1">Manage Users</h1>
             <p className="text-muted mb-0">Review and control user access. Block or unblock users instantly.</p>

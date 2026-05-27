@@ -64,7 +64,7 @@ const LearningRoadmap = () => {
                 <span key={s} className="badge border rounded-pill px-3 py-2 fw-normal"
                   style={{ cursor: "pointer", background: targetSkill === s ? "#198754" : "#f1f5f9", color: targetSkill === s ? "#fff" : "#475569", transition: "all 0.15s" }}
                   onClick={() => pickSuggestion(s)}>
-                  <i className="fa fa-code me-1" style={{ fontSize: "0.7rem" }}></i>{s}
+<span className="d-inline-flex align-items-center" style={{ gap: 5 }}><i className="fa fa-code" style={{ fontSize: "0.7rem" }}></i>{s}</span>
                 </span>
               ))}
             </div>
@@ -131,11 +131,11 @@ const LearningRoadmap = () => {
           </div>
 
           <div className="mt-4 d-flex gap-3">
-            <button className="btn btn-success rounded-pill px-4 fw-semibold" onClick={generateRoadmap} disabled={loading}>
-              <i className="fa fa-refresh" style={{ marginRight: 10 }} />Regenerate
+            <button className="btn btn-success rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }} onClick={generateRoadmap} disabled={loading}>
+              <i className="fa fa-refresh" />Regenerate
             </button>
-            <button className="btn btn-outline-primary rounded-pill px-4 fw-semibold" onClick={() => setRoadmap(null)}>
-              <i className="fa fa-times" style={{ marginRight: 10 }} />Clear
+            <button className="btn btn-outline-primary rounded-pill px-4 fw-semibold d-inline-flex align-items-center" style={{ gap: 8 }} onClick={() => setRoadmap(null)}>
+              <i className="fa fa-times" />Clear
             </button>
           </div>
         </div>

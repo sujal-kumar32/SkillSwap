@@ -102,8 +102,8 @@ const AdminBookings = () => {
       ) : (
         <div className="admin-card">
           <div className="p-4">
-            <div className="d-flex justify-content-between align-items-center gap-3 mb-4 flex-wrap">
-              <div className="d-flex gap-3 flex-wrap">
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap" style={{ gap: 10 }}>
+              <div className="d-flex flex-wrap" style={{ gap: 8 }}>
                 {["All", ...Object.keys(statusLabels)].map((s) => (
                   <button key={s} className={`btn btn-sm rounded-pill fw-semibold px-3 py-2 ${filter === s ? "btn-primary" : "btn-outline-secondary"}`}
                     style={{ fontSize: "0.8rem" }} onClick={() => setFilter(s)}>
@@ -111,7 +111,7 @@ const AdminBookings = () => {
                   </button>
                 ))}
               </div>
-              <div className="d-flex align-items-center gap-3 flex-wrap">
+              <div className="d-flex align-items-center flex-wrap" style={{ gap: 8 }}>
                 <small className="text-muted">{filtered.length} bookings</small>
                 <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
               </div>

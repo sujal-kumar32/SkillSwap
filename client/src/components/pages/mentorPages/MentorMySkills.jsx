@@ -91,13 +91,13 @@ const MentorMySkills = () => {
           <div className="d-flex" style={{ gap: "10px" }}>
             <LoadingButton loading={deletingId === skill._id} className="btn btn-outline-danger btn-sm rounded-pill"
               onClick={() => handleDelete(skill._id)}>
-              <i className="fa fa-trash me-1" />Delete
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-trash" />Delete</span>
             </LoadingButton>
           </div>
         ) : (
           <Link to={`/mentor/create-session?skillId=${skill._id}`}
             className="btn btn-outline-primary btn-sm rounded-pill">
-            <i className="fa fa-plus me-1" />Create Session
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-plus" />Create Session</span>
           </Link>
         )}
       </div>
@@ -110,7 +110,7 @@ const MentorMySkills = () => {
         title="Skills"
         subtitle={tab === "my" ? "Skills you've created." : "All skills on the platform."}
         action={<Link to="/mentor/create-skill" className="btn btn-primary rounded-pill px-4">
-          <i className="fa fa-plus" style={{ marginRight: 10 }} />New Skill</Link>}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-plus" />New Skill</span></Link>}
       />
 
       <div className="row g-4 mb-4">
@@ -150,8 +150,9 @@ const MentorMySkills = () => {
             color: tab === "my" ? "#0d6efd" : "#64748b",
             boxShadow: tab === "my" ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
             transition: "all 0.2s",
+            display: "inline-flex", alignItems: "center", gap: "8px",
           }}>
-          <i className="fa fa-user me-2" />My Skills
+          <i className="fa fa-user" />My Skills
         </button>
         <button onClick={() => setTab("all")}
           style={{
@@ -160,8 +161,9 @@ const MentorMySkills = () => {
             color: tab === "all" ? "#0d6efd" : "#64748b",
             boxShadow: tab === "all" ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
             transition: "all 0.2s",
+            display: "inline-flex", alignItems: "center", gap: "8px",
           }}>
-          <i className="fa fa-globe me-2" />All Skills
+          <i className="fa fa-globe" />All Skills
         </button>
       </div>
 

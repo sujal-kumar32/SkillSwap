@@ -114,10 +114,10 @@ const LearnerSkills = () => {
                 </div>
 
                 <p className="text-muted small mb-2">
-                  <i className="fa fa-folder text-primary me-1" />
+                  <i className="fa fa-folder text-primary" style={{ marginRight: 6 }} />
                   {skill.categoryId?.name || "Uncategorized"}
                   {skill.createdBy?.name && (
-                    <span> &middot; <i className="fa fa-user text-secondary me-1" />{skill.createdBy.name}</span>
+                    <span> &middot; <i className="fa fa-user text-secondary" style={{ marginRight: 6 }} />{skill.createdBy.name}</span>
                   )}
                 </p>
 

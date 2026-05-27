@@ -90,6 +90,7 @@ app.use("/api/availability", availabilityRoutes);
 app.use("/api/badges", badgeRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err.message);
