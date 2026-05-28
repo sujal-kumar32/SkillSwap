@@ -7,6 +7,11 @@ const {
   approveUser,
   blockUser,
   unblockUser,
+  getPresence,
+  searchUsers,
+  blockInteraction,
+  unblockInteraction,
+  getBlockedUsers,
 } = require("../apis/Users/userController");
 
 const protect = require("../middleware/authMiddleware");
@@ -21,5 +26,11 @@ router.put("/:userId/approve", protect, requireAdmin, approveUser);
 router.put("/:userId/block", protect, requireAdmin, blockUser);
 
 router.put("/:userId/unblock", protect, requireAdmin, unblockUser);
+
+router.get("/search", protect, searchUsers);
+router.post("/:userId/block", protect, blockInteraction);
+router.post("/:userId/unblock", protect, unblockInteraction);
+router.get("/blocked", protect, getBlockedUsers);
+router.get("/:userId/presence", protect, getPresence);
 
 module.exports = router;

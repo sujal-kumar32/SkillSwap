@@ -126,11 +126,11 @@ class Apiservices {
     );
   }
 
-  blockUser(userId) {
+  adminBlockUser(userId) {
     return axios.put(baseUrl + `users/${userId}/block`);
   }
 
-  unblockUser(userId) {
+  adminUnblockUser(userId) {
     return axios.put(baseUrl + `users/${userId}/unblock`);
   }
 
@@ -454,6 +454,70 @@ class Apiservices {
 
   getFollowSuggestions(params = {}) {
     return axios.get(baseUrl + "follow/suggestions", { params });
+  }
+
+  sendMessage(data) {
+    return axios.post(baseUrl + "chat/send", data);
+  }
+
+  getConversations() {
+    return axios.get(baseUrl + "chat/conversations");
+  }
+
+  getChat(chatId) {
+    return axios.get(baseUrl + `chat/${chatId}`);
+  }
+
+  getOrCreateDM(userId) {
+    return axios.get(baseUrl + `chat/dm/${userId}`);
+  }
+
+  getOrCreateBookingChat(requestId) {
+    return axios.get(baseUrl + `chat/booking/${requestId}`);
+  }
+
+  markChatRead(chatId) {
+    return axios.patch(baseUrl + `chat/${chatId}/read`);
+  }
+
+  getUnreadChatCount() {
+    return axios.get(baseUrl + "chat/unread-count");
+  }
+
+  uploadChatFile(formData) {
+    return axios.post(baseUrl + "chat/upload", formData);
+  }
+
+  searchMessages(q) {
+    return axios.get(baseUrl + "chat/search", { params: { q } });
+  }
+
+  toggleReaction(chatId, messageId, emoji) {
+    return axios.post(baseUrl + `chat/${chatId}/messages/${messageId}/reaction`, { emoji });
+  }
+
+  getUserPresence(userId) {
+    return axios.get(baseUrl + `users/${userId}/presence`);
+  }
+
+  searchUsers(q) {
+    return axios.get(baseUrl + "users/search", { params: { q } });
+  }
+
+  deleteMessage(chatId, messageId) {
+    return axios.delete(baseUrl + `chat/${chatId}/messages/${messageId}`);
+  }
+
+  blockUser(userId) {
+    return axios.post(baseUrl + `users/${userId}/block`);
+  }
+
+  unblockUser(userId) {
+    return axios.post(baseUrl + `users/${userId}/unblock`);
+  }
+
+  getBlockedUsers() {
+    return axios.get(baseUrl + "users/blocked");
   }
 }
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
 import { deleteConfirmAlert } from "../../../utils/alertUtils";
@@ -15,6 +15,7 @@ const MyBookings = () => {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [tick, setTick] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -126,6 +127,14 @@ const MyBookings = () => {
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">
                       <div className="d-flex justify-content-end" style={{ gap: 8 }}>
+                        <button onClick={() => {
+                          Apiservices.getOrCreateBookingChat(booking._id).then((res) => {
+                            navigate(`/messages/${res.data.data._id}`);
+                          }).catch(() => {});
+                        }}
+                          className="btn btn-sm btn-outline-info rounded-pill px-3 py-2 fw-semibold">
+                          <i className="fa fa-comment" />
+                        </button>
                         <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold">Details</Link>
                         {(booking._sessionState === "live" || booking._sessionState === "upcoming") && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
                           <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"

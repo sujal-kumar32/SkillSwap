@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import { confirmAlert } from "../../../utils/alertUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
@@ -30,6 +30,7 @@ const Bookings = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const { badgeData, setBadgeData, handleXpResponse } = useXpCelebration();
+  const navigate = useNavigate();
 
   const fetchBookings = async () => {
     try {
@@ -281,6 +282,18 @@ const learnerId = booking.learnerId?._id;
                         </LoadingButton>
                       </div>
                     )}
+
+                    <div className="mt-3">
+                      <button onClick={() => {
+                        Apiservices.getOrCreateBookingChat(booking._id).then((res) => {
+                          navigate(`/messages/${res.data.data._id}`);
+                        }).catch(() => {});
+                      }}
+                        className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold w-100"
+                        style={{ fontSize: "0.8rem" }}>
+                        <i className="fa fa-comment me-1" />Message
+                      </button>
+                    </div>
 
                     {status === "accepted" && (
                       <div className="mt-3 d-flex" style={{ gap: "10px" }}>

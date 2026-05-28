@@ -43,6 +43,7 @@ app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", creden
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use("/uploads", express.static("uploads"));
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -124,10 +125,12 @@ process.on("uncaughtException", (err) => {
 });
 
 const { initSocket } = require("./socket");
-const { setSocketIO } = require("./services/notificationService");
+const { setSocketIO: setNotifIO } = require("./services/notificationService");
+const { setSocketIO: setChatIO } = require("./apis/Chat/chatController");
 
 const io = initSocket(server);
-setSocketIO(io);
+setNotifIO(io);
+setChatIO(io);
 
 server.listen(PORT, (err) => {
   if (err) {

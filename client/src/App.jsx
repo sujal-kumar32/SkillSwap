@@ -62,6 +62,7 @@ import VerifyEmail from "./components/pages/VerifyEmail";
 import PublicProfile from "./components/pages/PublicProfile";
 import Feed from "./components/pages/Feed";
 import NotificationPage from "./components/pages/NotificationPage";
+import MessagesPage from "./components/pages/MessagesPage";
 import { SocketProvider } from "./context/SocketContext";
 import Apiservices from "../Apiservices";
 
@@ -194,6 +195,15 @@ function App() {
             element={
               <RequireUser>
                 <Feed />
+              </RequireUser>
+            }
+          />
+
+          <Route
+            path="/messages/:chatId?"
+            element={
+              <RequireUser>
+                <MessagesPage />
               </RequireUser>
             }
           />

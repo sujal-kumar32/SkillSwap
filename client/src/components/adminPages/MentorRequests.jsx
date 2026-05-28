@@ -52,7 +52,7 @@ const MentorRequests = () => {
     if (!confirmed) return;
     setActionLoading(userId);
     try {
-      const res = await Apiservices.blockUser(userId);
+      const res = await Apiservices.adminBlockUser(userId);
       if (res.data.success) { showToast.success("Mentor blocked"); loadMentors(); }
       else showToast.warning(res.data.message);
     } catch (err) { showToast.error(err.response?.data?.message || "Failed"); }
@@ -64,7 +64,7 @@ const MentorRequests = () => {
     if (!confirmed) return;
     setActionLoading(userId);
     try {
-      const res = await Apiservices.unblockUser(userId);
+      const res = await Apiservices.adminUnblockUser(userId);
       if (res.data.success) { showToast.success("Mentor unblocked"); loadMentors(); }
       else showToast.warning(res.data.message);
     } catch (err) { showToast.error(err.response?.data?.message || "Failed"); }

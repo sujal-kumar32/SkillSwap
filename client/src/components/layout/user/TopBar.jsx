@@ -9,7 +9,7 @@ import Apiservices from "../../../../Apiservices";
 const TopBar = () => {
   const [showNotifs, setShowNotifs] = useState(false);
   const notifRef = useRef(null);
-  const { unreadCount, setUnreadCount } = useSocket();
+  const { unreadCount, unreadChatCount, setUnreadCount } = useSocket();
   const location = useLocation();
   const isNotifsPage = location.pathname === "/notifications";
 
@@ -109,6 +109,19 @@ const TopBar = () => {
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-stream" /> Feed
+        </Link>
+
+        <Link to="/messages" style={btnStyle}
+          onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
+          onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
+          <i className="fa fa-comment" /> Messages
+          {unreadChatCount > 0 && (
+            <span style={{
+              background: "#ef4444", color: "white", fontSize: "0.65rem",
+              fontWeight: 700, padding: "2px 7px", borderRadius: 999,
+              marginLeft: 2, lineHeight: 1,
+            }}>{unreadChatCount > 99 ? "99+" : unreadChatCount}</span>
+          )}
         </Link>
 
         <Link to="/leaderboard" style={btnStyle}

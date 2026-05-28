@@ -67,8 +67,13 @@ const userSchema = new mongoose.Schema(
     followerCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
 
+    isOnline: { type: Boolean, default: false },
+    lastActive: { type: Date, default: Date.now },
+
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
+    blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
     earnedBadges: [{
       badgeId: { type: mongoose.Schema.Types.ObjectId, ref: "Badge" },
       earnedAt: { type: Date, default: Date.now },
@@ -76,5 +81,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+userSchema.index({ name: 1 });
+userSchema.index({ blockedUsers: 1 });
 
 module.exports = mongoose.model("User", userSchema);

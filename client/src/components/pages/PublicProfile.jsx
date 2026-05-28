@@ -5,10 +5,14 @@ import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
 import FollowButton from "../shared/FollowButton";
 import { useAuth } from "../../App";
+import { useSocket } from "../../context/SocketContext";
+import { showToast } from "../../utils/toastUtils";
+import { confirmAlert } from "../../utils/alertUtils";
 
 const PublicProfile = () => {
   const { userId } = useParams();
   const { user: me } = useAuth();
+  const { onlineUsers } = useSocket();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -122,8 +126,35 @@ const PublicProfile = () => {
 
         <div className="container" style={{ marginTop: -80 }}>
           <div className="learner-card p-4 mb-4" style={{ position: "relative" }}>
-            <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
+            <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
               {!isOwn && <FollowButton userId={userId} onToggle={handleToggle} />}
+              {!isOwn && (
+                <button onClick={() => {
+                  Apiservices.getOrCreateDM(userId).then((res) => {
+                    navigate(`/messages/${res.data.data._id}`);
+                  }).catch((err) => {
+                    showToast.error(err.response?.data?.message || "Could not start conversation");
+                  });
+                }}
+                  className="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold"
+                  style={{ fontSize: "0.8rem" }}>
+                  <i className="fa fa-comment me-1" />Message
+                </button>
+              )}
+              {!isOwn && (
+                <button onClick={async () => {
+                  const ok = await confirmAlert("Block this user? They won't be able to message you.");
+                  if (!ok) return;
+                  try {
+                    await Apiservices.blockUser(userId);
+                    showToast.success("User blocked");
+                  } catch { showToast.error("Failed to block user"); }
+                }}
+                  className="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold"
+                  style={{ fontSize: "0.8rem" }}>
+                  <i className="fa fa-ban me-1" />Block
+                </button>
+              )}
             </div>
             <div className="d-flex flex-wrap align-items-end gap-4">
               <img
@@ -133,7 +164,9 @@ const PublicProfile = () => {
               />
               <div className="flex-grow-1">
                 <div className="d-flex flex-wrap align-items-center" style={{ gap: "10px" }}>
-                  <h2 className="fw-bold mb-0">{profile.name}</h2>
+                  <h2 className="fw-bold mb-0">{profile.name}
+                    {onlineUsers.has(profile._id) && <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: "#22c55e", marginLeft: 8, verticalAlign: "middle" }} title="Online" />}
+                  </h2>
                   {roleBadge}
                 </div>
                 <p className="text-muted mb-1" style={{ fontSize: "0.85rem" }}>@{profile.name?.toLowerCase().replace(/\s+/g, "")}</p>
@@ -325,48 +358,61 @@ const PublicProfile = () => {
   );
 };
 
-const UserListModal = ({ title, users, onClose }) => (
-  <div style={{
-    position: "fixed", inset: 0, zIndex: 9999,
-    background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
-    display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-  }} onClick={onClose}>
+const UserListModal = ({ title, users, onClose }) => {
+  const nav = useNavigate();
+  const openChat = (uid) => {
+    Apiservices.getOrCreateDM(uid).then((res) => {
+      onClose();
+      nav(`/messages/${res.data.data._id}`);
+    }).catch(() => {});
+  };
+  return (
     <div style={{
-      background: "#fff", borderRadius: 20, maxWidth: 500, width: "100%",
-      maxHeight: "70vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-    }} onClick={(e) => e.stopPropagation()}>
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+    }} onClick={onClose}>
       <div style={{
-        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-        padding: "16px 20px", borderRadius: "20px 20px 0 0",
-        display: "flex", justifyContent: "space-between", alignItems: "center",
-      }}>
-        <h5 className="fw-bold mb-0 text-white">{title} ({users.length})</h5>
-        <button className="btn btn-sm rounded-circle" style={{ width: 30, height: 30, background: "rgba(255,255,255,0.2)", color: "white", display: "grid", placeItems: "center", border: "none" }} onClick={onClose}>
-          <i className="fa fa-times" />
-        </button>
-      </div>
-      <div style={{ padding: 16 }}>
-        {users.length === 0 ? (
-          <p className="text-muted text-center py-3 mb-0">No users yet.</p>
-        ) : (
-          users.map((u) => (
-            <Link key={u._id} to={`/profile/${u._id}`} onClick={onClose} style={{ textDecoration: "none", color: "inherit" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, transition: "background 0.15s" }}
+        background: "#fff", borderRadius: 20, maxWidth: 500, width: "100%",
+        maxHeight: "70vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+      }} onClick={(e) => e.stopPropagation()}>
+        <div style={{
+          background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+          padding: "16px 20px", borderRadius: "20px 20px 0 0",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <h5 className="fw-bold mb-0 text-white">{title} ({users.length})</h5>
+          <button className="btn btn-sm rounded-circle" style={{ width: 30, height: 30, background: "rgba(255,255,255,0.2)", color: "white", display: "grid", placeItems: "center", border: "none" }} onClick={onClose}>
+            <i className="fa fa-times" />
+          </button>
+        </div>
+        <div style={{ padding: 16 }}>
+          {users.length === 0 ? (
+            <p className="text-muted text-center py-3 mb-0">No users yet.</p>
+          ) : (
+            users.map((u) => (
+              <div key={u._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 12, transition: "background 0.15s" }}
                 onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
                 onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
-                <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0d6efd&color=fff&size=40`}
-                  alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
-                <div>
-                  <div className="fw-semibold" style={{ fontSize: "0.9rem" }}>{u.name}</div>
-                  <small className="text-muted">{u.bio?.slice(0, 60) || `Lv.${u.level || 1}`}</small>
-                </div>
+                <Link to={`/profile/${u._id}`} onClick={onClose} style={{ textDecoration: "none", color: "inherit", display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+                  <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0d6efd&color=fff&size=40`}
+                    alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                  <div style={{ minWidth: 0 }}>
+                    <div className="fw-semibold" style={{ fontSize: "0.9rem" }}>{u.name}</div>
+                    <small className="text-muted">{u.bio?.slice(0, 60) || `Lv.${u.level || 1}`}</small>
+                  </div>
+                </Link>
+                <button onClick={(e) => { e.stopPropagation(); openChat(u._id); }}
+                  className="btn btn-sm btn-outline-primary rounded-pill fw-semibold" style={{ fontSize: "0.7rem", flexShrink: 0 }}>
+                  <i className="fa fa-comment me-1" />Message
+                </button>
               </div>
-            </Link>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default PublicProfile;

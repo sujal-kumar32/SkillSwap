@@ -1,4 +1,6 @@
 const { Server } = require("socket.io");
+const User = require("./apis/Users/userModel");
+const Chat = require("./apis/Chat/chatModel");
 
 function initSocket(server) {
   const io = new Server(server, {
@@ -24,11 +26,36 @@ function initSocket(server) {
     }
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", async (socket) => {
     socket.join(`user:${socket.userId}`);
 
-    socket.on("disconnect", () => {
+    // Presence (fire-and-forget with .catch)
+    User.findByIdAndUpdate(socket.userId, { isOnline: true, lastActive: new Date() }).catch(() => {});
+    socket.broadcast.emit("user_online", { userId: socket.userId });
+
+    socket.on("typing", ({ chatId }) => {
+      socket.to(`chat:${chatId}`).emit("typing", { chatId, userId: socket.userId });
+    });
+
+    socket.on("stop_typing", ({ chatId }) => {
+      socket.to(`chat:${chatId}`).emit("stop_typing", { chatId, userId: socket.userId });
+    });
+
+    socket.on("join_chat", async ({ chatId }) => {
+      const chat = await Chat.findById(chatId).select("participants").lean().catch(() => null);
+      if (chat && chat.participants.some((p) => p.toString() === socket.userId)) {
+        socket.join(`chat:${chatId}`);
+      }
+    });
+
+    socket.on("leave_chat", ({ chatId }) => {
+      socket.leave(`chat:${chatId}`);
+    });
+
+    socket.on("disconnect", async () => {
       socket.leave(`user:${socket.userId}`);
+      User.findByIdAndUpdate(socket.userId, { isOnline: false, lastActive: new Date() }).catch(() => {});
+      socket.broadcast.emit("user_offline", { userId: socket.userId });
     });
   });
 

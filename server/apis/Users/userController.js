@@ -23,9 +23,10 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
     }
 
     if (search) {
+      const safe = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       filter.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
+        { name: { $regex: safe, $options: "i" } },
+        { email: { $regex: safe, $options: "i" } },
       ];
     }
 
@@ -173,7 +174,60 @@ exports.unblockUser = asyncHandler(async (req, res) => {
 
 });
 
+// BLOCK A USER (user-to-user)
+exports.blockInteraction = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (userId === req.user.id) {
+    return res.status(400).json({ success: false, message: "Cannot block yourself" });
+  }
+  const target = await User.findById(userId).select("_id");
+  if (!target) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  await User.findByIdAndUpdate(req.user.id, { $addToSet: { blockedUsers: userId } });
+  res.json({ success: true, message: "User blocked" });
+});
+
+// UNBLOCK A USER (user-to-user)
+exports.unblockInteraction = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  await User.findByIdAndUpdate(req.user.id, { $pull: { blockedUsers: userId } });
+  res.json({ success: true, message: "User unblocked" });
+});
+
+// GET BLOCKED USERS
+exports.getBlockedUsers = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select("blockedUsers").populate("blockedUsers", "name profileImage").lean();
+  res.json({ success: true, data: user.blockedUsers || [] });
+});
+
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// SEARCH USERS (for compose)
+exports.searchUsers = asyncHandler(async (req, res) => {
+  const { q } = req.query;
+  if (!q?.trim()) {
+    return res.json({ success: true, data: [] });
+  }
+  const users = await User.find({
+    _id: { $ne: req.user.id },
+    name: { $regex: escapeRegex(q.trim()), $options: "i" },
+  })
+    .select("name profileImage")
+    .limit(20)
+    .lean();
+  res.json({ success: true, data: users });
+});
+
 // APPLY FOR MENTOR
+exports.getPresence = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.userId).select("isOnline lastActive");
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  res.json({ success: true, data: { isOnline: user.isOnline, lastActive: user.lastActive } });
+});
+
 exports.applyForMentor = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user.id);

@@ -9,3 +9,24 @@ export function timeAgo(date) {
   if (days < 7) return `${days}d ago`;
   return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
+
+export function formatDayHeader(date) {
+  const msgDate = new Date(date);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (msgDate.toDateString() === today.toDateString()) return "Today";
+  if (msgDate.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 6);
+  if (msgDate >= weekAgo) {
+    return msgDate.toLocaleDateString("en-US", { weekday: "long" });
+  }
+
+  if (msgDate.getFullYear() === today.getFullYear()) {
+    return msgDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+  return msgDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
