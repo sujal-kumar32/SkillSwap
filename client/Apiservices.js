@@ -2,7 +2,7 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
-const baseUrl = import.meta.env.VITE_API_URL + "/";
+const baseUrl = "https://skillswap-0weh.onrender.com/api/";
 
 class Apiservices {
 
