@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Apiservices from "../../../Apiservices";
 
 function Contact() {
   const navigate = useNavigate();
@@ -7,7 +8,7 @@ function Contact() {
   const [catSearch, setCatSearch] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/categories").then(r=>r.json()).then(res => setCategories(res.data || [])).catch(()=>{});
+    Apiservices.getCategories().then(res => setCategories(res.data.data || [])).catch(() => {});
   }, []);
   return (
     <>

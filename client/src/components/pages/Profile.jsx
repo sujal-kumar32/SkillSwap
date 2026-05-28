@@ -121,6 +121,23 @@ const Profile = () => {
     );
   }
 
+  if (error) {
+    return (
+      <>
+        <TopBar />
+        <div className="bg-image" style={{ minHeight: "calc(100vh - 64px)" }}>
+          <div className="container py-5">
+            <div className="alert alert-danger text-center py-5">
+              <i className="fa fa-exclamation-triangle fa-2x mb-3" />
+              <h4 className="fw-bold">Failed to load profile</h4>
+              <p className="mb-0">{error}</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <TopBar />

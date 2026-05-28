@@ -8,6 +8,7 @@ const LearnerSkills = () => {
   const navigate = useNavigate();
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -17,8 +18,11 @@ const LearnerSkills = () => {
       try {
         const res = await Apiservices.getSkills();
         if (!cancelled) setSkills(res.data.data || []);
-      } catch {
-        if (!cancelled) showToast.error("Failed to load skills");
+      } catch (e) {
+        if (!cancelled) {
+          setError(e?.response?.data?.message || "Failed to load skills");
+          showToast.error("Failed to load skills");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -83,7 +87,15 @@ const LearnerSkills = () => {
         </div>
       </div>
 
-      {loading ? <LoadingState /> : filtered.length ? (
+      {loading ? <LoadingState /> : error ? (
+        <div className="learner-card p-5 text-center">
+          <div className="learner-empty-icon mx-auto mb-3" style={{ color: "#dc2626" }}>
+            <i className="fa fa-exclamation-triangle" />
+          </div>
+          <h5 className="fw-bold">Something went wrong</h5>
+          <p className="text-muted mb-0">{error}</p>
+        </div>
+      ) : filtered.length ? (
         <div className="row g-4">
           {filtered.map((skill) => (
             <div className="col-md-6 col-xl-4 d-flex" key={skill._id}>

@@ -9,6 +9,7 @@ const MentorDashboard = () => {
   const [recentBookings, setRecentBookings] = useState([]);
   const [recentSessions, setRecentSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -33,7 +34,7 @@ const MentorDashboard = () => {
         setRecentBookings(bookings.slice(0, 5));
         setRecentSessions(sessions.slice(0, 3));
       } catch (e) {
-        console.log(e);
+        setError(e?.response?.data?.message || "Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -77,6 +78,16 @@ const MentorDashboard = () => {
           </div>
         ))}
       </div>
+
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center gap-3 mb-4" style={{ borderRadius: 16 }}>
+          <i className="fa fa-exclamation-circle" style={{ fontSize: "1.3rem" }} />
+          <div>
+            <strong className="fw-semibold">Error loading dashboard</strong>
+            <p className="mb-0 small">{error}</p>
+          </div>
+        </div>
+      )}
 
       <div className="row g-4">
         <div className="col-lg-7">

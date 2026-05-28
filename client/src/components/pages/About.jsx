@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Apiservices from "../../../Apiservices";
 
 function About() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
+  const [catLoading, setCatLoading] = useState(true);
+  const [catError, setCatError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/categories").then(r=>r.json()).then(res => setCategories(res.data || [])).catch(()=>{});
+    Apiservices.getCategories()
+      .then(res => setCategories(res.data.data || []))
+      .catch(() => setCatError("Failed to load categories"))
+      .finally(() => setCatLoading(false));
   }, []);
 
   useEffect(() => {
@@ -52,8 +58,9 @@ function About() {
             >
               <div className="input-group">
                 <select style={{ width: 140, padding: "10px", border: "1px solid #dee2e6", borderRadius: "0", background: "#fff" }}
-                  value={catSearch} onChange={(e) => setCatSearch(e.target.value)}>
-                  <option value="">All Skills</option>
+                  value={catSearch} onChange={(e) => setCatSearch(e.target.value)}
+                  disabled={catLoading}>
+                  <option value="">{catLoading ? "Loading..." : catError ? "Unavailable" : "All Skills"}</option>
                   {categories.filter((c) => c.status !== "inactive").map((c) => (
                     <option key={c._id} value={c._id}>{c.name}</option>
                   ))}

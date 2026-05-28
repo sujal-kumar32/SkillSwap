@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
+import { LoadingState } from "../learner/LearnerUI";
 
 const PAGE_SIZE = 10;
 
@@ -82,7 +83,7 @@ const ViewRequests = () => {
           </div>
 
           {loading ? (
-            <p className="text-center py-4 text-muted">Loading...</p>
+            <LoadingState label="Loading requests..." />
           ) : (
             <div className="table-responsive">
               <table className="table align-middle mb-0">

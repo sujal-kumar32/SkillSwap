@@ -7,6 +7,8 @@ const fallbackImgs = ["img/courses-1.jpg","img/courses-2.jpg","img/courses-3.jpg
 function Course() {
   const [sessions, setSessions] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [params] = useSearchParams();
   const [search, setSearch] = useState(params.get("q") || "");
   const [category, setCategory] = useState(params.get("cat") || "");
@@ -21,12 +23,10 @@ function Course() {
   });
 
   useEffect(() => {
-    Apiservices.fetchSessions({ limit: 20 }).then((res) => {
-      setSessions(res.data.data || []);
-    }).catch(() => {});
-    Apiservices.getCategories().then((res) => {
-      setCategories(res.data.data || []);
-    }).catch(() => {});
+    Promise.all([
+      Apiservices.fetchSessions({ limit: 20 }).then((res) => setSessions(res.data.data || [])),
+      Apiservices.getCategories().then((res) => setCategories(res.data.data || [])),
+    ]).catch(() => setError("Failed to load sessions")).finally(() => setLoading(false));
   }, []);
   useEffect(() => {
     const destroyCarousel = (selector) => {
@@ -156,8 +156,9 @@ function Course() {
                 <div className="input-group-prepend">
                   <select className="btn btn-outline-light bg-white text-body px-4"
                     value={category} onChange={(e) => setCategory(e.target.value)}
+                    disabled={loading}
                     style={{ height: "100%", border: "1px solid #dee2e6", borderRadius: "0.25rem 0 0 0.25rem" }}>
-                    <option value="">All Skills</option>
+                    <option value="">{loading ? "Loading..." : "All Skills"}</option>
                     {categories.filter((c) => c.status !== "inactive").map((c) => (
                       <option key={c._id} value={c._id}>{c.name}</option>
                     ))}
@@ -196,36 +197,55 @@ function Course() {
                 </div>
               </div>
             </div>
-            <div className="row">
-              {(filtered.length > 0 ? filtered : []).slice(0, 6).map((s, i) => (
-                <div className="col-lg-4 col-md-6 pb-4" key={s._id}>
-                  <Link
-                    className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                    to={`/learner/sessions/${s._id}`}
-                  >
-                    <img className="img-fluid" src={fallbackImgs[i % 6]} alt={s.title} />
-                    <div className="courses-text">
-                      <h4 className="text-center text-white px-3">
-                        {s.title}
-                      </h4>
-                      <div className="border-top w-100 mt-3">
-                        <div className="d-flex justify-content-between p-4">
-                          <span className="text-white">
-                            <i className="fa fa-user mr-2" />
-                            {s.mentorId?.name || "Mentor"}
-                          </span>
-                          <span className="text-white">
-                            <i className="fa fa-star mr-2" />
-                            {s.rating || "4.8"}
-                            <small>(—)</small>
-                          </span>
+            {loading ? (
+              <div className="text-center py-5">
+                <div className="spinner-border text-primary mb-3" role="status" style={{ width: "3rem", height: "3rem" }} />
+                <p className="text-muted">Loading sessions...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-5">
+                <i className="fa fa-exclamation-triangle text-danger mb-3" style={{ fontSize: "2.5rem" }} />
+                <h4 className="fw-bold">Failed to load sessions</h4>
+                <p className="text-muted mb-0">{error}</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-5">
+                <i className="fa fa-search text-muted mb-3" style={{ fontSize: "2.5rem" }} />
+                <h4 className="fw-bold">No sessions found</h4>
+                <p className="text-muted mb-0">Try adjusting your search or filter criteria.</p>
+              </div>
+            ) : (
+              <div className="row">
+                {filtered.slice(0, 6).map((s, i) => (
+                  <div className="col-lg-4 col-md-6 pb-4" key={s._id}>
+                    <Link
+                      className="courses-list-item position-relative d-block overflow-hidden mb-2"
+                      to={`/learner/sessions/${s._id}`}
+                    >
+                      <img className="img-fluid" src={fallbackImgs[i % 6]} alt={s.title} />
+                      <div className="courses-text">
+                        <h4 className="text-center text-white px-3">
+                          {s.title}
+                        </h4>
+                        <div className="border-top w-100 mt-3">
+                          <div className="d-flex justify-content-between p-4">
+                            <span className="text-white">
+                              <i className="fa fa-user mr-2" />
+                              {s.mentorId?.name || "Mentor"}
+                            </span>
+                            <span className="text-white">
+                              <i className="fa fa-star mr-2" />
+                              {s.rating || "4.8"}
+                              <small>(—)</small>
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </div>
-              ))}
-            </div>
+                    </Link>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         {/* Courses End */}
