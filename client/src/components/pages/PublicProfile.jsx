@@ -216,6 +216,41 @@ const PublicProfile = () => {
                   <i className="fa fa-calendar me-2" />Joined {new Date(profile.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long" })}
                 </p>
               )}
+
+              {profile.socialLinks && (
+                <div className="d-flex flex-wrap gap-2 mt-3">
+                  {profile.socialLinks.github && (
+                    <a href={profile.socialLinks.github} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                      style={{ fontSize: "0.75rem", color: "#1e293b" }}>
+                      <i className="fa fa-code-branch me-1" />GitHub
+                    </a>
+                  )}
+                  {profile.socialLinks.linkedin && (
+                    <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                      style={{ fontSize: "0.75rem", color: "#1e293b" }}>
+                      <i className="fa fa-briefcase me-1" />LinkedIn
+                    </a>
+                  )}
+                  {profile.socialLinks.twitter && (
+                    <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                      style={{ fontSize: "0.75rem", color: "#1e293b" }}>
+                      <i className="fa fa-hashtag me-1" />Twitter
+                    </a>
+                  )}
+                  {profile.socialLinks.portfolio && (
+                    <a href={profile.socialLinks.portfolio} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                      style={{ fontSize: "0.75rem", color: "#1e293b" }}>
+                      <i className="fa fa-globe me-1" />Website
+                    </a>
+                  )}
+                  {profile.socialLinks.youtube && (
+                    <a href={profile.socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                      style={{ fontSize: "0.75rem", color: "#1e293b" }}>
+                      <i className="fa fa-video me-1" />YouTube
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

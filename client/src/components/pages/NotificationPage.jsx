@@ -4,6 +4,7 @@ import TopBar from "../layout/user/TopBar";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
 import { useSocket } from "../../context/SocketContext";
+import { timeAgo } from "../../utils/timeUtils";
 
 const typeIcons = {
   follow: "fa-user-plus", booking_request: "fa-calendar-plus", booking_accepted: "fa-check-circle",
@@ -107,9 +108,7 @@ const NotificationPage = () => {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: "0.85rem", lineHeight: 1.4, color: "#1e293b", fontWeight: n.read ? 400 : 600 }}>{n.message}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                      <small style={{ fontSize: "0.65rem", color: "#94a3b8" }}>
-                        {new Date(n.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                      </small>
+                      <small style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{timeAgo(n.createdAt)}</small>
                       {n.link && (
                         <Link to={n.link} style={{ fontSize: "0.7rem", color: "#0d6efd", textDecoration: "none", fontWeight: 600 }}
                           onClick={(e) => e.stopPropagation()}>

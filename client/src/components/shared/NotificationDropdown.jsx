@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSocket } from "../../context/SocketContext";
+import { timeAgo } from "../../utils/timeUtils";
 
 const typeIcons = {
   follow: "fa-user-plus",
@@ -75,9 +76,7 @@ const NotificationDropdown = ({ onClose }) => {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: "0.82rem", lineHeight: 1.4, color: "#1e293b" }}>{n.message}</div>
-                  <small style={{ fontSize: "0.65rem", color: "#94a3b8" }}>
-                    {new Date(n.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                  </small>
+                  <small style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{timeAgo(n.createdAt)}</small>
                 </div>
               </div>
             </Link>

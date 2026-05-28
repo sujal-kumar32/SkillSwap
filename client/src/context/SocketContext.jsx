@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../App";
 import Apiservices from "../../Apiservices";
+import { showToast } from "../utils/toastUtils";
 
 const SocketContext = createContext(null);
 
@@ -40,6 +41,7 @@ export function SocketProvider({ children }) {
     s.on("notification", (data) => {
       setLatestNotifications((prev) => [data, ...prev].slice(0, 3));
       setUnreadCount((c) => c + 1);
+      showToast.info(data.message, { autoClose: 4000 });
     });
 
     s.on("unread_count", (count) => {
