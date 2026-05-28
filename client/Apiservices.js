@@ -2,7 +2,7 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
-const baseUrl = "/api/";
+const baseUrl = import.meta.env.VITE_API_URL + "/";
 
 class Apiservices {
 
