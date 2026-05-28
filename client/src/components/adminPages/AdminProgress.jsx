@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 import Pagination from "../Pagination";
 
 const AdminProgress = () => {
@@ -86,7 +87,7 @@ const AdminProgress = () => {
                           <div className="d-flex align-items-center gap-2">
                             <img src={l.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(l.name)}&background=0d6efd&color=fff`}
                               alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
-                            <span className="fw-semibold" style={{ color: "#1e293b" }}>{l.name}</span>
+                            <span className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={l} /></span>
                           </div>
                         </td>
                         <td style={{ color: "#64748b" }}>{l.email}</td>

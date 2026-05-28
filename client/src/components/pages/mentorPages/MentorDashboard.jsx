@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader } from "../../learner/LearnerUI";
+import UserLink from "../../../components/shared/UserLink";
 import { useAuth } from "../../../App";
 
 const MentorDashboard = () => {
@@ -106,7 +107,7 @@ const MentorDashboard = () => {
                   <div key={b._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
                     <div>
                       <h6 className="fw-bold mb-0 small">{b.sessionId?.title || "Session"}</h6>
-                      <small className="text-muted">{b.learnerId?.name || "Learner"}{b.sessionId?.maxLearners > 0 ? " • Group" : ""}</small>
+                      <small className="text-muted"><UserLink user={b.learnerId} name={b.learnerId?.name || "Learner"} />{b.sessionId?.maxLearners > 0 ? " • Group" : ""}</small>
                     </div>
                     <span style={{ background: b.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : b.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : b.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #64748b, #475569)", color: b.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                       {b.requestStatus}

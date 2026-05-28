@@ -4,6 +4,7 @@ import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader, LoadingState } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
+import UserLink from "../../../components/shared/UserLink";
 
 const avatarFor = (name = "Learner", image) =>
   image || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
@@ -130,12 +131,12 @@ const Learners = () => {
                     {/* IMAGE */}
                     <img
                       src={avatarFor(learner.name, learner.profileImage)}
-                      alt={learner.name}
+                      alt=<UserLink user={learner} />
                       className="learner-image mb-3"
                     />
 
                     {/* INFO */}
-                    <h5 className="fw-bold mb-1">{learner.name}</h5>
+                    <h5 className="fw-bold mb-1"><UserLink user={learner} /></h5>
 
                     <p className="text-primary fw-semibold mb-3">
                       {learner.skills?.join(", ") || learner.lastSession || "Learner"}

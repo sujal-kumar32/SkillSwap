@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 import Pagination from "../Pagination";
 
 const AdminReviews = () => {
@@ -111,9 +112,9 @@ const AdminReviews = () => {
                   {reviews.length ? (
                     reviews.map((r) => (
                       <tr key={r._id}>
-                        <td className="fw-semibold" style={{ color: "#1e293b" }}>{r.learner || r.learnerId?.name || "Unknown"}</td>
+                        <td className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={r.learnerId} name={r.learner || r.learnerId?.name || "Unknown"} /></td>
                         <td style={{ color: "#64748b" }}>{r.session || r.sessionId?.title}</td>
-                        <td style={{ color: "#64748b" }}>{r.mentor || r.mentorId?.name}</td>
+                        <td style={{ color: "#64748b" }}><UserLink user={r.mentorId} name={r.mentor || r.mentorId?.name} /></td>
                         <td><span className="text-warning">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span></td>
                         <td style={{ color: "#64748b", maxWidth: 250 }} className="text-truncate">{r.comment || "-"}</td>
                       </tr>

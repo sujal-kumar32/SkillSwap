@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
+import UserLink from "../../../components/shared/UserLink";
 
 const rankColors = [
   { bg: "#fef3c7", border: "#fbbf24", text: "#92400e", icon: "fa-crown" },
@@ -115,7 +116,7 @@ const LearnerLeaderboard = () => {
                     )}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <h6 className="fw-bold mb-0" style={{ fontSize: "0.9rem" }}>{item.name}</h6>
+                    <h6 className="fw-bold mb-0" style={{ fontSize: "0.9rem" }}><UserLink user={item} /></h6>
                     <small className="text-muted" style={{ fontSize: "0.75rem" }}>
                       Level {item.level} &middot; {item.badges} badge{item.badges !== 1 ? "s" : ""}
                     </small>

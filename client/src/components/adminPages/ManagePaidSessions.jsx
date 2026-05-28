@@ -6,6 +6,7 @@ import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { StatCard, LoadingState } from "../learner/LearnerUI";
 import Pagination from "../Pagination";
+import UserLink from "../shared/UserLink";
 
 const ManagePaidSessions = () => {
   const navigate = useNavigate();
@@ -153,7 +154,7 @@ const ManagePaidSessions = () => {
                       filteredSessions.map((s) => (
                         <tr key={s._id}>
                           <td className="fw-semibold" style={{ color: "#1e293b" }}>{s.title}</td>
-                          <td style={{ color: "#64748b" }}>{s.mentorId?.name || "Unknown"}</td>
+                          <td style={{ color: "#64748b" }}><UserLink user={s.mentorId} name={s.mentorId?.name || "Unknown"} /></td>
                           <td className="fw-semibold">₹{s.price ?? 0}</td>
                           <td>{s.bookings ?? 0}</td>
                           <td>

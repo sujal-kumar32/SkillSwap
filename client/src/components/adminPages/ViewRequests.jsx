@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 
 const PAGE_SIZE = 10;
 
@@ -101,9 +102,9 @@ const ViewRequests = () => {
                   {paginated.length ? (
                     paginated.map((r) => (
                       <tr key={r._id}>
-                        <td className="fw-semibold" style={{ color: "#1e293b" }}>{r.learnerId?.name}</td>
+                        <td className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={r.learnerId} name={r.learnerId?.name} /></td>
                         <td style={{ color: "#64748b" }}>{r.sessionId?.title}</td>
-                        <td style={{ color: "#64748b" }}>{r.mentorId?.name}</td>
+                        <td style={{ color: "#64748b" }}><UserLink user={r.mentorId} name={r.mentorId?.name} /></td>
                         <td style={{ color: "#64748b" }}>{new Date(r.createdAt).toLocaleDateString()}</td>
                         <td>
                           <span style={{ background: r.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : r.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : r.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: r.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>

@@ -4,6 +4,7 @@ import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 import Pagination from "../Pagination";
 
 const SkillApproval = () => {
@@ -182,7 +183,7 @@ const SkillApproval = () => {
                       <tr key={skill._id}>
                         <td className="fw-semibold" style={{ color: "#1e293b" }}>{skill.name}</td>
                         <td style={{ color: "#64748b" }}>{skill.categoryId?.name || "-"}</td>
-                        <td style={{ color: "#64748b" }}>{skill.createdBy?.name || "Unknown"}</td>
+                        <td style={{ color: "#64748b" }}><UserLink user={skill.createdBy} name={skill.createdBy?.name || "Unknown"} /></td>
                         <td>
                           <span style={{ background: skill.isDeleted ? "linear-gradient(135deg, #374151, #1f2937)" : skill.status === "approved" ? "linear-gradient(135deg, #16a34a, #15803d)" : skill.status === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: skill.status === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                             {skill.isDeleted ? "Deleted" : skill.status}

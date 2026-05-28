@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Apiservices from "../../../Apiservices";
+import UserLink from "../shared/UserLink";
 
 const fallbackImgs = ["img/courses-1.jpg","img/courses-2.jpg","img/courses-3.jpg","img/courses-4.jpg","img/courses-5.jpg","img/courses-6.jpg"];
 
@@ -231,7 +232,7 @@ function Course() {
                           <div className="d-flex justify-content-between p-4">
                             <span className="text-white">
                               <i className="fa fa-user mr-2" />
-                              {s.mentorId?.name || "Mentor"}
+                              <UserLink user={s.mentorId} name={s.mentorId?.name || "Mentor"} />
                             </span>
                             <span className="text-white">
                               <i className="fa fa-star mr-2" />

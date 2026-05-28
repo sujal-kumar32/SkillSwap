@@ -64,6 +64,9 @@ const userSchema = new mongoose.Schema(
     verificationToken: String,
     verificationTokenExpires: Date,
 
+    followerCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
     earnedBadges: [{

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import {
@@ -151,7 +152,7 @@ const LearnerDashboard = () => {
             {sessions.slice(0, 2).map((session) => (
               <div key={session._id} className="border-top py-3">
                 <h6 className="fw-bold mb-1">{session.title}</h6>
-                <small className="text-muted">{session.mentorId?.name} • {session.duration || 60} min</small>
+                <small className="text-muted"><UserLink user={session.mentorId} name={session.mentorId?.name} /> • {session.duration || 60} min</small>
               </div>
             ))}
             {!sessions.length && (

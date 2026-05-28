@@ -3,6 +3,7 @@ import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
 import { showToast } from "../../utils/toastUtils";
 import { confirmAlert } from "../../utils/alertUtils";
+import UserLink from "../shared/UserLink";
 
 const MentorRequests = () => {
   const [mentors, setMentors] = useState([]);
@@ -133,7 +134,7 @@ const MentorRequests = () => {
                           alt="" className="rounded-circle" width="40" height="40" style={{ objectFit: "cover" }}
                         />
                         <div>
-                          <h6 className="fw-bold mb-0">{mentor.name}</h6>
+                          <h6 className="fw-bold mb-0"><UserLink user={mentor} /></h6>
                           {mentor.bio && <small className="text-muted">{mentor.bio.slice(0, 60)}</small>}
                         </div>
                       </div>

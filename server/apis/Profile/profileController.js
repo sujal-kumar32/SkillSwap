@@ -215,3 +215,39 @@ exports.getXpHistory = asyncHandler(async (req, res) => {
     });
 
 });
+
+exports.getPublicProfile = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  const user = await User.findById(userId).select(
+    "name email profileImage coverImage bio interests skills xp level followerCount followingCount roles socialLinks createdAt"
+  );
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  const Session = require("../Session/sessionModel");
+  const Review = require("../Reviews/reviewModel");
+
+  const [sessionCount, reviewCount] = await Promise.all([
+    Session.countDocuments({ mentorId: userId, status: { $ne: "cancelled" } }),
+    Review.countDocuments({ mentorId: userId }),
+  ]);
+
+  let rating = null;
+  if (reviewCount > 0) {
+    const reviews = await Review.find({ mentorId: userId });
+    rating = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1);
+  }
+
+  res.json({
+    success: true,
+    data: {
+      ...user.toObject(),
+      sessionCount,
+      reviewCount,
+      rating,
+    },
+  });
+});

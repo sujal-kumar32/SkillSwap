@@ -59,6 +59,7 @@ import ForgotPassword from "./components/pages/ForgotPassword";
 import ResetPassword from "./components/pages/ResetPassword";
 import Settings from "./components/pages/Settings";
 import VerifyEmail from "./components/pages/VerifyEmail";
+import PublicProfile from "./components/pages/PublicProfile";
 import Apiservices from "../Apiservices";
 
 const AuthContext = createContext(null);
@@ -172,6 +173,8 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
           </Route>
+
+          <Route path="/profile/:userId" element={<PublicProfile />} />
 
           <Route
             path="/workspace"

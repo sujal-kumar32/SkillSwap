@@ -4,6 +4,7 @@ import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 import { useAuth } from "../../App";
 
 const badge = (status) => {
@@ -36,6 +37,10 @@ const Profile = () => {
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [xpHistory, setXpHistory] = useState([]);
   const [xpHistoryOpen, setXpHistoryOpen] = useState(false);
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -60,6 +65,7 @@ const Profile = () => {
           linkedin: u.socialLinks?.linkedin || "", github: u.socialLinks?.github || "",
           portfolio: u.socialLinks?.portfolio || "", youtube: u.socialLinks?.youtube || "",
           twitter: u.socialLinks?.twitter || "",
+          followerCount: u.followerCount || 0, followingCount: u.followingCount || 0,
         });
         if (sRes.data?.data) {
           setStats(sRes.data.data);
@@ -167,20 +173,28 @@ const Profile = () => {
                   </span>}
                 </div>
                 <p className="text-muted mb-1">{profile.email}</p>
-                <div className="d-flex align-items-center" style={{ gap: "16px", marginTop: "6px" }}>
-                  <div className="d-flex align-items-center" style={{ gap: "8px" }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: 8,
-                      background: "linear-gradient(135deg, #0d6efd20, #6610f220)",
-                      display: "grid", placeItems: "center", color: "#0d6efd", fontSize: "0.85rem",
-                    }}>
-                      <i className="fa fa-bolt" />
+                  <div className="d-flex align-items-center" style={{ gap: "16px", marginTop: "6px" }}>
+                    <div className="d-flex align-items-center" style={{ gap: "8px" }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: "linear-gradient(135deg, #0d6efd20, #6610f220)",
+                        display: "grid", placeItems: "center", color: "#0d6efd", fontSize: "0.85rem",
+                      }}>
+                        <i className="fa fa-bolt" />
+                      </div>
+                      <div>
+                        <div className="fw-bold" style={{ fontSize: "0.9rem" }}>Lv.{user?.level || 1}</div>
+                        <small className="text-muted" style={{ fontSize: "0.65rem" }}>{(user?.xp || 0).toLocaleString()} XP</small>
+                      </div>
                     </div>
-                    <div>
-                      <div className="fw-bold" style={{ fontSize: "0.9rem" }}>Lv.{user?.level || 1}</div>
-                      <small className="text-muted" style={{ fontSize: "0.65rem" }}>{(user?.xp || 0).toLocaleString()} XP</small>
-                    </div>
-                  </div>
+                    <button className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.8rem" }}
+                      onClick={() => { setShowFollowers(true); Apiservices.getFollowers(user?._id, { limit: 50 }).then(r => setFollowers(r.data.data || [])).catch(() => {}); }}>
+                      <strong>{profile.followerCount}</strong> Followers
+                    </button>
+                    <button className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.8rem" }}
+                      onClick={() => { setShowFollowing(true); Apiservices.getFollowing(user?._id, { limit: 50 }).then(r => setFollowing(r.data.data || [])).catch(() => {}); }}>
+                      <strong>{profile.followingCount}</strong> Following
+                    </button>
                   <div style={{ flex: 1, maxWidth: 200 }}>
                     <div style={{ height: 4, background: "#eef2f7", borderRadius: 999, overflow: "hidden" }}>
                       <div style={{
@@ -495,6 +509,7 @@ const Profile = () => {
                           const date = session?.date ? new Date(session.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
                           const skill = session?.skillId?.name || "";
                           const mentor = session?.mentorId?.name || session?.mentorId?.email || "";
+const mentorId = session?.mentorId?._id;
                           const status = s.requestStatus || s.status || "";
                           return (
                             <div key={s._id} style={{ background: "#fafbfc", borderRadius: 16, padding: "20px 24px", display: "flex", alignItems: "center", gap: 20 }}>
@@ -506,7 +521,7 @@ const Profile = () => {
                                 <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
                                   {date && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-calendar" style={{ color: "#94a3b8", marginRight: 10 }} />{date}</span>}
                                   {skill && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-tag" style={{ color: "#94a3b8", marginRight: 10 }} />{skill}</span>}
-                                  {mentor && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-user" style={{ color: "#94a3b8", marginRight: 10 }} />{mentor}</span>}
+                                  {mentor && <span style={{ fontSize: "0.8rem", color: "#64748b" }}><i className="fa fa-user" style={{ color: "#94a3b8", marginRight: 10 }} /><UserLink userId={mentorId} name={mentor} /></span>}
                                 </div>
                               </div>
                               {badge(status)}
@@ -634,8 +649,59 @@ const Profile = () => {
           </div>
         </div>
       )}
+
+      {showFollowers && (
+        <UserListModal title="Your Followers" users={followers} onClose={() => setShowFollowers(false)} />
+      )}
+      {showFollowing && (
+        <UserListModal title="Following" users={following} onClose={() => setShowFollowing(false)} />
+      )}
     </>
   );
 };
+
+const UserListModal = ({ title, users, onClose }) => (
+  <div style={{
+    position: "fixed", inset: 0, zIndex: 9999,
+    background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)",
+    display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+  }} onClick={onClose}>
+    <div style={{
+      background: "#fff", borderRadius: 20, maxWidth: 500, width: "100%",
+      maxHeight: "70vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+    }} onClick={(e) => e.stopPropagation()}>
+      <div style={{
+        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+        padding: "16px 20px", borderRadius: "20px 20px 0 0",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <h5 className="fw-bold mb-0 text-white">{title} ({users.length})</h5>
+        <button className="btn btn-sm rounded-circle" style={{ width: 30, height: 30, background: "rgba(255,255,255,0.2)", color: "white", display: "grid", placeItems: "center", border: "none" }} onClick={onClose}>
+          <i className="fa fa-times" />
+        </button>
+      </div>
+      <div style={{ padding: 16 }}>
+        {users.length === 0 ? (
+          <p className="text-muted text-center py-3 mb-0">No users yet.</p>
+        ) : (
+          users.map((u) => (
+            <Link key={u._id} to={`/profile/${u._id}`} onClick={onClose} style={{ textDecoration: "none", color: "inherit" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, transition: "background 0.15s" }}
+                onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                <img src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0d6efd&color=fff&size=40`}
+                  alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
+                <div>
+                  <div className="fw-semibold" style={{ fontSize: "0.9rem" }}>{u.name}</div>
+                  <small className="text-muted">{u.bio?.slice(0, 60) || `Lv.${u.level || 1}`}</small>
+                </div>
+              </div>
+            </Link>
+          ))
+        )}
+      </div>
+    </div>
+  </div>
+);
 
 export default Profile;

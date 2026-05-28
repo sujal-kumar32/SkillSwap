@@ -7,6 +7,7 @@ import Apiservices from "../../../../Apiservices";
 import { PageHeader, LoadingState } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
+import UserLink from "../../../components/shared/UserLink";
 
 
 const avatarFor = (name = "Learner", image) =>
@@ -201,6 +202,7 @@ const Bookings = () => {
             ) : bookings.length ? (
               bookings.map((booking) => {
                     const learnerName = booking.learnerId?.name || "Learner";
+const learnerId = booking.learnerId?._id;
                     const learnerImage = booking.learnerId?.profileImage;
                     const status = booking.requestStatus;
                     return (
@@ -216,7 +218,7 @@ const Bookings = () => {
                         />
 
                       <div style={{ marginLeft: "16px" }}>
-                        <h5 className="fw-bold mb-1">{learnerName}</h5>
+                        <h5 className="fw-bold mb-1"><UserLink userId={learnerId} name={learnerName} /></h5>
 
                         <small className="text-muted">
                           {booking.learnerId?.email || "Learner"}

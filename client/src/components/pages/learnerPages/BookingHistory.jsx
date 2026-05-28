@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatusBadge } from "../../learner/LearnerUI";
+import UserLink from "../../../components/shared/UserLink";
 
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
@@ -57,7 +58,7 @@ const BookingHistory = () => {
                   <tr key={booking._id}>
                     <td>
                       <h6 className="fw-bold mb-1">{booking.sessionId?.title}</h6>
-                      <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>
+                      <small className="text-muted"><UserLink user={booking.sessionId?.mentorId} name={booking.sessionId?.mentorId?.name} /></small>
                     </td>
                     <td>{booking.date || booking.sessionId?.date || "—"}</td>
                     <td>{booking.paymentStatus}</td>

@@ -6,6 +6,7 @@ import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
+import UserLink from "../../../components/shared/UserLink";
 
 const Modal = ({ children }) => (
   <div style={{
@@ -202,7 +203,7 @@ const LearnerReviews = () => {
                 <div className="d-flex justify-content-between align-items-start mb-2">
                   <div>
                     <h5 className="fw-bold mb-1">{review.session}</h5>
-                    <small className="text-muted">{review.mentor}</small>
+                    <small className="text-muted"><UserLink userId={review.mentorId || booking?.mentorId?._id} name={review.mentor} /></small>
                   </div>
                   <span className="text-warning">{Array(review.rating).fill("★").join("")}{Array(5 - review.rating).fill("☆").join("")}</span>
                 </div>
@@ -263,7 +264,7 @@ const LearnerReviews = () => {
                   <option value="">Select a session...</option>
                   {availableBookings.map((b) => (
                     <option key={b._id} value={b.sessionId?._id || b.sessionId}>
-                      {(b.sessionId?.title || "Untitled Session").substring(0, 40)}{(b.sessionId?.title || "").length > 40 ? "…" : ""} — {b.mentorId?.name || "Mentor"}
+                      {(b.sessionId?.title || "Untitled Session").substring(0, 40)}{(b.sessionId?.title || "").length > 40 ? "…" : ""} — <UserLink user={b.mentorId} name={b.mentorId?.name || "Mentor"} />
                     </option>
                   ))}
                 </select>

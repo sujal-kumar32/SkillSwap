@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
 import { deleteConfirmAlert } from "../../../utils/alertUtils";
 import Apiservices from "../../../../Apiservices";
@@ -116,7 +117,7 @@ const MyBookings = () => {
                               <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }}>Upcoming</span>
                             )}
                           </h6>
-                          <small className="text-muted">{booking.sessionId?.mentorId?.name}</small>
+                          <small className="text-muted"><UserLink user={booking.sessionId?.mentorId} name={booking.sessionId?.mentorId?.name} /></small>
                         </div>
                       </div>
                     </td>

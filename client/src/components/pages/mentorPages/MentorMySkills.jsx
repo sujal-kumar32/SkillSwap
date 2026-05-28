@@ -5,6 +5,7 @@ import { deleteConfirmAlert } from "../../../../src/utils/alertUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
+import UserLink from "../../../components/shared/UserLink";
 import { useAuth } from "../../../App";
 
 const MentorMySkills = () => {
@@ -79,7 +80,7 @@ const MentorMySkills = () => {
         </div>
         <p className="text-muted small mb-2">
           {skill.categoryId?.name} &middot; {skill.level || "all"}
-          {showOwner && skill.createdBy?.name && <span> &middot; by {skill.createdBy.name}</span>}
+          {showOwner && skill.createdBy?.name && <span> &middot; by <UserLink user={skill.createdBy} /></span>}
         </p>
         {skill.tags?.length > 0 && (
           <div className="d-flex flex-wrap gap-1 mb-2">

@@ -10,11 +10,13 @@ const {
   updateProfile,
   getProfileStats,
   getXpHistory,
+  getPublicProfile,
 } = require("../apis/Profile/profileController");
 
 router.get("/", protect, getProfile);
 router.put("/", protect, upload.single("profileImage"), validate(profile.update), updateProfile);
 router.get("/stats", protect, getProfileStats);
 router.get("/xp-history", protect, getXpHistory);
+router.get("/public/:userId", getPublicProfile);
 
 module.exports = router;

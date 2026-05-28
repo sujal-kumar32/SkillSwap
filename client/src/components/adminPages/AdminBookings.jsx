@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 import Pagination from "../Pagination";
 
 const PAGE_SIZE = 10;
@@ -126,7 +127,7 @@ const AdminBookings = () => {
                       <div className="flex-grow-1" style={{ minWidth: 0 }}>
                         <h6 className="fw-bold mb-1" style={{ fontSize: "0.9rem" }}>{r.sessionId?.title || "Session"}</h6>
                         <small className="text-muted d-block">
-                          {r.userId?.name || r.learnerId?.name} → {r.sessionId?.mentorId?.name || "Mentor"}
+                          <UserLink userId={r.userId?._id || r.learnerId?._id} name={r.userId?.name || r.learnerId?.name} /> → <UserLink user={r.sessionId?.mentorId} name={r.sessionId?.mentorId?.name || "Mentor"} />
                         </small>
                         <small className="text-muted">{r.timeSlot || r.sessionId?.time || ""}</small>
                       </div>

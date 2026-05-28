@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
@@ -171,7 +172,7 @@ const BookSession = () => {
             <h5 className="fw-bold">Booking Summary</h5>
             <img src={session.thumbnail} alt={session.title} className="w-100 rounded-4 my-3" style={{ height: 190, objectFit: "cover" }} />
             <h6 className="fw-bold">{session.title}</h6>
-            <p className="text-muted small">{session.mentorId?.name || "SkillSwap Mentor"}</p>
+            <p className="text-muted small">                      <UserLink user={session.mentorId} name={session.mentorId?.name || "SkillSwap Mentor"} /></p>
             <div className="list-group list-group-flush">
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Date</span><strong>{formatDate(session.date)}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Time</span><strong>{session.time || "Flexible"}</strong></div>

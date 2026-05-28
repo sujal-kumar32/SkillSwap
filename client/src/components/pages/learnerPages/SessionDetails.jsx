@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, SessionCard, StatusBadge } from "../../learner/LearnerUI";
@@ -146,7 +147,7 @@ const SessionDetails = () => {
                 <div className="border-top py-3" key={review._id}>
                   <div className="text-warning mb-1">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
                   <p className="mb-1">{review.comment}</p>
-                  <small className="text-muted">{review.learner || review.learnerId?.name || "Anonymous"}</small>
+                  <small className="text-muted"><UserLink user={review.learnerId} name={review.learner || review.learnerId?.name || "Anonymous"} /></small>
                 </div>
               )) : (
                 <p className="text-muted mb-0">No reviews for this session yet.</p>
@@ -161,7 +162,7 @@ const SessionDetails = () => {
             <div className="d-flex align-items-center my-3" style={{ gap: "10px" }}>
               <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" className="rounded-circle" width="56" height="56" style={{ objectFit: "cover" }} />
               <div>
-                <h6 className="fw-bold mb-0">{session.mentorId?.name || "SkillSwap Mentor"}</h6>
+                <h6 className="fw-bold mb-0"><UserLink user={session.mentorId} name={session.mentorId?.name || "SkillSwap Mentor"} /></h6>
                 <small className="text-muted">{session.mentorId?.email || "mentor@skillswap.com"}</small>
               </div>
             </div>

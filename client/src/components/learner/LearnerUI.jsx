@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import UserLink from "../shared/UserLink";
 
 export const PageHeader = ({ title, subtitle, action }) => (
   <div className="learner-page-header d-flex flex-column flex-lg-row justify-content-between mb-4" style={{ gap: 10 }}>
@@ -124,7 +125,7 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
         </div>
         <p className="text-muted small mb-3 d-flex align-items-center" style={{ gap: 6 }}>
           <i className="fa fa-user-tie text-primary" />
-          {mentor}
+          <UserLink user={session.mentorId} name={mentor} />
         </p>
         <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: 8 }}>
           {session.rating ? <span className="d-flex align-items-center" style={{ gap: 5 }}>

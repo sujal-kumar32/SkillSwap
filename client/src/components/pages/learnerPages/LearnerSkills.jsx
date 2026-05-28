@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
 import { showToast } from "../../../utils/toastUtils";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
+import UserLink from "../../../components/shared/UserLink";
 
 const LearnerSkills = () => {
   const navigate = useNavigate();
@@ -129,7 +130,7 @@ const LearnerSkills = () => {
                   <i className="fa fa-folder text-primary" style={{ marginRight: 6 }} />
                   {skill.categoryId?.name || "Uncategorized"}
                   {skill.createdBy?.name && (
-                    <span> &middot; <i className="fa fa-user text-secondary" style={{ marginRight: 6 }} />{skill.createdBy.name}</span>
+                    <span> &middot; <i className="fa fa-user text-secondary" style={{ marginRight: 6 }} /><UserLink user={skill.createdBy} /></span>
                   )}
                 </p>
 

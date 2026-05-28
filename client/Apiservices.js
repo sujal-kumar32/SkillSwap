@@ -406,6 +406,31 @@ class Apiservices {
   withdrawEarnings(amount) {
     return axios.post(baseUrl + "earnings/withdraw", { amount });
   }
+
+  // Follow System
+  toggleFollow(userId) {
+    return axios.post(baseUrl + "follow/toggle", { userId });
+  }
+
+  getFollowers(userId, params = {}) {
+    return axios.get(baseUrl + `follow/followers/${userId}`, { params });
+  }
+
+  getFollowing(userId, params = {}) {
+    return axios.get(baseUrl + `follow/following/${userId}`, { params });
+  }
+
+  getFollowCount(userId) {
+    return axios.get(baseUrl + `follow/count/${userId}`);
+  }
+
+  getFollowStatus(userId) {
+    return axios.get(baseUrl + `follow/status/${userId}`);
+  }
+
+  getPublicProfile(userId) {
+    return axios.get(baseUrl + `profile/public/${userId}`);
+  }
 }
 
 export default new Apiservices();

@@ -169,3 +169,6 @@ Thumbs.db
 # Logs (additional)
 *.log
 logs/
+
+# Project roadmap (tracking doc, delete when all phases done)
+ROADMAP.md

@@ -4,6 +4,7 @@ import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
+import UserLink from "../shared/UserLink";
 
 const PAGE_SIZE = 10;
 
@@ -171,7 +172,7 @@ const ManageUsers = () => {
                             <img src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0d6efd&color=fff`}
                               alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
                             <div>
-                              <div className="fw-semibold" style={{ color: "#1e293b" }}>{user.name}</div>
+                              <div className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={user} /></div>
                               <small style={{ color: "#64748b" }}>{user.email}</small>
                             </div>
                           </div>

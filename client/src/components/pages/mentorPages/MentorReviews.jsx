@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
+import UserLink from "../../../components/shared/UserLink";
 
 const MentorReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -57,7 +58,7 @@ const MentorReviews = () => {
                         alt="" className="rounded-circle" width="32" height="32" style={{ objectFit: "cover" }}
                       />
                       <div>
-                        <h6 className="fw-bold mb-0">{review.learner || review.learnerId?.name || "Anonymous"}</h6>
+                        <h6 className="fw-bold mb-0"><UserLink user={review.learnerId} name={review.learner || review.learnerId?.name || "Anonymous"} /></h6>
                         <small className="text-muted">{review.session}</small>
                       </div>
                     </div>
