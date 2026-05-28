@@ -133,6 +133,13 @@ async function checkAndAwardBadges(userId) {
   }
 
   if (newlyEarned.length) await user.save();
+  for (const badge of newlyEarned) {
+    createFeedEvent(userId, "badge_earned", badge._id, "Badge", {
+      badgeName: badge.name,
+      badgeIcon: badge.icon,
+      badgeColor: badge.color,
+    });
+  }
   return newlyEarned;
 }
 
@@ -148,6 +155,13 @@ async function awardXP(userId, amount, reason, referenceId = null, referenceMode
 
   await XpTransaction.create({ userId, amount, reason, referenceId, referenceModel });
 
+  if (leveledUp) {
+    createFeedEvent(userId, "level_up", null, null, {
+      level: newLevel,
+      xp: user.xp,
+    });
+  }
+
   const newBadges = await checkAndAwardBadges(userId);
 
   const badgeDetails = newBadges.map((b) => ({
@@ -157,5 +171,7 @@ async function awardXP(userId, amount, reason, referenceId = null, referenceMode
 
   return { xp: user.xp, level: user.level, leveledUp, xpGained: amount, reason, newBadges: badgeDetails };
 }
+
+const { createFeedEvent } = require("./feedService");
 
 module.exports = { awardXP, checkAndAwardBadges, calculateLevel, xpForNextLevel, getUserStats };

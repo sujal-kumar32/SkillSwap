@@ -1,6 +1,7 @@
 const Follow = require("./followModel");
 const User = require("../Users/userModel");
 const asyncHandler = require("../../utilities/asyncHandler");
+const { createFeedEvent } = require("../../services/feedService");
 
 exports.toggleFollow = asyncHandler(async (req, res) => {
   const { userId } = req.body;
@@ -27,6 +28,9 @@ exports.toggleFollow = asyncHandler(async (req, res) => {
   await Follow.create({ follower: currentUserId, following: userId });
   await User.findByIdAndUpdate(currentUserId, { $inc: { followingCount: 1 } });
   await User.findByIdAndUpdate(userId, { $inc: { followerCount: 1 } });
+  createFeedEvent(currentUserId, "started_following", userId, "User", {
+    targetName: target.name,
+  });
   res.json({ success: true, following: true, message: "Followed" });
 });
 

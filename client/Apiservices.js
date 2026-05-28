@@ -431,6 +431,10 @@ class Apiservices {
   getPublicProfile(userId) {
     return axios.get(baseUrl + `profile/public/${userId}`);
   }
+
+  getFeed(params = {}) {
+    return axios.get(baseUrl + "feed", { params });
+  }
 }
 
 export default new Apiservices();

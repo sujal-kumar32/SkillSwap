@@ -60,6 +60,7 @@ import ResetPassword from "./components/pages/ResetPassword";
 import Settings from "./components/pages/Settings";
 import VerifyEmail from "./components/pages/VerifyEmail";
 import PublicProfile from "./components/pages/PublicProfile";
+import Feed from "./components/pages/Feed";
 import Apiservices from "../Apiservices";
 
 const AuthContext = createContext(null);
@@ -175,6 +176,15 @@ function App() {
           </Route>
 
           <Route path="/profile/:userId" element={<PublicProfile />} />
+
+          <Route
+            path="/feed"
+            element={
+              <RequireUser>
+                <Feed />
+              </RequireUser>
+            }
+          />
 
           <Route
             path="/workspace"

@@ -33,6 +33,7 @@ const badgeRoutes = require("./routes/badgeRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const followRoutes = require("./routes/followRoutes");
+const feedRoutes = require("./routes/feedRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -98,6 +99,7 @@ app.use("/api/badges", badgeRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/follow", followRoutes);
+app.use("/api/feed", feedRoutes);
 app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {

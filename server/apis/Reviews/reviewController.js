@@ -1,7 +1,7 @@
 ﻿const Review = require("./reviewModel");
-const Request = require("../Request/requestModel");
 const User = require("../Users/userModel");
 const asyncHandler = require("../../utilities/asyncHandler");
+const { createFeedEvent } = require("../../services/feedService");
 const getPagination = require("../../utilities/paginate");
 const { awardXP } = require("../../services/xpService");
 
@@ -141,6 +141,11 @@ exports.createReview = asyncHandler(async (req, res) => {
     } catch (xpErr) {
       console.error("XP award failed:", xpErr.message);
     }
+
+    createFeedEvent(req.user.id, "review_written", review._id, "Review", {
+      sessionTitle: sessionName,
+      rating,
+    });
 
     res.status(201).json({
       success: true,

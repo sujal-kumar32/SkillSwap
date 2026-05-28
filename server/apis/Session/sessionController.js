@@ -10,6 +10,7 @@ const Wishlist = require("../Wishlist/wishlistModel");
 const Wallet = require("../Wallet/walletModel");
 const Transaction = require("../Wallet/transactionModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
+const { createFeedEvent } = require("../../services/feedService");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -83,6 +84,11 @@ exports.createSession = asyncHandler(async (req, res) => {
       session.meetLink = `https://meet.jit.si/skillswap-${session._id}-${suffix}`;
       await session.save();
     }
+
+    createFeedEvent(req.user.id, "session_created", session._id, "Session", {
+      title: session.title,
+      skillName: skill.name,
+    });
 
     res.status(201).json({
       success: true,
