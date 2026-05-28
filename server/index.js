@@ -1,11 +1,13 @@
 require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const app = express();
+const server = http.createServer(app);
 
 const db = require("./config/db");
 
@@ -34,6 +36,7 @@ const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const followRoutes = require("./routes/followRoutes");
 const feedRoutes = require("./routes/feedRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
@@ -100,6 +103,7 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/follow", followRoutes);
 app.use("/api/feed", feedRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {
@@ -119,7 +123,13 @@ process.on("uncaughtException", (err) => {
   console.error("FATAL:", err.message);
 });
 
-app.listen(PORT, (err) => {
+const { initSocket } = require("./socket");
+const { setSocketIO } = require("./services/notificationService");
+
+const io = initSocket(server);
+setSocketIO(io);
+
+server.listen(PORT, (err) => {
   if (err) {
     console.log("Server Error", err);
   } else {

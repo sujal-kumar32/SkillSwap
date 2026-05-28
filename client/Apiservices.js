@@ -435,6 +435,26 @@ class Apiservices {
   getFeed(params = {}) {
     return axios.get(baseUrl + "feed", { params });
   }
+
+  getNotifications(params = {}) {
+    return axios.get(baseUrl + "notifications", { params });
+  }
+
+  getUnreadCount() {
+    return axios.get(baseUrl + "notifications/unread-count");
+  }
+
+  markNotificationRead(id) {
+    return axios.patch(baseUrl + `notifications/${id}/read`);
+  }
+
+  markAllNotificationsRead() {
+    return axios.patch(baseUrl + "notifications/read-all");
+  }
+
+  getFollowSuggestions(params = {}) {
+    return axios.get(baseUrl + "follow/suggestions", { params });
+  }
 }
 
 export default new Apiservices();

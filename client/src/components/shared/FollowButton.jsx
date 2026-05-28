@@ -4,11 +4,12 @@ import { useAuth } from "../../App";
 import { useNavigate } from "react-router-dom";
 import { showToast } from "../../utils/toastUtils";
 
-const FollowButton = ({ userId, onToggle }) => {
+const FollowButton = ({ userId, onToggle, size }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [following, setFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hovering, setHovering] = useState(false);
 
   useEffect(() => {
     if (!user || userId === user._id) return;
@@ -42,11 +43,15 @@ const FollowButton = ({ userId, onToggle }) => {
     <button
       onClick={handleClick}
       disabled={loading}
-      className={`btn rounded-pill px-4 fw-semibold ${following ? "btn-outline-secondary" : "btn-primary"}`}
-      style={{ minWidth: 120 }}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      className={`btn rounded-pill fw-semibold ${following ? "btn-outline-danger" : "btn-primary"} ${size === "sm" ? "btn-sm px-3" : "px-4"}`}
+      style={size === "sm" ? { minWidth: 90, fontSize: "0.75rem" } : { minWidth: 120 }}
     >
       {loading ? (
         <span className="spinner-border spinner-border-sm" role="status" />
+      ) : following && hovering ? (
+        <><i className="fa fa-times me-2" />Unfollow</>
       ) : following ? (
         <><i className="fa fa-check me-2" />Following</>
       ) : (

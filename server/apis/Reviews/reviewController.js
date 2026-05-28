@@ -2,6 +2,7 @@
 const User = require("../Users/userModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const { createFeedEvent } = require("../../services/feedService");
+const { sendNotification } = require("../../services/notificationService");
 const getPagination = require("../../utilities/paginate");
 const { awardXP } = require("../../services/xpService");
 
@@ -146,6 +147,10 @@ exports.createReview = asyncHandler(async (req, res) => {
       sessionTitle: sessionName,
       rating,
     });
+
+    if (mentorId) {
+      sendNotification(mentorId, req.user.id, "new_review", `${user?.name || "Someone"} reviewed "${sessionName}"`, `/learner/sessions/${sessionId}`);
+    }
 
     res.status(201).json({
       success: true,

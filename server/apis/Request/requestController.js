@@ -11,6 +11,7 @@ const CalendarToken = require("../Calendar/calendarTokenModel");
 const { createCalendarEvent, deleteCalendarEvent, refreshAccessToken } = require("../../utilities/calendarService");
 const { ensureMeetLink } = require("../../utilities/meetLinkHelper");
 const { awardXP } = require("../../services/xpService");
+const { sendNotification } = require("../../services/notificationService");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -78,13 +79,17 @@ exports.createRequest = asyncHandler(async (req, res) => {
       paymentStatus: session.price ? "pending" : "paid",
     });
 
+    User.findById(req.user.id).select("name").lean().then((learner) => {
+      sendNotification(session.mentorId, req.user.id, "booking_request", `${learner?.name || "A learner"} booked "${session.title}"`, `/mentor/bookings`);
+    });
+
     res.status(201).json({
       success: true,
       message: "Session booked successfully",
       data: request,
     });
 
-    // Notify mentor
+    // Notify mentor by email
     Promise.all([
       User.findById(req.user.id).select("name"),
       User.findById(session.mentorId).select("name email"),
@@ -496,13 +501,20 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       Promise.all([
         Session.findById(request.sessionId).select("title"),
         User.findById(request.learnerId).select("name email"),
-      ]).then(([session, learner]) => {
-        if (!learner?.email) return;
-        sendEmail({
-          to: learner.email,
-          subject: status === "accepted" ? "Booking Confirmed!" : `Booking ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-          html: bookingStatusUpdateLearner(learner.name, session?.title || "Session", status),
-        });
+      ]).then(([s, learner]) => {
+        if (learner?.email) {
+          sendEmail({
+            to: learner.email,
+            subject: status === "accepted" ? "Booking Confirmed!" : `Booking ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+            html: bookingStatusUpdateLearner(learner.name, s?.title || "Session", status),
+          });
+        }
+        const title = s?.title || "Session";
+        if (status === "accepted") {
+          sendNotification(request.learnerId, request.mentorId, "booking_accepted", `Your booking for "${title}" was accepted`, `/learner/bookings`);
+        } else if (status === "completed") {
+          sendNotification(request.learnerId, request.mentorId, "booking_completed", `Your session "${title}" is completed`, `/learner/bookings`);
+        }
       }).catch((err) => console.error("Status notification failed:", err.message));
     }
 

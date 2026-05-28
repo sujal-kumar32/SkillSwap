@@ -173,19 +173,16 @@ const Profile = () => {
                   </span>}
                 </div>
                 <p className="text-muted mb-1">{profile.email}</p>
-                  <div className="d-flex align-items-center" style={{ gap: "16px", marginTop: "6px" }}>
-                    <div className="d-flex align-items-center" style={{ gap: "8px" }}>
+                  <div className="d-flex align-items-center flex-wrap" style={{ gap: "12px", marginTop: "6px" }}>
+                    <div className="d-flex align-items-center" style={{ gap: "6px" }}>
                       <div style={{
-                        width: 32, height: 32, borderRadius: 8,
+                        width: 28, height: 28, borderRadius: 6,
                         background: "linear-gradient(135deg, #0d6efd20, #6610f220)",
-                        display: "grid", placeItems: "center", color: "#0d6efd", fontSize: "0.85rem",
+                        display: "grid", placeItems: "center", color: "#0d6efd", fontSize: "0.75rem",
                       }}>
                         <i className="fa fa-bolt" />
                       </div>
-                      <div>
-                        <div className="fw-bold" style={{ fontSize: "0.9rem" }}>Lv.{user?.level || 1}</div>
-                        <small className="text-muted" style={{ fontSize: "0.65rem" }}>{(user?.xp || 0).toLocaleString()} XP</small>
-                      </div>
+                      <span className="fw-bold" style={{ fontSize: "0.9rem" }}>Lv.{user?.level || 1}</span>
                     </div>
                     <button className="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.8rem" }}
                       onClick={() => { setShowFollowers(true); Apiservices.getFollowers(user?._id, { limit: 50 }).then(r => setFollowers(r.data.data || [])).catch(() => {}); }}>
@@ -195,7 +192,8 @@ const Profile = () => {
                       onClick={() => { setShowFollowing(true); Apiservices.getFollowing(user?._id, { limit: 50 }).then(r => setFollowing(r.data.data || [])).catch(() => {}); }}>
                       <strong>{profile.followingCount}</strong> Following
                     </button>
-                  <div style={{ flex: 1, maxWidth: 200 }}>
+                  </div>
+                  <div style={{ maxWidth: 300, marginTop: 8 }}>
                     <div style={{ height: 4, background: "#eef2f7", borderRadius: 999, overflow: "hidden" }}>
                       <div style={{
                         height: "100%", borderRadius: 999,
@@ -208,7 +206,6 @@ const Profile = () => {
                       {(user?.xp || 0) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)} / {50 * (user?.level || 1) * ((user?.level || 1) + 1) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)} XP
                     </small>
                   </div>
-                </div>
                 {profile.bio && <p className="mb-0 small" style={{ marginTop: "6px" }}>{profile.bio}</p>}
               </div>
             </div>

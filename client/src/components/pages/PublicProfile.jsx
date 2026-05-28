@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import TopBar from "../layout/user/TopBar";
 import Apiservices from "../../../Apiservices";
 import { LoadingState } from "../learner/LearnerUI";
@@ -9,6 +9,12 @@ import { useAuth } from "../../App";
 const PublicProfile = () => {
   const { userId } = useParams();
   const { user: me } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (me && userId === me._id) navigate("/profile", { replace: true });
+  }, [me, userId, navigate]);
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,6 +23,7 @@ const PublicProfile = () => {
   const [following, setFollowing] = useState([]);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [similarUsers, setSimilarUsers] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -33,6 +40,12 @@ const PublicProfile = () => {
     };
     load();
     return () => { cancelled = true; };
+  }, [userId]);
+
+  useEffect(() => {
+    Apiservices.getFollowSuggestions({ limit: 4 }).then((res) => {
+      setSimilarUsers((res.data.data || []).filter((u) => u._id !== userId));
+    }).catch(() => {});
   }, [userId]);
 
   const loadFollowers = async () => {
@@ -238,6 +251,30 @@ const PublicProfile = () => {
               ) : (
                 <p className="text-muted fst-italic mb-0">No interests listed.</p>
               )}
+            </div>
+          )}
+
+          {!isOwn && similarUsers.length > 0 && (
+            <div className="learner-card p-4 mb-4">
+              <h5 className="fw-bold mb-3"><i className="fa fa-users text-primary me-2" />Similar People</h5>
+              <div className="d-flex flex-column" style={{ gap: 10 }}>
+                {similarUsers.map((u) => (
+                  <div key={u._id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <Link to={`/profile/${u._id}`} style={{ flexShrink: 0 }}>
+                      <img
+                        src={u.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=0d6efd&color=fff&size=36`}
+                        alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />
+                    </Link>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <Link to={`/profile/${u._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                        <div className="fw-semibold" style={{ fontSize: "0.85rem" }}>{u.name}</div>
+                      </Link>
+                      <small className="text-muted" style={{ fontSize: "0.65rem" }}>{u.followerCount || 0} followers</small>
+                    </div>
+                    <FollowButton userId={u._id} size="sm" />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

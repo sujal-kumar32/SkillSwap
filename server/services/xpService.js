@@ -124,6 +124,9 @@ async function checkAndAwardBadges(userId) {
       case "min_rating":
         met = stats.avgRating >= (badge.requirement.count / 10) && stats.ratingCount >= 10;
         break;
+      case "followers_count":
+        met = (user.followerCount || 0) >= badge.requirement.count;
+        break;
     }
 
     if (met) {
@@ -139,6 +142,7 @@ async function checkAndAwardBadges(userId) {
       badgeIcon: badge.icon,
       badgeColor: badge.color,
     });
+    sendNotification(userId, null, "badge_earned", `You earned the "${badge.name}" badge!`, `/profile`);
   }
   return newlyEarned;
 }
@@ -173,5 +177,6 @@ async function awardXP(userId, amount, reason, referenceId = null, referenceMode
 }
 
 const { createFeedEvent } = require("./feedService");
+const { sendNotification } = require("./notificationService");
 
 module.exports = { awardXP, checkAndAwardBadges, calculateLevel, xpForNextLevel, getUserStats };

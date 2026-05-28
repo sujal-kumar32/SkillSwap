@@ -7,5 +7,6 @@ router.get("/followers/:userId", ctrl.getFollowers);
 router.get("/following/:userId", ctrl.getFollowing);
 router.get("/count/:userId", ctrl.getFollowCount);
 router.get("/status/:userId", protect, ctrl.getFollowStatus);
+router.get("/suggestions", protect, ctrl.getSuggestions);
 
 module.exports = router;

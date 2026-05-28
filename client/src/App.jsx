@@ -61,6 +61,8 @@ import Settings from "./components/pages/Settings";
 import VerifyEmail from "./components/pages/VerifyEmail";
 import PublicProfile from "./components/pages/PublicProfile";
 import Feed from "./components/pages/Feed";
+import NotificationPage from "./components/pages/NotificationPage";
+import { SocketProvider } from "./context/SocketContext";
 import Apiservices from "../Apiservices";
 
 const AuthContext = createContext(null);
@@ -158,6 +160,7 @@ function RequireLearner({ children }) {
 function App() {
   return (
     <AuthProvider>
+      <SocketProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
@@ -176,6 +179,15 @@ function App() {
           </Route>
 
           <Route path="/profile/:userId" element={<PublicProfile />} />
+
+          <Route
+            path="/notifications"
+            element={
+              <RequireUser>
+                <NotificationPage />
+              </RequireUser>
+            }
+          />
 
           <Route
             path="/feed"
@@ -298,6 +310,7 @@ function App() {
 
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover draggable theme="light" />
       </BrowserRouter>
+      </SocketProvider>
     </AuthProvider>
   );
 }

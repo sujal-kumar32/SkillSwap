@@ -1,9 +1,25 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import { useAuth } from "../../../App";
+import { useSocket } from "../../../context/SocketContext";
+import NotificationDropdown from "../../shared/NotificationDropdown";
+import Apiservices from "../../../../Apiservices";
 
 const TopBar = () => {
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifRef = useRef(null);
+  const { unreadCount, setUnreadCount } = useSocket();
+  const location = useLocation();
+  const isNotifsPage = location.pathname === "/notifications";
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotifs(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const userName = user?.name || "User";
@@ -66,16 +82,28 @@ const TopBar = () => {
           <i className="fa fa-th-large" /> Workspace
         </Link>
 
-        <button style={btnStyle}
-          onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
-          onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-bell" /> Notifications
-          <span style={{
-            background: "#ef4444", color: "white", fontSize: "0.65rem",
-            fontWeight: 700, padding: "2px 7px", borderRadius: 999,
-            marginLeft: 2, lineHeight: 1,
-          }}>3</span>
-        </button>
+          <div ref={notifRef} style={{ position: "relative" }}>
+            <button style={btnStyle}
+              onClick={() => {
+                if (isNotifsPage) return;
+                setShowNotifs(!showNotifs);
+                if (!showNotifs && unreadCount > 0) {
+                  Apiservices.markAllNotificationsRead().then(() => setUnreadCount(0)).catch(() => {});
+                }
+              }}
+            onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
+            onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
+            <i className="fa fa-bell" /> Notifications
+            {unreadCount > 0 && (
+              <span style={{
+                background: "#ef4444", color: "white", fontSize: "0.65rem",
+                fontWeight: 700, padding: "2px 7px", borderRadius: 999,
+                marginLeft: 2, lineHeight: 1,
+              }}>{unreadCount > 99 ? "99+" : unreadCount}</span>
+            )}
+          </button>
+          {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} />}
+        </div>
 
         <Link to="/feed" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
