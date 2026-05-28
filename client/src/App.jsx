@@ -52,6 +52,7 @@ import BookingHistory from "./components/pages/learnerPages/BookingHistory";
 import AIRecommendations from "./components/pages/learnerPages/AIRecommendations";
 import LearnerWallet from "./components/pages/learnerPages/LearnerWallet";
 import MentorEarnings from "./components/pages/mentorPages/MentorEarnings";
+import MentorAnalytics from "./components/pages/mentorPages/MentorAnalytics";
 import Wishlist from "./components/pages/learnerPages/Wishlist";
 import LearningRoadmap from "./components/pages/learnerPages/LearningRoadmap";
 import LearnerSkills from "./components/pages/learnerPages/LearnerSkills";
@@ -291,6 +292,7 @@ function App() {
             <Route path="/mentor/leaderboard" element={<LearnerLeaderboard />} />
             <Route path="/mentor/sessions/:id" element={<SessionManage />} />
             <Route path="/mentor/earnings" element={<MentorEarnings />} />
+            <Route path="/mentor/analytics" element={<MentorAnalytics />} />
           </Route>
 
           <Route

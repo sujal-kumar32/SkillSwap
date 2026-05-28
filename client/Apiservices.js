@@ -519,6 +519,10 @@ class Apiservices {
   getBlockedUsers() {
     return axios.get(baseUrl + "users/blocked");
   }
+
+  getMentorAnalytics() {
+    return axios.get(baseUrl + "analytics/mentor");
+  }
 }
 
 export default new Apiservices();
