@@ -9,6 +9,7 @@ const getPagination = require("../../utilities/paginate");
 const Wishlist = require("../Wishlist/wishlistModel");
 const Wallet = require("../Wallet/walletModel");
 const Transaction = require("../Wallet/transactionModel");
+const SessionMaterial = require("../SessionMaterial/sessionMaterialModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 const { createFeedEvent } = require("../../services/feedService");
 
@@ -102,13 +103,20 @@ exports.createSession = asyncHandler(async (req, res) => {
 // GET CURRENT MENTOR SESSIONS
 exports.getMySessions = asyncHandler(async (req, res) => {
 
-    const sessions = await Session.find({ mentorId: req.user.id })
-      .populate({
-        path: "skillId",
-        populate: { path: "categoryId", select: "name" },
-      })
-      .populate("mentorId", "name email profileImage")
-      .lean();
+    const { page, limit, skip } = getPagination(req.query);
+
+    const [sessions, total] = await Promise.all([
+      Session.find({ mentorId: req.user.id })
+        .skip(skip)
+        .limit(limit)
+        .populate({
+          path: "skillId",
+          populate: { path: "categoryId", select: "name" },
+        })
+        .populate("mentorId", "name email profileImage")
+        .lean(),
+      Session.countDocuments({ mentorId: req.user.id }),
+    ]);
 
     const sessionIds = sessions.map((session) => session._id);
     const [bookingCounts, ratings, acceptedCounts] = await Promise.all([
@@ -141,7 +149,9 @@ exports.getMySessions = asyncHandler(async (req, res) => {
 
     res.json({
       success: true,
-      total: sessions.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: sessions.map((session) => ({
         ...session,
         bookings: countMap[session._id.toString()] || 0,
@@ -170,14 +180,17 @@ exports.getSessions = asyncHandler(async (req, res) => {
     else if (price === "paid") filter.price = { $gt: 0 };
 
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
+      filter.$text = { $search: search };
     }
 
     let sortObj = {};
     if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
+    else if (sort === "oldest") sortObj = { createdAt: 1 };
+    else if (sort === "price") sortObj = { price: 1 };
+    else if (sort === "price-desc") sortObj = { price: -1 };
+    else if (sort === "name") sortObj = { title: 1 };
+    else if (search) sortObj = { score: { $meta: "textScore" } };
+    else sortObj = { createdAt: -1 };
     else if (sort === "oldest") sortObj = { createdAt: 1 };
     else if (sort === "price") sortObj = { price: 1 };
     else if (sort === "price-desc") sortObj = { price: -1 };
@@ -510,6 +523,12 @@ exports.deleteSession = asyncHandler(async (req, res) => {
         await wallet.save();
       }
     }
+
+    await Promise.all([
+      SessionMaterial.deleteMany({ sessionId: session._id }),
+      Request.deleteMany({ sessionId: session._id }),
+      Wishlist.deleteMany({ sessionId: session._id }),
+    ]);
 
     await session.deleteOne();
 

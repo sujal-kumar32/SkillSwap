@@ -53,4 +53,4 @@ async function seedBadges() {
   }
 }
 
-module.exports = { seedBadges, badgeDefinitions };
+module.exports = { seedBadges };

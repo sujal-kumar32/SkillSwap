@@ -7,6 +7,7 @@ function Detail() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     Apiservices.getCategories().then(res => setCategories(res.data.data || [])).catch(() => {});
@@ -93,23 +94,24 @@ function Detail() {
                   <button
                     className="btn btn-outline-light bg-white text-body px-4 dropdown-toggle"
                     type="button"
-                    data-toggle="dropdown"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
                     aria-haspopup="true"
-                    aria-expanded="false"
+                    aria-expanded={dropdownOpen}
                   >
-                    Courses
+                    Categories
                   </button>
-                  <div className="dropdown-menu">
-                    <a className="dropdown-item" href="#">
-                      Courses 1
-                    </a>
-                    <a className="dropdown-item" href="#">
-                      Courses 2
-                    </a>
-                    <a className="dropdown-item" href="#">
-                      Courses 3
-                    </a>
-                  </div>
+                  {dropdownOpen && (
+                    <div className="dropdown-menu show" style={{ position: "absolute", top: "100%", left: 0, zIndex: 1000, minWidth: 160 }}>
+                      <button className="dropdown-item" type="button" onClick={() => { setDropdownOpen(false); setCatSearch(""); }}>
+                        All Categories
+                      </button>
+                      {categories.filter((c) => c.status !== "inactive").map((c) => (
+                        <button key={c._id} className="dropdown-item" type="button" onClick={() => { setDropdownOpen(false); setCatSearch(c._id); }}>
+                          {c.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <input id="dt-search" type="text" className="form-control border-light"
                   style={{ padding: "30px 25px" }} placeholder="Search skills, mentors, sessions..."

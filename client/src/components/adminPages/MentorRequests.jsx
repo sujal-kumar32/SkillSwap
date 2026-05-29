@@ -128,10 +128,10 @@ const MentorRequests = () => {
                 {mentors.map((mentor) => (
                   <tr key={mentor._id} style={{ cursor: "pointer" }} onClick={() => viewDetails(mentor)}>
                     <td>
-                      <div className="d-flex align-items-center gap-3">
+                      <div className="d-flex align-items-center" style={{ gap: 18 }}>
                         <img
                           src={mentor.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(mentor.name)}&background=0d6efd&color=fff&size=64`}
-                          alt="" className="rounded-circle" width="40" height="40" style={{ objectFit: "cover" }}
+                          alt="" className="rounded-circle" style={{ width: 40, height: 40, objectFit: "cover", flexShrink: 0 }}
                         />
                         <div>
                           <h6 className="fw-bold mb-0"><UserLink user={mentor} /></h6>
@@ -184,7 +184,7 @@ const MentorRequests = () => {
                   <div className="d-flex align-items-center" style={{ gap: "10px" }}>
                     <img
                       src={selectedMentor.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedMentor.name)}&background=fff&color=0d6efd&size=64`}
-                      alt="" className="rounded-circle" width="44" height="44" style={{ objectFit: "cover", border: "2px solid rgba(255,255,255,0.4)" }}
+                      alt="" className="rounded-circle" style={{ width: 44, height: 44, objectFit: "cover", flexShrink: 0, border: "2px solid rgba(255,255,255,0.4)" }}
                     />
                     <div>
                       <h5 className="fw-bold mb-0" style={{ color: "#fff" }}>{selectedMentor.name}</h5>

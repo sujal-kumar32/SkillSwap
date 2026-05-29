@@ -158,6 +158,9 @@ const LearnerWallet = () => {
             >
               <i className="fa fa-credit-card" /> {depositing ? "Processing..." : "Deposit"}
             </LoadingButton>
+            <p className="text-muted small mt-3 mb-0 text-center" style={{ fontSize: "0.75rem" }}>
+              <i className="fa fa-info-circle me-1" /> Deposits are non-refundable and can only be used for bookings.
+            </p>
           </div>
         </div>
 

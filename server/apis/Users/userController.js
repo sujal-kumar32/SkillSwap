@@ -57,7 +57,7 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
     const { userId } = req.params;
     const { status } = req.body;
 
-    if (!["active", "blocked"].includes(status)) {
+    if (!["active", "blocked", "deleted"].includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Invalid status",
@@ -81,6 +81,7 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
     }
 
     user.status = status;
+    if (status === "deleted") user.deletedBy = "admin";
     await user.save();
 
     res.json({

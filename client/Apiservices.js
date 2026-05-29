@@ -22,8 +22,8 @@ class Apiservices {
     return axios.get(baseUrl + `auth/verify/${token}`);
   }
 
-  resendVerification() {
-    return axios.post(baseUrl + "auth/resend-verification");
+  resendVerification(data = {}) {
+    return axios.post(baseUrl + "auth/resend-verification", data);
   }
 
   deleteAccount(data) {
@@ -46,10 +46,6 @@ class Apiservices {
     const config = { params: { ...extraParams } };
     if (includeDeleted) config.params.includeDeleted = true;
     return axios.get(baseUrl + "skills", config);
-  }
-
-  getSessions() {
-    return axios.get(baseUrl + "sessions");
   }
 
   fetchSessions(params = {}) {
@@ -115,10 +111,6 @@ class Apiservices {
     return axios.get(baseUrl + "users", config);
   }
 
-  applyForMentor() {
-    return axios.post(baseUrl + "users/apply-mentor");
-  }
-
   updateUserStatus(userId, status) {
     return axios.put(
       baseUrl + `users/${userId}/status`,
@@ -132,10 +124,6 @@ class Apiservices {
 
   adminUnblockUser(userId) {
     return axios.put(baseUrl + `users/${userId}/unblock`);
-  }
-
-  approveUser(userId) {
-    return axios.put(baseUrl + `users/${userId}/approve`);
   }
 
   getRequests() {
@@ -255,18 +243,6 @@ class Apiservices {
     return axios.put(baseUrl + `sessions/${sessionId}/start`);
   }
 
-  createOrder(data) {
-    return axios.post(baseUrl + "payments/create-order", data);
-  }
-
-  verifyPayment(data) {
-    return axios.post(baseUrl + "payments/verify-payment", data);
-  }
-
-  processRefund(data) {
-    return axios.post(baseUrl + "payments/refund", data);
-  }
-
   getSettings() {
     return axios.get(baseUrl + "settings");
   }
@@ -285,26 +261,6 @@ class Apiservices {
 
   getAllMentorApplications(params = {}) {
     return axios.get(baseUrl + "mentor-applications/all", { params });
-  }
-
-  approveMentorApplication(id, data = {}) {
-    return axios.put(baseUrl + `mentor-applications/${id}/approve`, data);
-  }
-
-  rejectMentorApplication(id, data = {}) {
-    return axios.put(baseUrl + `mentor-applications/${id}/reject`, data);
-  }
-
-  removeMentor(id) {
-    return axios.put(baseUrl + `mentor-applications/${id}/remove-mentor`);
-  }
-
-  unblockMentor(id) {
-    return axios.put(baseUrl + `mentor-applications/${id}/unblock`);
-  }
-
-  deleteMentorApplication(id) {
-    return axios.delete(baseUrl + `mentor-applications/${id}`);
   }
 
   calendarConnect() {
@@ -420,16 +376,21 @@ class Apiservices {
     return axios.get(baseUrl + `follow/following/${userId}`, { params });
   }
 
-  getFollowCount(userId) {
-    return axios.get(baseUrl + `follow/count/${userId}`);
-  }
-
   getFollowStatus(userId) {
     return axios.get(baseUrl + `follow/status/${userId}`);
   }
 
   getPublicProfile(userId) {
     return axios.get(baseUrl + `profile/public/${userId}`);
+  }
+
+  getOnboarding(role) {
+    const params = role ? { role } : {};
+    return axios.get(baseUrl + "profile/onboarding", { params });
+  }
+
+  dismissOnboarding() {
+    return axios.put(baseUrl + "profile/onboarding/dismiss");
   }
 
   getFeed(params = {}) {
@@ -496,10 +457,6 @@ class Apiservices {
     return axios.post(baseUrl + `chat/${chatId}/messages/${messageId}/reaction`, { emoji });
   }
 
-  getUserPresence(userId) {
-    return axios.get(baseUrl + `users/${userId}/presence`);
-  }
-
   searchUsers(q) {
     return axios.get(baseUrl + "users/search", { params: { q } });
   }
@@ -523,6 +480,79 @@ class Apiservices {
   getMentorAnalytics() {
     return axios.get(baseUrl + "analytics/mentor");
   }
+
+  broadcastNotification(data) {
+    return axios.post(baseUrl + "admin/broadcast", data);
+  }
+
+  getAdminPayments(params = {}) {
+    return axios.get(baseUrl + "admin/payments", { params });
+  }
+
+  createDispute(data) {
+    return axios.post(baseUrl + "disputes", data);
+  }
+
+  getMyDisputes() {
+    return axios.get(baseUrl + "disputes");
+  }
+
+  getDispute(id) {
+    return axios.get(baseUrl + `disputes/${id}`);
+  }
+
+  getAllDisputes(params = {}) {
+    return axios.get(baseUrl + "disputes/all", { params });
+  }
+
+  resolveDispute(id, data) {
+    return axios.put(baseUrl + `disputes/${id}/resolve`, data);
+  }
+
 }
+
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) reject(error);
+    else resolve();
+  });
+  failedQueue = [];
+};
+
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
+    }
+    if (originalRequest.url?.includes("auth/refresh")) {
+      return Promise.reject(error);
+    }
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject });
+      }).then(() => axios(originalRequest));
+    }
+    originalRequest._retry = true;
+    isRefreshing = true;
+    try {
+      await axios.post("/api/auth/refresh");
+      processQueue(null);
+      return axios(originalRequest);
+    } catch {
+      processQueue(error);
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+      return Promise.reject(error);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
 
 export default new Apiservices();

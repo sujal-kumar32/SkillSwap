@@ -68,7 +68,7 @@ const Feed = () => {
                 </div>
               </div>
 
-              <div className="d-flex gap-2 mb-4" style={{ borderBottom: "1px solid #eef2f7" }}>
+              <div className="d-flex mb-4" style={{ gap: "14px", borderBottom: "1px solid #eef2f7" }}>
                 {tabs.map((t) => (
                   <button key={t.id} onClick={() => setTab(t.id)}
                     className={`btn btn-sm rounded-top-3 fw-semibold px-4 py-2 ${tab === t.id ? "btn-primary" : "btn-outline-secondary border-0"}`}
@@ -111,7 +111,7 @@ const Feed = () => {
 
             <div className="col-lg-4">
               <div className="learner-card p-3" style={{ position: "sticky", top: 80 }}>
-                <h6 className="fw-bold mb-3"><i className="fa fa-user-plus text-primary me-2" />Suggested for you</h6>
+                <h6 className="fw-bold mb-3"><i className="fa fa-user-plus text-primary" style={{ marginRight: 12 }} />Suggested for you</h6>
                 {suggestionsLoading ? (
                   <div className="text-center py-3">
                     <div className="spinner-border spinner-border-sm text-primary" role="status" />

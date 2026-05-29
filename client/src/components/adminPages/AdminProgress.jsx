@@ -84,9 +84,9 @@ const AdminProgress = () => {
                     learners.map((l) => (
                       <tr key={l._id}>
                         <td>
-                          <div className="d-flex align-items-center gap-2">
+                          <div className="d-flex align-items-center" style={{ gap: 14 }}>
                             <img src={l.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(l.name)}&background=0d6efd&color=fff`}
-                              alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
+                              alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
                             <span className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={l} /></span>
                           </div>
                         </td>

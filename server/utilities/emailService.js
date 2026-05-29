@@ -10,6 +10,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+transporter.verify()
+  .then(() => console.log("SMTP connected"))
+  .catch((err) => console.error("SMTP connection failed:", err.message));
+
 async function sendEmail({ to, subject, html, attachments }) {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
     console.warn("SMTP not configured — skipping email to", to);
@@ -27,7 +31,14 @@ async function sendEmail({ to, subject, html, attachments }) {
     mailOptions.attachments = attachments;
   }
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${subject}`);
+  } catch (err) {
+    console.error(`Failed to send email to ${to}:`, err.message);
+    if (err.response) console.error("SMTP response:", err.response);
+    throw err;
+  }
 }
 
 module.exports = { sendEmail };

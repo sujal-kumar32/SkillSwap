@@ -26,6 +26,9 @@ import AdminBookings from "./components/adminPages/AdminBookings";
 import AdminSettings from "./components/adminPages/AdminSettings";
 import AdminCategories from "./components/adminPages/AdminCategories";
 import MentorRequests from "./components/adminPages/MentorRequests";
+import AdminBroadcast from "./components/adminPages/AdminBroadcast";
+import AdminPayments from "./components/adminPages/AdminPayments";
+import AdminDisputes from "./components/adminPages/AdminDisputes";
 import MentorMaster from "./components/layout/user/mentor/MentorMaster";
 import MentorDashboard from "./components/pages/mentorPages/MentorDashboard";
 import CreateSession from "./components/pages/mentorPages/CreateSession";
@@ -65,6 +68,9 @@ import Feed from "./components/pages/Feed";
 import NotificationPage from "./components/pages/NotificationPage";
 import MessagesPage from "./components/pages/MessagesPage";
 import { SocketProvider } from "./context/SocketContext";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
+import { SkeletonInjector } from "./components/ui/Skeleton";
+import "./responsive.css";
 import Apiservices from "../Apiservices";
 
 const AuthContext = createContext(null);
@@ -152,11 +158,8 @@ function RequireLearner({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  return user.roles?.includes("admin") ? (
-    <Navigate to="/admin" replace />
-  ) : (
-    children
-  );
+  if (!user.roles?.includes("learner")) return <Navigate to="/" replace />;
+  return children;
 }
 
 function App() {
@@ -164,8 +167,9 @@ function App() {
     <AuthProvider>
       <SocketProvider>
       <BrowserRouter>
+        <SkeletonInjector />
         <Routes>
-          <Route path="/" element={<Layout />}>
+          <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
             <Route index element={<HomeRoute />} />
             <Route path="/about" element={<About />} />
             <Route path="/courses" element={<Course />} />
@@ -180,13 +184,15 @@ function App() {
             <Route path="/verify-email/:token" element={<VerifyEmail />} />
           </Route>
 
-          <Route path="/profile/:userId" element={<PublicProfile />} />
+          <Route path="/profile/:userId" element={<ErrorBoundary><PublicProfile /></ErrorBoundary>} />
 
           <Route
             path="/notifications"
             element={
               <RequireUser>
-                <NotificationPage />
+                <ErrorBoundary fallbackMessage="Failed to load notifications.">
+                  <NotificationPage />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -195,7 +201,9 @@ function App() {
             path="/feed"
             element={
               <RequireUser>
-                <Feed />
+                <ErrorBoundary fallbackMessage="Failed to load feed.">
+                  <Feed />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -204,7 +212,9 @@ function App() {
             path="/messages/:chatId?"
             element={
               <RequireUser>
-                <MessagesPage />
+                <ErrorBoundary fallbackMessage="Failed to load messages.">
+                  <MessagesPage />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -213,7 +223,9 @@ function App() {
             path="/workspace"
             element={
               <RequireUser>
-                <WorkspaceHub />
+                <ErrorBoundary fallbackMessage="Failed to load workspace.">
+                  <WorkspaceHub />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -222,7 +234,9 @@ function App() {
             path="/profile"
             element={
               <RequireUser>
-                <Profile />
+                <ErrorBoundary fallbackMessage="Failed to load profile.">
+                  <Profile />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -231,7 +245,9 @@ function App() {
             path="/settings"
             element={
               <RequireUser>
-                <Settings />
+                <ErrorBoundary fallbackMessage="Failed to load settings.">
+                  <Settings />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -240,7 +256,9 @@ function App() {
             path="/leaderboard"
             element={
               <RequireUser>
-                <LeaderboardPage />
+                <ErrorBoundary fallbackMessage="Failed to load leaderboard.">
+                  <LeaderboardPage />
+                </ErrorBoundary>
               </RequireUser>
             }
           />
@@ -249,7 +267,9 @@ function App() {
             path="/admin"
             element={
               <RequireAdmin>
-                <AdminMaster />
+                <ErrorBoundary fallbackMessage="Admin panel encountered an error.">
+                  <AdminMaster />
+                </ErrorBoundary>
               </RequireAdmin>
             }
           >
@@ -269,6 +289,9 @@ function App() {
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/progress" element={<AdminProgress />} />
             <Route path="/admin/mentor-requests" element={<MentorRequests />} />
+            <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/disputes" element={<AdminDisputes />} />
+            <Route path="/admin/broadcast" element={<AdminBroadcast />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
           </Route>
 
@@ -276,7 +299,9 @@ function App() {
             path="/mentor"
             element={
               <RequireMentor>
-                <MentorMaster />
+                <ErrorBoundary fallbackMessage="Mentor panel encountered an error.">
+                  <MentorMaster />
+                </ErrorBoundary>
               </RequireMentor>
             }
           >
@@ -299,7 +324,9 @@ function App() {
             path="/learner"
             element={
               <RequireLearner>
-                <LearnerMaster />
+                <ErrorBoundary fallbackMessage="Learner panel encountered an error.">
+                  <LearnerMaster />
+                </ErrorBoundary>
               </RequireLearner>
             }
           >

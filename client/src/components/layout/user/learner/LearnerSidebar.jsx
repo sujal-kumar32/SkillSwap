@@ -2,16 +2,17 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../../utils/toastUtils";
 import { useAuth } from "../../../../App";
+import { useSocket } from "../../../../context/SocketContext";
 
 const links = [
   { to: "/learner", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
   { to: "/learner/skills", label: "Browse Skills", icon: "fa-layer-group" },
   { to: "/learner/explore", label: "Explore Sessions", icon: "fa-compass" },
+  { to: "/learner/wishlist", label: "Wishlist", icon: "fa-heart" },
   { to: "/learner/bookings", label: "My Bookings", icon: "fa-calendar-check" },
+  { to: "/learner/history", label: "Booking History", icon: "fa-history" },
   { to: "/learner/progress", label: "Learning Progress", icon: "fa-chart-line" },
   { to: "/learner/reviews", label: "Reviews", icon: "fa-star" },
-  { to: "/learner/wishlist", label: "Wishlist", icon: "fa-heart" },
-  { to: "/learner/history", label: "Booking History", icon: "fa-history" },
   { to: "/learner/ai", label: "AI Recommendations", icon: "fa-magic" },
   { to: "/learner/ai-roadmap", label: "Learning Roadmap", icon: "fa-road" },
   { to: "/learner/wallet", label: "SkillWallet", icon: "fa-wallet" },
@@ -46,9 +47,10 @@ const XpWidget = ({ user }) => {
   );
 };
 
-const LearnerSidebar = () => {
+const LearnerSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { unreadChatCount, unreadCount } = useSocket();
 
   const handleLogout = async () => {
     await logout();
@@ -56,8 +58,10 @@ const LearnerSidebar = () => {
     navigate("/", { replace: true });
   };
 
+  const handleNav = () => { if (onClose) onClose(); };
+
   return (
-    <aside className="learner-sidebar">
+    <aside className={`learner-sidebar${sidebarOpen ? " open" : ""}`}>
       <div className="p-4 border-bottom" style={{ borderColor: "rgba(0,0,0,0.04)" }}>
         <Link to="/workspace" className="text-decoration-none">
           <div className="d-flex align-items-center gap-2">
@@ -72,7 +76,7 @@ const LearnerSidebar = () => {
         </Link>
       </div>
 
-      <nav className="p-3 flex-grow-1">
+      <nav className="p-3 flex-grow-1" onClick={handleNav}>
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -86,6 +90,31 @@ const LearnerSidebar = () => {
             <span>{link.label}</span>
           </NavLink>
         ))}
+        <div style={{ height: 1, background: "#eef2f7", margin: "8px 12px" }} />
+        <NavLink to="/messages" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-comment" />
+          <span>Messages</span>
+          {unreadChatCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadChatCount > 99 ? "99+" : unreadChatCount}
+            </span>
+          )}
+        </NavLink>
+        <NavLink to="/notifications" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-bell" />
+          <span>Notifications</span>
+          {unreadCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </NavLink>
       </nav>
 
       <XpWidget user={user} />

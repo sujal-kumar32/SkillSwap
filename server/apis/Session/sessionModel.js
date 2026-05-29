@@ -67,4 +67,6 @@ const sessionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+sessionSchema.index({ title: "text", description: "text" });
+
 module.exports = mongoose.model("Session", sessionSchema);

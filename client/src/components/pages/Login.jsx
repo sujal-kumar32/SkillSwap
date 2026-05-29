@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../../utils/toastUtils";
 import illustration from "../../assets/images/image.png";
@@ -17,6 +17,26 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef(null);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      cooldownRef.current = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    }
+    return () => { if (cooldownRef.current) clearTimeout(cooldownRef.current); };
+  }, [resendCooldown]);
+
+  const handleResendVerification = async () => {
+    if (resendCooldown > 0 || !email) return;
+    try {
+      const res = await Apiservices.resendVerification({ email });
+      showToast.success(res.data?.message || "Verification email resent!");
+      setResendCooldown(60);
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to resend verification");
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -272,10 +292,10 @@ padding: 0;
         <nav className="navbar navbar-expand-lg pt-4 px-4">
           <div className="container-fluid"></div>
         </nav>
-        <div className="container-fluid bg-image h-100 px-4 py-5">
+        <div className="container-fluid bg-image h-100 px-4 py-5 login-container">
           <div className="row align-items-center min-vh-75">
             {/* LEFT */}
-            <div className="col-lg-7">
+            <div className="col-lg-7 login-features">
               <h1 className="headline">
                 Exchange Skills.
                 <br />
@@ -306,7 +326,7 @@ padding: 0;
             <div className="col-lg-5 px-lg-4">
               <div className="glass-card">
                 <div className="text-center mb-4">
-                  <h3 className="fw-bold mb-1" style={{ color: "#333", fontSize: "1.8rem" }}>
+                  <h3 className="fw-bold mb-1" style={{ color: "#333", fontSize: "clamp(1.3rem, 4vw, 1.8rem)" }}>
                     {isSignup ? "Create Account" : "Welcome back"}
                   </h3>
                   <p className="text-muted small" style={{ fontSize: "1rem" }}>
@@ -317,6 +337,12 @@ padding: 0;
                 {verificationSent && (
                   <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 14, color: "#856404" }}>
                     <strong>Verify your email!</strong> We sent a verification link to your email. Please check your inbox and click the link to activate your account.
+                    <div className="mt-2">
+                      <button type="button" onClick={handleResendVerification} disabled={resendCooldown > 0}
+                        style={{ background: "none", border: "none", color: "#856404", fontWeight: 600, textDecoration: "underline", cursor: resendCooldown > 0 ? "not-allowed" : "pointer", opacity: resendCooldown > 0 ? 0.6 : 1, padding: 0, fontSize: 13 }}>
+                        {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+                      </button>
+                    </div>
                   </div>
                 )}
 

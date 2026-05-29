@@ -148,19 +148,28 @@ exports.getRequests = asyncHandler(async (req, res) => {
 exports.getMyBookings = asyncHandler(async (req, res) => {
     const { page, limit, skip } = getPagination(req.query);
     const filter = { learnerId: req.user.id };
+
+    if (req.query.status) {
+      const statuses = req.query.status.split(",").map((s) => s.trim()).filter(Boolean);
+      if (statuses.length === 1) filter.requestStatus = statuses[0];
+      else if (statuses.length > 1) filter.requestStatus = { $in: statuses };
+    }
+
+    const queryBuilder = Request.find(filter).skip(skip).limit(limit)
+      .populate({
+        path: "sessionId",
+        populate: [
+          { path: "skillId", populate: { path: "categoryId", select: "name" } },
+          { path: "mentorId", select: "name email profileImage" },
+        ],
+      })
+      .populate("learnerId", "name email profileImage")
+      .populate("mentorId", "name email profileImage")
+      .sort({ createdAt: -1 })
+      .lean();
+
     const [requests, total] = await Promise.all([
-      Request.find(filter).skip(skip).limit(limit)
-        .populate({
-          path: "sessionId",
-          populate: [
-            { path: "skillId", populate: { path: "categoryId", select: "name" } },
-            { path: "mentorId", select: "name email profileImage" },
-          ],
-        })
-        .populate("learnerId", "name email profileImage")
-        .populate("mentorId", "name email profileImage")
-        .sort({ createdAt: -1 })
-        .lean(),
+      queryBuilder,
       Request.countDocuments(filter),
     ]);
 

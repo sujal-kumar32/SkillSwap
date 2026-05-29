@@ -31,18 +31,13 @@ async function getUserStats(userId) {
   const avgRating = ratingResult[0]?.avg || 0;
   const ratingCount = ratingResult[0]?.count || 0;
 
-  const completedRequestIds = await Request.find({
-    learnerId: oid, requestStatus: "completed",
+  const allRequestSessionIds = await Request.find({
+    learnerId: oid,
   }).distinct("sessionId");
   const sessionSkillIds = await Session.distinct("skillId", {
-    _id: { $in: completedRequestIds },
+    _id: { $in: allRequestSessionIds },
   });
   const skillsCount = sessionSkillIds.length;
-
-  const allSessionsBySkill = await Session.aggregate([
-    { $match: { _id: { $in: completedRequestIds } } },
-    { $group: { _id: "$skillId", count: { $sum: 1 } } },
-  ]);
 
   const completedRequestsForSkill = await Request.aggregate([
     { $match: { learnerId: oid, requestStatus: "completed" } },
@@ -56,7 +51,7 @@ async function getUserStats(userId) {
   }
 
   const totalSessionsBySkill = await Session.aggregate([
-    { $match: { _id: { $in: completedRequestIds } } },
+    { $match: { _id: { $in: allRequestSessionIds } } },
     { $group: { _id: "$skillId", count: { $sum: 1 } } },
   ]);
   const totalMap = {};
@@ -179,4 +174,4 @@ async function awardXP(userId, amount, reason, referenceId = null, referenceMode
 const { createFeedEvent } = require("./feedService");
 const { sendNotification } = require("./notificationService");
 
-module.exports = { awardXP, checkAndAwardBadges, calculateLevel, xpForNextLevel, getUserStats };
+module.exports = { awardXP, checkAndAwardBadges };

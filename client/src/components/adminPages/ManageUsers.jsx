@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { confirmAlert } from "../../utils/alertUtils";
+import React, { useState, useEffect, useRef } from "react";
+import { confirmAlert, deleteConfirmAlert } from "../../utils/alertUtils";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
-import { LoadingState } from "../learner/LearnerUI";
+import { TableSkeleton } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 import UserLink from "../shared/UserLink";
 
 const PAGE_SIZE = 10;
@@ -12,15 +13,24 @@ const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const debounceRef = useRef(null);
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setActiveSearch(search), 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [search]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, filter]);
+  }, [page, filter, activeSearch]);
 
   const fetchUsers = async () => {
     try {
@@ -28,11 +38,12 @@ const ManageUsers = () => {
       setError(null);
       const params = { page, limit: PAGE_SIZE };
       if (filter !== "All") params.status = filter.toLowerCase();
-      if (search.trim()) params.search = search.trim();
+      if (activeSearch.trim()) params.search = activeSearch.trim();
       const response = await Apiservices.getUsers({ params });
       if (response.data.success) {
         setUsers(response.data.data);
         setTotalPages(response.data.pages || 1);
+        setTotal(response.data.total || 0);
       } else {
         setError("Failed to load users");
         showToast.error("Failed to load users");
@@ -80,6 +91,8 @@ const ManageUsers = () => {
   const handleSearch = (val) => {
     setSearch(val);
     setPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setActiveSearch(val), 400);
   };
 
   const StatCard = ({ label, value, icon, color }) => (
@@ -97,18 +110,6 @@ const ManageUsers = () => {
       </div>
     </div>
   );
-
-  const Pagination = () => totalPages > 1 ? (
-    <div className="d-flex justify-content-center mt-5">
-      <div className="d-flex align-items-center" style={{ gap: 8 }}>
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left" /> Prev</button>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button key={i + 1} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${page === i + 1 ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
-        ))}
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next <i className="fa fa-chevron-right" /></button>
-      </div>
-    </div>
-  ) : null;
 
   return (
     <div>
@@ -151,7 +152,7 @@ const ManageUsers = () => {
           </div>
 
           {loading ? (
-            <LoadingState />
+            <TableSkeleton rows={5} cols={4} />
           ) : users.length ? (
             <>
               <div className="table-responsive">
@@ -166,14 +167,14 @@ const ManageUsers = () => {
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr key={user._id}>
+                      <tr key={user._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
                         <td>
-                          <div className="d-flex align-items-center gap-2">
+                          <div className="d-flex align-items-center" style={{ gap: 14 }}>
                             <img src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0d6efd&color=fff`}
-                              alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
-                            <div>
-                              <div className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={user} /></div>
-                              <small style={{ color: "#64748b" }}>{user.email}</small>
+                              alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                            <div className="min-w-0">
+                              <div className="fw-semibold text-truncate" style={{ color: "#1e293b" }}><UserLink user={user} /></div>
+                              <small style={{ color: "#64748b" }} className="text-truncate d-block">{user.email}</small>
                             </div>
                           </div>
                         </td>
@@ -181,19 +182,45 @@ const ManageUsers = () => {
                         <td>
                           <span style={{ background: user.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : user.status === "deleted" ? "linear-gradient(135deg, #374151, #1f2937)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{user.status}</span>
                         </td>
-                        <td className="text-end">
-                          {user.status === "active" ? (
-                            <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
-                              style={{ fontSize: "0.8rem" }} onClick={() => handleBlock(user._id)}>
-                              <i className="fa fa-ban me-1" /> Block
-                            </LoadingButton>
-                          ) : user.status === "deleted" ? (
-                            <span className="text-muted small fw-semibold">User deleted their account</span>
+                        <td className="text-end" style={{ whiteSpace: "nowrap" }}>
+                          {user.status === "deleted" ? (
+                            <span className="text-muted small fw-semibold">{user.deletedBy === "self" ? "Deleted by user" : user.deletedBy === "admin" ? "Deleted by admin" : "Account deleted"}</span>
                           ) : (
-                            <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-success rounded-pill fw-semibold"
-                              style={{ fontSize: "0.8rem" }} onClick={() => handleUnblock(user._id)}>
-                              <i className="fa fa-check me-1" /> Unblock
-                            </LoadingButton>
+                            <>
+                              {user.status === "active" ? (
+                                <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
+                                  style={{ fontSize: "0.8rem" }} onClick={() => handleBlock(user._id)}>
+                                  <i className="fa fa-ban me-1" /> Block
+                                </LoadingButton>
+                              ) : (
+                                <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-success rounded-pill fw-semibold"
+                                  style={{ fontSize: "0.8rem" }} onClick={() => handleUnblock(user._id)}>
+                                  <i className="fa fa-check me-1" /> Unblock
+                                </LoadingButton>
+                              )}
+                              <button className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
+                                style={{ fontSize: "0.8rem", marginLeft: 6 }}
+                                onClick={async () => {
+                                  const ok = await deleteConfirmAlert(`user "${user.name}"`);
+                                  if (!ok) return;
+                                  try {
+                                    setActionLoading(user._id);
+                                    const res = await Apiservices.updateUserStatus(user._id, "deleted");
+                                    setUsers((prev) =>
+                                      prev.map((u) =>
+                                        u._id === user._id ? { ...u, ...res.data.data } : u,
+                                      ),
+                                    );
+                                    showToast.success("User deleted");
+                                  } catch (err) {
+                                    showToast.error(err.response?.data?.message || "Failed to delete user");
+                                  } finally {
+                                    setActionLoading(null);
+                                  }
+                                }}>
+                                <i className="fa fa-trash me-1" /> Delete
+                              </button>
+                            </>
                           )}
                         </td>
                       </tr>
@@ -201,7 +228,10 @@ const ManageUsers = () => {
                   </tbody>
                 </table>
               </div>
-              <Pagination />
+              <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
+                <small className="text-muted">Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, total)} of {total}</small>
+                <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
             </>
           ) : (
             <div className="text-center py-4 text-muted">No users found</div>

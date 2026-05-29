@@ -1,13 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import { confirmAlert } from "../../../utils/alertUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader, LoadingState } from "../../learner/LearnerUI";
+import { PageHeader, CardSkeleton } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
 import UserLink from "../../../components/shared/UserLink";
+import DisputeModal from "../../../components/shared/DisputeModal";
 
 
 const avatarFor = (name = "Learner", image) =>
@@ -31,8 +32,9 @@ const Bookings = () => {
   const [totalPages, setTotalPages] = useState(1);
   const { badgeData, setBadgeData, handleXpResponse } = useXpCelebration();
   const navigate = useNavigate();
+  const [disputeBooking, setDisputeBooking] = useState(null);
 
-  const fetchBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       setLoading(true);
       const response = await Apiservices.getMentorBookings({ page, limit: 12 });
@@ -44,11 +46,11 @@ const Bookings = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
-    fetchBookings();
-  }, [page]);
+    loadBookings();
+  }, [loadBookings]);
 
   const stats = useMemo(
     () => ({
@@ -199,7 +201,9 @@ const Bookings = () => {
           {/* REQUEST CARDS */}
           <div className="row g-4">
             {loading ? (
-              <div className="col-12"><LoadingState /></div>
+              Array.from({ length: 6 }).map((_, i) => (
+                <div className="col-lg-4 col-md-6" key={i}><CardSkeleton lines={4} /></div>
+              ))
             ) : bookings.length ? (
               bookings.map((booking) => {
                     const learnerName = booking.learnerId?.name || "Learner";
@@ -320,6 +324,19 @@ const learnerId = booking.learnerId?._id;
                         </LoadingButton>
                       </div>
                     )}
+                    {status !== "pending" && (
+                      <div className="mt-3">
+                        <button
+                          className="btn btn-outline-warning rounded-pill w-100 py-2"
+                          style={{ fontSize: "0.8rem" }}
+                          onClick={() => setDisputeBooking(booking)}
+                        >
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <i className="fa fa-gavel" />Dispute
+                          </span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -414,6 +431,13 @@ const learnerId = booking.learnerId?._id;
         `}
       </style>
       <BadgeUnlockModal badges={badgeData} onClose={() => setBadgeData(null)} />
+      {disputeBooking && (
+        <DisputeModal
+          requestId={disputeBooking._id}
+          onClose={() => setDisputeBooking(null)}
+          onCreated={() => { setDisputeBooking(null); loadBookings(); }}
+        />
+      )}
     </>
   );
 };

@@ -5,9 +5,46 @@ const crypto = require("crypto");
 const asyncHandler = require("../../utilities/asyncHandler");
 const { sendEmail } = require("../../utilities/emailService");
 const { welcomeEmail, emailVerification, passwordResetEmail } = require("../../utilities/emailTemplates");
+const RefreshToken = require("../../models/RefreshToken");
 
 const SECRET = process.env.JWT_SECRET;
-const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const ACCESS_EXPIRES = "15m";
+const REFRESH_EXPIRES_DAYS = 7;
+
+const generateAccessToken = (payload) => {
+  return jwt.sign(payload, SECRET, { expiresIn: ACCESS_EXPIRES, algorithm: "HS256" });
+};
+
+const generateRefreshToken = async (userId) => {
+  const token = crypto.randomBytes(40).toString("hex");
+  const hash = crypto.createHash("sha256").update(token).digest("hex");
+  await RefreshToken.create({
+    userId,
+    token: hash,
+    expiresAt: new Date(Date.now() + REFRESH_EXPIRES_DAYS * 24 * 60 * 60 * 1000),
+  });
+  return token;
+};
+
+const setTokenCookies = (res, accessToken, refreshToken) => {
+  res.cookie("token", accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 15 * 60 * 1000,
+  });
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: REFRESH_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
+  });
+};
+
+const clearTokenCookies = (res) => {
+  res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
+  res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
+};
 
 if (!SECRET) {
   throw new Error("JWT_SECRET is not configured");
@@ -54,11 +91,16 @@ exports.register = asyncHandler(async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
-    await sendEmail({
-      to: user.email,
-      subject: "Verify your email - SkillSwap",
-      html: emailVerification(user.name, verifyLink),
-    });
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email - SkillSwap",
+        html: emailVerification(user.name, verifyLink),
+      });
+    } catch (err) {
+      console.error("Register: verification email failed:", err.message);
+      console.log("Verification link (fallback):", verifyLink);
+    }
 
     res.status(201).json({
       success: true,
@@ -91,11 +133,15 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
     user.verificationTokenExpires = undefined;
     await user.save();
 
-    sendEmail({
-      to: user.email,
-      subject: "Welcome to SkillSwap!",
-      html: welcomeEmail(user.name),
-    }).catch((err) => console.error("Welcome email failed:", err.message));
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Welcome to SkillSwap!",
+        html: welcomeEmail(user.name),
+      });
+    } catch (err) {
+      console.error("Welcome email failed:", err.message);
+    }
 
     res.json({
       success: true,
@@ -104,15 +150,28 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
 
 });
 
+const resendCooldowns = new Map();
+
 // RESEND VERIFICATION
 exports.resendVerification = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    const email = req.body?.email?.toLowerCase().trim() || req.user?.email;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
-    if (user.isVerified !== false) {
+    const lastSent = resendCooldowns.get(email);
+    if (lastSent && Date.now() - lastSent < 60000) {
+      const remaining = Math.ceil((60000 - (Date.now() - lastSent)) / 1000);
+      return res.status(429).json({ success: false, message: `Please wait ${remaining}s before resending` });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No account found with this email" });
+    }
+
+    if (user.isVerified) {
       return res.json({ success: true, message: "Your email is already verified." });
     }
 
@@ -125,11 +184,17 @@ exports.resendVerification = asyncHandler(async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
-    await sendEmail({
-      to: user.email,
-      subject: "Verify your email - SkillSwap",
-      html: emailVerification(user.name, verifyLink),
-    });
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email - SkillSwap",
+        html: emailVerification(user.name, verifyLink),
+      });
+      resendCooldowns.set(email, Date.now());
+    } catch (err) {
+      console.error("Resend verification email failed:", err.message);
+      console.log("Verification link (fallback):", verifyLink);
+    }
 
     res.json({
       success: true,
@@ -215,6 +280,7 @@ exports.login = asyncHandler(async (req, res) => {
       });
     }
 
+<<<<<<< HEAD
     // PAYLOAD
     const payload = {
       id: user._id,
@@ -233,11 +299,17 @@ exports.login = asyncHandler(async (req, res) => {
     };
 
     res.cookie("token", token, cookieOptions);
+=======
+    const payload = { id: user._id, roles: user.roles };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = await generateRefreshToken(user._id);
+    setTokenCookies(res, accessToken, refreshToken);
+>>>>>>> main
 
     res.send({
       success: true,
       message: "Login successful",
-      token,
+      token: accessToken,
       data: { ...payload, name: user.name },
     });
 
@@ -256,6 +328,13 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
       });
     }
 
+    if (user.resetPasswordExpires && user.resetPasswordExpires > Date.now() + 58 * 60 * 1000) {
+      return res.status(429).json({
+        success: false,
+        message: "Please wait at least 2 minutes before requesting another reset.",
+      });
+    }
+
     const token = crypto.randomBytes(32).toString("hex");
     const hash = crypto.createHash("sha256").update(token).digest("hex");
 
@@ -265,15 +344,23 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
 
     const resetLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${token}`;
 
-    sendEmail({
-      to: user.email,
-      subject: "Password Reset - SkillSwap",
-      html: passwordResetEmail(user.name, resetLink),
-    }).catch((err) => console.error("Reset email failed:", err.message));
+    let emailSent = false;
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Password Reset - SkillSwap",
+        html: passwordResetEmail(user.name, resetLink),
+      });
+      emailSent = true;
+    } catch (err) {
+      console.error("Reset email failed:", err.message);
+      console.log("Password reset link (fallback):", resetLink);
+    }
 
     res.json({
       success: true,
       message: "If that email exists, a reset link has been sent.",
+      ...(process.env.NODE_ENV !== "production" && !emailSent ? { devResetLink: resetLink } : {}),
     });
 
 });
@@ -357,6 +444,7 @@ exports.deleteAccount = asyncHandler(async (req, res) => {
     user.timezone = "UTC";
     user.socialLinks = {};
     user.status = "deleted";
+    user.deletedBy = "self";
     user.isVerified = false;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
@@ -390,14 +478,62 @@ exports.getMe = asyncHandler(async (req, res) => {
 
 });
 
+// REFRESH TOKEN
+exports.refresh = asyncHandler(async (req, res) => {
+
+    const rawToken = req.cookies?.refreshToken;
+    if (!rawToken) {
+      return res.status(401).json({ success: false, message: "No refresh token" });
+    }
+
+    const hash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    const stored = await RefreshToken.findOne({ token: hash });
+
+    if (!stored) {
+      clearTokenCookies(res);
+      return res.status(401).json({ success: false, message: "Invalid refresh token" });
+    }
+
+    const user = await User.findById(stored.userId).select("name email roles");
+    if (!user || user.status !== "active") {
+      await RefreshToken.deleteMany({ userId: stored.userId });
+      clearTokenCookies(res);
+      return res.status(401).json({ success: false, message: "Account no longer active" });
+    }
+
+    await RefreshToken.deleteOne({ _id: stored._id });
+
+    const payload = { id: user._id, roles: user.roles };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = await generateRefreshToken(user._id);
+    setTokenCookies(res, accessToken, refreshToken);
+
+    res.json({
+      success: true,
+      token: accessToken,
+      data: { ...payload, name: user.name },
+    });
+
+});
+
 // LOGOUT
 exports.logout = asyncHandler(async (req, res) => {
 
+<<<<<<< HEAD
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
     });
+=======
+    const rawToken = req.cookies?.refreshToken;
+    if (rawToken) {
+      const hash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      await RefreshToken.deleteOne({ token: hash });
+    }
+
+    clearTokenCookies(res);
+>>>>>>> main
 
     res.json({ success: true, message: "Logged out successfully" });
 

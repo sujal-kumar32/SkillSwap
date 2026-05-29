@@ -67,7 +67,7 @@ exports.downloadCertificate = asyncHandler(async (req, res) => {
           content: pdfBuffer,
         },
       ],
-    });
+    }).catch((err) => console.error("Certificate email failed:", err.message));
   });
 
   const pageWidth = doc.page.width;

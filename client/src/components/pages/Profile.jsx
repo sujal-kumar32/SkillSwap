@@ -159,9 +159,9 @@ const Profile = () => {
             }}>
               <i className="fa fa-pen" style={{ marginRight: 10 }} />Edit Profile
             </Link>
-            <div className="d-flex flex-wrap align-items-end gap-4">
+            <div className="d-flex flex-wrap align-items-end" style={{ gap: 26 }}>
               <img src={profile.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=0d6efd&color=fff&size=128`}
-                alt="" className="rounded-circle border border-4 border-white shadow-sm" style={{ width: 120, height: 120, objectFit: "cover", marginTop: -60 }} />
+                alt="" className="rounded-circle border border-4 border-white shadow-sm avatar-responsive-lg profile-avatar-neg" style={{ objectFit: "cover" }} />
               <div className="flex-grow-1">
                 <div className="d-flex flex-wrap align-items-center" style={{ gap: "10px" }}>
                   <h2 className="fw-bold mb-0">{profile.name}</h2>
@@ -172,8 +172,8 @@ const Profile = () => {
                     <i className="fa fa-chalkboard" style={{ marginRight: 5 }} />Mentor
                   </span>}
                 </div>
-                <p className="text-muted mb-1">{profile.email}</p>
-                  <div className="d-flex align-items-center flex-wrap" style={{ gap: "12px", marginTop: "6px" }}>
+                <p className="text-muted mb-1" style={{ marginTop: 4 }}>{profile.email}</p>
+                  <div className="d-flex align-items-center flex-wrap" style={{ gap: "12px", marginTop: "8px" }}>
                     <div className="d-flex align-items-center" style={{ gap: "6px" }}>
                       <div style={{
                         width: 28, height: 28, borderRadius: 6,
@@ -197,13 +197,13 @@ const Profile = () => {
                     <div style={{ height: 4, background: "#eef2f7", borderRadius: 999, overflow: "hidden" }}>
                       <div style={{
                         height: "100%", borderRadius: 999,
-                        width: `${Math.min(100, ((user?.xp || 0) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)) / (50 * (user?.level || 1) * ((user?.level || 1) + 1) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)) * 100)}%`,
+                        width: `${Math.min(100, ((user?.xp || 0) - 25 * (user?.level || 1) * ((user?.level || 1) - 1)) / (50 * (user?.level || 1)) * 100)}%`,
                         background: "linear-gradient(90deg, #0d6efd, #6610f2)",
                         transition: "width 0.5s ease",
                       }} />
                     </div>
                     <small className="text-muted" style={{ fontSize: "0.6rem" }}>
-                      {(user?.xp || 0) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)} / {50 * (user?.level || 1) * ((user?.level || 1) + 1) - 50 * (user?.level || 1) * ((user?.level || 1) - 1)} XP
+                      {(user?.xp || 0) - 25 * (user?.level || 1) * ((user?.level || 1) - 1)} / {50 * (user?.level || 1)} XP
                     </small>
                   </div>
                 {profile.bio && <p className="mb-0 small" style={{ marginTop: "6px" }}>{profile.bio}</p>}

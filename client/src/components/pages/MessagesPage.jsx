@@ -347,9 +347,9 @@ const MessagesPage = () => {
           style={{ width: 360, minWidth: 320, borderRight: "1px solid #eef2f7", background: "#fff" }}>
           <div style={{ padding: "16px 20px", borderBottom: "1px solid #eef2f7" }}>
             <div className="d-flex justify-content-between align-items-center mb-2">
-              <h5 className="fw-bold mb-0"><i className="fa fa-comments text-primary me-2" />Messages</h5>
+              <h5 className="fw-bold mb-0"><i className="fa fa-comments text-primary" style={{ marginRight: 10 }} />Messages</h5>
               <button onClick={() => setShowCompose(true)} className="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" style={{ fontSize: "0.75rem" }}>
-                <i className="fa fa-pen me-1" />New
+                <i className="fa fa-pen" style={{ marginRight: 8 }} />New
               </button>
             </div>
             <div className="input-group input-group-sm">
@@ -539,7 +539,7 @@ const MessagesPage = () => {
           </div>
         )}
 
-        <div className={`d-flex flex-column flex-grow-1 ${showMobileList && !chatId ? "d-none d-md-flex" : "d-flex"}`}>
+        <div className={`d-flex flex-column flex-grow-1 ${showMobileList ? "d-none d-md-flex" : "d-flex"}`}>
           {!chatId ? (
             <div className="d-flex align-items-center justify-content-center flex-grow-1" style={{ background: "#fafbfc" }}>
               <div className="text-center">

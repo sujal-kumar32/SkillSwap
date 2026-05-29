@@ -3,7 +3,7 @@ import { deleteConfirmAlert } from "../../../../src/utils/alertUtils";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
-import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
+import { EmptyState, PageHeader, StatCard, CardSkeleton } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
 import UserLink from "../../../components/shared/UserLink";
@@ -195,7 +195,13 @@ const LearnerReviews = () => {
         <StatCard icon="fa-pen" label="Pending Reviews" value={pendingCount} tone="info" />
       </div>
 
-      {loading ? <LoadingState /> : reviews.length ? (
+      {loading ? (
+        <div className="row g-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div className="col-md-6" key={i}><CardSkeleton lines={2} /></div>
+          ))}
+        </div>
+      ) : reviews.length ? (
         <div className="row g-4">
           {reviews.map((review) => (
             <div className="col-md-6" key={review._id}>

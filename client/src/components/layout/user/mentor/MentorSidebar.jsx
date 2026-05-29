@@ -2,13 +2,14 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../../utils/toastUtils";
 import { useAuth } from "../../../../App";
+import { useSocket } from "../../../../context/SocketContext";
 
 const links = [
   { to: "/mentor", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
-  { to: "/mentor/create-skill", label: "Create Skill", icon: "fa-lightbulb" },
   { to: "/mentor/my-skills", label: "My Skills", icon: "fa-code" },
-  { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
+  { to: "/mentor/create-skill", label: "Create Skill", icon: "fa-lightbulb" },
   { to: "/mentor/my-sessions", label: "My Sessions", icon: "fa-chalkboard-teacher" },
+  { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
   { to: "/mentor/availability", label: "Availability", icon: "fa-clock" },
   { to: "/mentor/bookings", label: "Bookings", icon: "fa-calendar-check" },
   { to: "/mentor/learners", label: "Learners", icon: "fa-users" },
@@ -46,9 +47,10 @@ const XpWidget = ({ user }) => {
   );
 };
 
-const MentorSidebar = () => {
+const MentorSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { unreadChatCount, unreadCount } = useSocket();
 
   const handleLogout = async () => {
     await logout();
@@ -56,8 +58,10 @@ const MentorSidebar = () => {
     navigate("/", { replace: true });
   };
 
+  const handleNav = () => { if (onClose) onClose(); };
+
   return (
-    <aside className="learner-sidebar">
+    <aside className={`learner-sidebar${sidebarOpen ? " open" : ""}`}>
       <div className="p-4 border-bottom" style={{ borderColor: "rgba(0,0,0,0.04)" }}>
         <Link to="/workspace" className="text-decoration-none">
           <div className="d-flex align-items-center gap-2">
@@ -72,7 +76,7 @@ const MentorSidebar = () => {
         </Link>
       </div>
 
-      <nav className="p-3 flex-grow-1">
+      <nav className="p-3 flex-grow-1" onClick={handleNav}>
         {links.map((link) => (
           <NavLink
             key={link.to}
@@ -86,6 +90,31 @@ const MentorSidebar = () => {
             <span>{link.label}</span>
           </NavLink>
         ))}
+        <div style={{ height: 1, background: "#eef2f7", margin: "8px 12px" }} />
+        <NavLink to="/messages" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-comment" />
+          <span>Messages</span>
+          {unreadChatCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadChatCount > 99 ? "99+" : unreadChatCount}
+            </span>
+          )}
+        </NavLink>
+        <NavLink to="/notifications" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-bell" />
+          <span>Notifications</span>
+          {unreadCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </NavLink>
       </nav>
 
       <XpWidget user={user} />

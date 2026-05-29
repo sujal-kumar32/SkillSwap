@@ -36,8 +36,8 @@ exports.toggleFollow = asyncHandler(async (req, res) => {
   });
   const follower = await User.findById(currentUserId).select("name").lean();
   sendNotification(userId, currentUserId, "follow", `${follower?.name || "Someone"} started following you`, `/profile/${currentUserId}`);
-  awardXP(userId, 5, "New follower", currentUserId, "User");
-  checkAndAwardBadges(userId);
+  await awardXP(userId, 5, "New follower", currentUserId, "User");
+  await checkAndAwardBadges(userId);
   res.json({ success: true, following: true, message: "Followed" });
 });
 
@@ -147,7 +147,7 @@ exports.getSuggestions = asyncHandler(async (req, res) => {
       },
       { $match: { overlap: { $gt: 0 } } },
       { $sort: { overlap: -1, followerCount: -1 } },
-      { $limit },
+      { $limit: limit },
       { $project: { name: 1, profileImage: 1, bio: 1, xp: 1, level: 1, followerCount: 1, interests: 1, overlap: 1 } },
     ]);
   }

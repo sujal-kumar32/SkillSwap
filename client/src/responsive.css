@@ -1,0 +1,663 @@
+/* ── Responsive Overhaul ───────────────────────────── */
+/* Breakpoints: xs <576, sm ≥576, md ≥768, lg ≥992, xl ≥1200, xxl ≥1400 */
+
+/* ── Smooth images on all screens ── */
+img { max-width: 100%; height: auto; }
+
+/* ── Sidebar: mobile collapse ── */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 9;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.sidebar-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── Navbar: "Get Started" visible on mobile ── */
+.navbar .btn-get-started-mobile {
+  display: none;
+}
+@media (max-width: 991.98px) {
+  .navbar .btn-get-started-mobile {
+    display: block;
+    margin-top: 10px;
+  }
+}
+
+/* ── TopBar: responsive ── */
+.topbar-btn { gap: 6px; }
+
+/* Notification page: gap between check icon and Mark All Read text */
+[style*="max-width: 720"] .btn-outline-primary .fa-check-double { margin-right: 10px !important; }
+
+
+@media (max-width: 1199.98px) {
+  .topbar-btn-text { display: none; }
+  .topbar-btn-icon { margin: 0; }
+}
+
+@media (max-width: 767.98px) {
+  .topbar-wrapper {
+    padding: 0 12px !important;
+    gap: 4px !important;
+  }
+  .topbar-btn {
+    padding: 8px 10px !important;
+    font-size: 0.8rem !important;
+    gap: 3px !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .topbar-wrapper {
+    flex-wrap: wrap;
+    height: auto !important;
+    padding: 8px 12px !important;
+    gap: 6px !important;
+  }
+  .topbar-left {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .topbar-right {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+  .topbar-user-name { display: none; }
+  .topbar-divider { display: none; }
+}
+
+/* ── Learner/Mentor/Admin Master shell ── */
+@media (max-width: 991.98px) {
+  .learner-shell,
+  .admin-shell {
+    position: relative;
+  }
+
+  .learner-sidebar,
+  .admin-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -100%;
+    width: 280px !important;
+    height: 100vh !important;
+    z-index: 100;
+    transition: left 0.3s ease;
+    box-shadow: 4px 0 24px rgba(15,23,42,0.15);
+  }
+  .learner-sidebar.open,
+  .admin-sidebar.open {
+    left: 0;
+  }
+
+  .learner-main,
+  .admin-main {
+    padding: 16px !important;
+  }
+
+  .sidebar-toggle-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: rgba(255,255,255,0.9);
+    border-radius: 10px;
+    color: #475569;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+}
+@media (min-width: 992px) {
+  .sidebar-toggle-btn { display: none !important; }
+}
+
+/* ── Learner/Mentor/Admin page header ── */
+@media (max-width: 576px) {
+  .learner-page-header,
+  .admin-page-header {
+    padding: 16px 18px !important;
+    border-radius: 16px !important;
+  }
+  .learner-page-header h1,
+  .admin-page-header h1 {
+    font-size: 1.2rem !important;
+  }
+}
+
+/* ── Workspace stat cards ── */
+@media (max-width: 575.98px) {
+  .stat-card .p-4 {
+    padding: 1rem !important;
+  }
+  .stat-card .stat-value {
+    font-size: 1.1rem !important;
+  }
+  .stat-card .stat-label {
+    font-size: 0.75rem !important;
+  }
+  .stat-card .stat-icon {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 0.9rem !important;
+  }
+  .workspace-card .card-body.p-5 {
+    padding: 1.5rem !important;
+  }
+}
+@media (max-width: 767.98px) {
+  .workspace-card .workspace-features li {
+    font-size: 0.85rem !important;
+  }
+}
+
+/* ── Stat cards grid ── */
+@media (max-width: 575.98px) {
+  .stat-cards-grid .col-6 {
+    padding: 0 4px;
+  }
+  .stat-cards-grid .learner-card,
+  .stat-cards-grid .admin-card {
+    padding: 16px 12px !important;
+    border-radius: 14px !important;
+  }
+  .stat-cards-grid .stat-icon {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 0.9rem !important;
+    border-radius: 10px !important;
+  }
+  .stat-cards-grid .stat-value {
+    font-size: 1.2rem !important;
+  }
+  .stat-cards-grid .stat-label {
+    font-size: 0.7rem !important;
+  }
+}
+
+/* ── Session cards grid ── */
+@media (max-width: 575.98px) {
+  .session-cards-grid .learner-session-card {
+    margin-bottom: 12px;
+  }
+  .learner-session-img {
+    height: 140px !important;
+  }
+  .learner-session-card .card-title {
+    font-size: 0.95rem !important;
+  }
+}
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .learner-session-img {
+    height: 160px !important;
+  }
+}
+
+/* ── Form inputs on mobile ── */
+@media (max-width: 575.98px) {
+  .form-control {
+    font-size: 0.875rem !important;
+  }
+  select.form-control {
+    font-size: 0.875rem !important;
+  }
+}
+
+/* ── Modals on mobile ── */
+@media (max-width: 575.98px) {
+  .modal-dialog {
+    margin: 0 !important;
+  }
+  .modal-content {
+    border-radius: 16px 16px 0 0 !important;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+  .modal-header {
+    padding: 16px 16px 12px !important;
+  }
+  .modal-body {
+    padding: 16px !important;
+  }
+  .modal-footer {
+    padding: 12px 16px !important;
+  }
+}
+
+/* ── Avatar sizes responsive ── */
+.avatar-responsive {
+  width: clamp(60px, 12vw, 100px) !important;
+  height: clamp(60px, 12vw, 100px) !important;
+}
+.avatar-responsive-sm {
+  width: clamp(32px, 6vw, 40px) !important;
+  height: clamp(32px, 6vw, 40px) !important;
+}
+.avatar-responsive-lg {
+  width: clamp(64px, 14vw, 100px) !important;
+  height: clamp(64px, 14vw, 100px) !important;
+}
+
+/* ── Workspace decorative orbs ── */
+.workspace-hub-wrapper {
+  overflow-x: hidden;
+}
+@media (max-width: 575.98px) {
+  .orb-1, .orb-2, .orb-3, .orb-4, .orb-5 {
+    display: none !important;
+  }
+}
+
+/* ── Home page fixes ── */
+@media (max-width: 991.98px) {
+  .home-hero .display-1 {
+    font-size: 2.5rem !important;
+  }
+  .home-hero h1:first-child {
+    font-size: 1.2rem !important;
+  }
+}
+@media (max-width: 575.98px) {
+  .home-hero .display-1 {
+    font-size: 1.8rem !important;
+  }
+  .home-hero .my-5 {
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .home-hero .py-5 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  .home-hero .input-group {
+    flex-wrap: wrap;
+  }
+  .home-hero .input-group select {
+    width: 100% !important;
+    border-radius: 8px !important;
+    margin-bottom: 8px;
+  }
+  .home-hero .input-group input {
+    padding: 16px 16px !important;
+    border-radius: 8px !important;
+  }
+  .home-hero .input-group-append {
+    width: 100%;
+    margin-top: 8px;
+  }
+  .home-hero .input-group-append button {
+    width: 100%;
+    border-radius: 8px !important;
+  }
+}
+
+/* ── About / image sections on home ── */
+@media (max-width: 575.98px) {
+  .home-about-img {
+    min-height: 250px !important;
+  }
+}
+
+/* ── Feature sections on home ── */
+@media (max-width: 575.98px) {
+  .home-feature-img {
+    min-height: 250px !important;
+  }
+  .home-feature-box {
+    margin-bottom: 20px;
+  }
+}
+
+/* ── Stats counter section on home ── */
+@media (max-width: 575.98px) {
+  .home-stats .col-6 {
+    margin-bottom: 16px;
+  }
+  .home-stats h1 {
+    font-size: 1.8rem !important;
+  }
+}
+
+/* ── Contact section ── */
+@media (max-width: 575.98px) {
+  .home-contact-box {
+    height: auto !important;
+    min-height: 300px;
+  }
+}
+
+/* ── Login/Signup page ── */
+@media (max-width: 575.98px) {
+  .login-container .glass-card {
+    padding: 1.5rem !important;
+    border-radius: 16px !important;
+  }
+  .login-container .row {
+    padding: 0 8px;
+  }
+  .login-features {
+    display: none;
+  }
+}
+
+/* ── Profile page ── */
+@media (max-width: 575.98px) {
+  .profile-cover {
+    height: 120px !important;
+  }
+  .profile-avatar {
+    width: 80px !important;
+    height: 80px !important;
+    margin-top: -40px !important;
+  }
+  .profile-info-col {
+    width: 2.2rem !important;
+  }
+}
+
+/* ── Footer responsive ── */
+@media (max-width: 767.98px) {
+  footer .row > div {
+    margin-bottom: 24px;
+  }
+  footer .newsletter .input-group {
+    flex-direction: column;
+  }
+  footer .newsletter .input-group input {
+    border-radius: 8px !important;
+    margin-bottom: 8px;
+    width: 100% !important;
+  }
+  footer .newsletter .input-group-append {
+    width: 100%;
+  }
+  footer .newsletter .input-group-append button {
+    width: 100%;
+    border-radius: 8px !important;
+  }
+}
+
+/* ── Scrollable sidebar nav on mobile ── */
+@media (max-width: 991.98px) {
+  .learner-sidebar nav,
+  .admin-sidebar nav {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Large screen optimizations (≥1400px) ── */
+@media (min-width: 1400px) {
+  .learner-main,
+  .admin-main {
+    padding: 40px 48px;
+  }
+  .learner-page-header,
+  .admin-page-header {
+    padding: 36px 40px;
+    border-radius: 28px;
+  }
+}
+
+/* ── Ultra-wide (≥1800px) ── */
+@media (min-width: 1800px) {
+  .learner-main,
+  .admin-main {
+    max-width: 1600px;
+  }
+}
+
+/* ── Generic: jumbotron section on information pages (About, Course, Feature, etc.) ── */
+@media (max-width: 575.98px) {
+  .jumbotron[style*="margin-bottom: 90"] {
+    margin-bottom: 30px !important;
+  }
+  .jumbotron .container.my-5 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .jumbotron select[style*="width: 140"] {
+    width: 100% !important;
+    border-radius: 8px !important;
+    margin-bottom: 6px;
+  }
+  .jumbotron input[style*="padding: 30px 25px"],
+  .jumbotron input[style*="padding"] {
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+  }
+  .jumbotron .input-group {
+    flex-wrap: wrap;
+  }
+  .jumbotron .input-group-append {
+    width: 100%;
+    margin-top: 6px;
+  }
+  .jumbotron .input-group-append button {
+    width: 100%;
+    border-radius: 8px !important;
+  }
+}
+
+/* ── Information pages: image columns with minHeight ── */
+@media (max-width: 575.98px) {
+  [style*="minHeight: 500"] {
+    min-height: 250px !important;
+  }
+}
+
+/* ── Contact page info panel ── */
+@media (max-width: 575.98px) {
+  [style*="height: 450"] {
+    height: auto !important;
+    min-height: 250px;
+    padding: 24px !important;
+  }
+}
+
+/* ── About/Course carousel padding ── */
+@media (max-width: 575.98px) {
+  [style*="padding: 0 30px"] {
+    padding: 0 12px !important;
+  }
+}
+
+/* ── Detail page dropdown toggle ── */
+@media (max-width: 575.98px) {
+  a[data-toggle="dropdown"] + .dropdown-menu {
+    position: static !important;
+    float: none;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* ── Mentor/Learner fixed icon columns ── */
+@media (max-width: 575.98px) {
+  [style*="width: 50"][style*="flexShrink"] {
+    width: 36px !important;
+  }
+}
+
+/* ── MentorAvailability fixed widths ── */
+@media (max-width: 575.98px) {
+  [style*="width: 110"] {
+    width: 100% !important;
+  }
+  [style*="minWidth: 56"] {
+    min-width: 44px !important;
+  }
+}
+
+/* ── CreateSession button excessive padding ── */
+@media (max-width: 575.98px) {
+  [style*="padding: 10px 24px"],
+  [style*="padding: 14px 24px"] {
+    padding: 10px 16px !important;
+  }
+  [style*="gap: 30"] {
+    gap: 16px !important;
+  }
+}
+
+/* ── MentorAnalytics chart heights ── */
+@media (max-width: 575.98px) {
+  [style*="height: 200"] {
+    height: 140px !important;
+  }
+  [style*="height: 220"] {
+    height: 150px !important;
+  }
+  [style*="height: 240"] {
+    height: 160px !important;
+  }
+  [style*="height: 280"] {
+    height: 180px !important;
+  }
+  [style*="height: 180"] {
+    height: 130px !important;
+  }
+}
+
+/* ── SessionManage thumbnail ── */
+@media (max-width: 575.98px) {
+  [style*="height: 160"][style*="objectFit"] {
+    height: 100px !important;
+  }
+  [style*="height: 190"][style*="objectFit"] {
+    height: 120px !important;
+  }
+  [style*="height: 330"][style*="objectFit"] {
+    height: 200px !important;
+  }
+}
+
+/* ── SessionDetails mentor avatar ── */
+@media (max-width: 575.98px) {
+  img[width="56"][height="56"] {
+    width: 40px !important;
+    height: 40px !important;
+  }
+}
+
+/* ── MessagesPage conversation sidebar ── */
+@media (max-width: 767.98px) {
+  [style*="width: 360"][style*="border-right: 1px solid"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  [style*="maxWidth: 180"][style*="white-space: nowrap"] {
+    max-width: 100px !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 991.98px) {
+  [style*="width: 360"][style*="border-right: 1px solid"] {
+    width: 260px !important;
+    min-width: 260px !important;
+  }
+}
+
+/* ── MessagesPage chat header back button ── */
+@media (max-width: 575.98px) {
+  .chat-messages-area {
+    padding: 12px !important;
+  }
+  .chat-input-area {
+    padding: 8px 12px !important;
+  }
+  .chat-input-area input {
+    font-size: 0.85rem !important;
+  }
+  .chat-date-badge {
+    font-size: 0.65rem !important;
+    padding: 2px 10px !important;
+  }
+}
+
+/* ── NotificationDropdown on mobile ── */
+@media (max-width: 575.98px) {
+  [style*="width: 380"][style*="z-index: 9999"] {
+    position: fixed !important;
+    top: 64px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-height: calc(100vh - 80px) !important;
+  }
+}
+
+/* ── WorkspaceHub avatar responsive ── */
+@media (max-width: 575.98px) {
+  .workspace-hub-wrapper img[style*="width: 100"][style*="height: 100"] {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  .workspace-hub-wrapper .greeting-text {
+    font-size: 1.2rem !important;
+  }
+  .workspace-hub-wrapper .subtitle-text {
+    font-size: 0.85rem !important;
+  }
+  .workspace-hub-wrapper [style*="padding: 5px 16px"] {
+    padding: 3px 10px !important;
+    font-size: 0.7rem !important;
+  }
+  .workspace-hub-wrapper .section-title {
+    font-size: 1rem !important;
+  }
+}
+
+/* ── Modal maxWidth on mobile ── */
+@media (max-width: 575.98px) {
+  [style*="maxWidth: 500"],
+  [style*="maxWidth: 520"] {
+    max-width: 100% !important;
+    margin: 0 8px;
+  }
+  [style*="maxWidth: 420"] {
+    max-width: 100% !important;
+  }
+}
+
+/* ── Fluid sizing with clamp() ── */
+[style*="padding: 14px 20px"][style*="border-bottom: 1px solid #f8fafc"] {
+  padding: clamp(10px, 1.5vw, 14px) clamp(12px, 2.5vw, 20px) !important;
+}
+[style*="padding: 14px 20px"] [style*="font-size: 0.85rem"] {
+  font-size: clamp(0.75rem, 0.8vw + 0.5rem, 0.85rem) !important;
+}
+[style*="max-width: 180"][style*="white-space: nowrap"] {
+  max-width: clamp(100px, 18vw, 180px) !important;
+}
+.bg-image [style*="padding: 16px 20px"][style*="background: #fafbfc"] {
+  padding: clamp(10px, 1.5vw, 16px) clamp(8px, 1.5vw, 20px) !important;
+}
+.bg-image [style*="padding: 12px 20px"][style*="border-top: 1px solid #eef2f7"] {
+  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 2vw, 20px) !important;
+}
+
+/* Profile avatar negative margin */
+.profile-avatar-neg {
+  margin-top: -60px;
+}
+@media (max-width: 575.98px) {
+  .profile-avatar-neg {
+    margin-top: -30px;
+  }
+}

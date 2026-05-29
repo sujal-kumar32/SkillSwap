@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader } from "../../learner/LearnerUI";
+import { PageHeader, CardSkeleton } from "../../learner/LearnerUI";
+import { DashboardSkeleton } from "../../ui/Skeleton";
 import UserLink from "../../../components/shared/UserLink";
 import { useAuth } from "../../../App";
+import OnboardingChecklist from "../../../components/shared/OnboardingChecklist";
 
 const MentorDashboard = () => {
   const [stats, setStats] = useState({ sessions: 0, learners: 0, reviews: 0, rating: "—" });
@@ -80,6 +82,8 @@ const MentorDashboard = () => {
         ))}
       </div>
 
+      <OnboardingChecklist role="mentor" />
+
       {error && (
         <div className="alert alert-danger d-flex align-items-center gap-3 mb-4" style={{ borderRadius: 16 }}>
           <i className="fa fa-exclamation-circle" style={{ fontSize: "1.3rem" }} />
@@ -90,6 +94,7 @@ const MentorDashboard = () => {
         </div>
       )}
 
+      {loading ? <DashboardSkeleton /> : (
       <div className="row g-4">
         <div className="col-lg-7">
           <div className="learner-card p-4 h-100">
@@ -99,9 +104,7 @@ const MentorDashboard = () => {
               </div>
               <h5 className="fw-bold mb-0">Recent Bookings</h5>
             </div>
-            {loading ? (
-              <div className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary" /></div>
-            ) : recentBookings.length > 0 ? (
+            {recentBookings.length > 0 ? (
               <div className="list-group list-group-flush">
                 {recentBookings.map((b) => (
                   <div key={b._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
@@ -130,15 +133,13 @@ const MentorDashboard = () => {
               </div>
               <h5 className="fw-bold mb-0">Your Sessions</h5>
             </div>
-            {loading ? (
-              <div className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary" /></div>
-            ) : recentSessions.length > 0 ? (
+            {recentSessions.length > 0 ? (
               <div className="list-group list-group-flush">
                 {recentSessions.map((s) => (
                   <div key={s._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
                     <div>
                       <h6 className="fw-bold mb-0 small">{s.title}</h6>
-                      <small className="text-muted">{s.date || "Flexible"} • {s.duration || 60}min</small>
+                      <small className="text-muted">{s.date ? new Date(s.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Flexible"}{s.time ? ` at ${s.time}` : ""} • {s.duration || 60}min</small>
                     </div>
                     <span style={{ background: s.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : s.status === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{s.status}</span>
                   </div>
@@ -151,6 +152,7 @@ const MentorDashboard = () => {
           </div>
         </div>
       </div>
+      )}
     </>
   );
 };

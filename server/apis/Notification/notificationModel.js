@@ -20,6 +20,7 @@ const notificationSchema = new mongoose.Schema(
         "booking_completed",
         "new_review",
         "badge_earned",
+        "system",
       ],
       required: true,
     },

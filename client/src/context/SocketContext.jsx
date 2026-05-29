@@ -41,7 +41,8 @@ export function SocketProvider({ children }) {
       setUnreadChatCount(res.data.data?.count || 0);
     }).catch(() => {});
 
-    const s = io(window.location.origin, {
+    const backendUrl = import.meta.env.DEV ? "http://localhost:3000" : window.location.origin;
+    const s = io(backendUrl, {
       withCredentials: true,
       transports: ["websocket", "polling"],
     });

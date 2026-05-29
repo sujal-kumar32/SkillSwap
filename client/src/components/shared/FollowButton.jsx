@@ -51,11 +51,11 @@ const FollowButton = ({ userId, onToggle, size }) => {
       {loading ? (
         <span className="spinner-border spinner-border-sm" role="status" />
       ) : following && hovering ? (
-        <><i className="fa fa-times me-2" />Unfollow</>
+        <><i className="fa fa-times" style={{ marginRight: 10 }} />Unfollow</>
       ) : following ? (
-        <><i className="fa fa-check me-2" />Following</>
+        <><i className="fa fa-check" style={{ marginRight: 10 }} />Following</>
       ) : (
-        <><i className="fa fa-plus me-2" />Follow</>
+        <><i className="fa fa-plus" style={{ marginRight: 10 }} />Follow</>
       )}
     </button>
   );

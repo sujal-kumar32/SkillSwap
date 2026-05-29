@@ -4,7 +4,7 @@ import { deleteConfirmAlert } from "../../../../src/utils/alertUtils";
 import { showToast } from "../../../utils/toastUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader, LoadingState } from "../../learner/LearnerUI";
+import { PageHeader, SessionCardSkeleton } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { getSessionState } from "../../../utils/sessionTimeUtils";
 
@@ -207,7 +207,7 @@ const MySessions = () => {
 
           <div className="row g-4">
             {loading ? (
-              <div className="col-12"><LoadingState /></div>
+              Array.from({ length: 6 }).map((_, i) => <SessionCardSkeleton key={i} />)
             ) : sessionStates.length ? (
               sessionStates.map((session) => {
                 const badge = stateBadge(session._state);
