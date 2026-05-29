@@ -104,15 +104,28 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
 
 });
 
+const resendCooldowns = new Map();
+
 // RESEND VERIFICATION
 exports.resendVerification = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+    const email = req.body?.email?.toLowerCase().trim() || req.user?.email;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required" });
     }
 
-    if (user.isVerified !== false) {
+    const lastSent = resendCooldowns.get(email);
+    if (lastSent && Date.now() - lastSent < 60000) {
+      const remaining = Math.ceil((60000 - (Date.now() - lastSent)) / 1000);
+      return res.status(429).json({ success: false, message: `Please wait ${remaining}s before resending` });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No account found with this email" });
+    }
+
+    if (user.isVerified) {
       return res.json({ success: true, message: "Your email is already verified." });
     }
 
@@ -130,6 +143,8 @@ exports.resendVerification = asyncHandler(async (req, res) => {
       subject: "Verify your email - SkillSwap",
       html: emailVerification(user.name, verifyLink),
     }).catch((err) => console.error("Resend verification email failed:", err.message));
+
+    resendCooldowns.set(email, Date.now());
 
     res.json({
       success: true,

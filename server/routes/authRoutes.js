@@ -9,7 +9,7 @@ const { register, login, changePassword, forgotPassword, resetPassword, verifyEm
 router.post("/register", validate(auth.register), register);
 router.post("/login", validate(auth.login), login);
 router.get("/verify/:token", verifyEmail);
-router.post("/resend-verification", protect, resendVerification);
+router.post("/resend-verification", resendVerification);
 router.post("/delete-account", protect, deleteAccount);
 router.post("/change-password", protect, validate(auth.changePassword), changePassword);
 router.post("/forgot-password", validate(auth.forgotPassword), forgotPassword);

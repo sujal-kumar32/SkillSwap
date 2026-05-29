@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { showToast } from "../../utils/toastUtils";
 import illustration from "../../assets/images/image.png";
@@ -17,6 +17,26 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const cooldownRef = useRef(null);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      cooldownRef.current = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    }
+    return () => { if (cooldownRef.current) clearTimeout(cooldownRef.current); };
+  }, [resendCooldown]);
+
+  const handleResendVerification = async () => {
+    if (resendCooldown > 0 || !email) return;
+    try {
+      const res = await Apiservices.resendVerification({ email });
+      showToast.success(res.data?.message || "Verification email resent!");
+      setResendCooldown(60);
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to resend verification");
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -317,6 +337,12 @@ padding: 0;
                 {verificationSent && (
                   <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 14, color: "#856404" }}>
                     <strong>Verify your email!</strong> We sent a verification link to your email. Please check your inbox and click the link to activate your account.
+                    <div className="mt-2">
+                      <button type="button" onClick={handleResendVerification} disabled={resendCooldown > 0}
+                        style={{ background: "none", border: "none", color: "#856404", fontWeight: 600, textDecoration: "underline", cursor: resendCooldown > 0 ? "not-allowed" : "pointer", opacity: resendCooldown > 0 ? 0.6 : 1, padding: 0, fontSize: 13 }}>
+                        {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend verification email"}
+                      </button>
+                    </div>
                   </div>
                 )}
 

@@ -22,8 +22,8 @@ class Apiservices {
     return axios.get(baseUrl + `auth/verify/${token}`);
   }
 
-  resendVerification() {
-    return axios.post(baseUrl + "auth/resend-verification");
+  resendVerification(data = {}) {
+    return axios.post(baseUrl + "auth/resend-verification", data);
   }
 
   deleteAccount(data) {
