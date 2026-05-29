@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Apiservices from "../../../../Apiservices";
-import { EmptyState, LoadingState, PageHeader, StatCard } from "../../learner/LearnerUI";
+import { EmptyState, PageHeader, StatCard, CardSkeleton } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import UserLink from "../../../components/shared/UserLink";
 
@@ -45,7 +45,13 @@ const MentorReviews = () => {
         <StatCard icon="fa-users" label="Learners Rated" value={learnerSet.size} tone="success" />
       </div>
 
-      {loading ? <LoadingState /> : reviews.length ? (
+      {loading ? (
+        <div className="row g-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div className="col-md-6" key={i}><CardSkeleton lines={2} /></div>
+          ))}
+        </div>
+      ) : reviews.length ? (
         <div className="row g-4">
           {reviews.map((review) => (
             <div className="col-md-6" key={review._id}>

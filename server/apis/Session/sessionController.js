@@ -102,13 +102,20 @@ exports.createSession = asyncHandler(async (req, res) => {
 // GET CURRENT MENTOR SESSIONS
 exports.getMySessions = asyncHandler(async (req, res) => {
 
-    const sessions = await Session.find({ mentorId: req.user.id })
-      .populate({
-        path: "skillId",
-        populate: { path: "categoryId", select: "name" },
-      })
-      .populate("mentorId", "name email profileImage")
-      .lean();
+    const { page, limit, skip } = getPagination(req.query);
+
+    const [sessions, total] = await Promise.all([
+      Session.find({ mentorId: req.user.id })
+        .skip(skip)
+        .limit(limit)
+        .populate({
+          path: "skillId",
+          populate: { path: "categoryId", select: "name" },
+        })
+        .populate("mentorId", "name email profileImage")
+        .lean(),
+      Session.countDocuments({ mentorId: req.user.id }),
+    ]);
 
     const sessionIds = sessions.map((session) => session._id);
     const [bookingCounts, ratings, acceptedCounts] = await Promise.all([
@@ -141,7 +148,9 @@ exports.getMySessions = asyncHandler(async (req, res) => {
 
     res.json({
       success: true,
-      total: sessions.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
       data: sessions.map((session) => ({
         ...session,
         bookings: countMap[session._id.toString()] || 0,

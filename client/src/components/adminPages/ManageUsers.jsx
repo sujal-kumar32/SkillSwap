@@ -1,9 +1,10 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { confirmAlert } from "../../utils/alertUtils";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
-import { LoadingState } from "../learner/LearnerUI";
+import { TableSkeleton } from "../learner/LearnerUI";
+import Pagination from "../Pagination";
 import UserLink from "../shared/UserLink";
 
 const PAGE_SIZE = 10;
@@ -12,15 +13,24 @@ const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const debounceRef = useRef(null);
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setActiveSearch(search), 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [search]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, filter]);
+  }, [page, filter, activeSearch]);
 
   const fetchUsers = async () => {
     try {
@@ -28,11 +38,12 @@ const ManageUsers = () => {
       setError(null);
       const params = { page, limit: PAGE_SIZE };
       if (filter !== "All") params.status = filter.toLowerCase();
-      if (search.trim()) params.search = search.trim();
+      if (activeSearch.trim()) params.search = activeSearch.trim();
       const response = await Apiservices.getUsers({ params });
       if (response.data.success) {
         setUsers(response.data.data);
         setTotalPages(response.data.pages || 1);
+        setTotal(response.data.total || 0);
       } else {
         setError("Failed to load users");
         showToast.error("Failed to load users");
@@ -80,6 +91,8 @@ const ManageUsers = () => {
   const handleSearch = (val) => {
     setSearch(val);
     setPage(1);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setActiveSearch(val), 400);
   };
 
   const StatCard = ({ label, value, icon, color }) => (
@@ -97,18 +110,6 @@ const ManageUsers = () => {
       </div>
     </div>
   );
-
-  const Pagination = () => totalPages > 1 ? (
-    <div className="d-flex justify-content-center mt-5">
-      <div className="d-flex align-items-center" style={{ gap: 8 }}>
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => Math.max(1, p - 1))}><i className="fa fa-chevron-left" /> Prev</button>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button key={i + 1} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${page === i + 1 ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
-        ))}
-        <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Next <i className="fa fa-chevron-right" /></button>
-      </div>
-    </div>
-  ) : null;
 
   return (
     <div>
@@ -151,7 +152,7 @@ const ManageUsers = () => {
           </div>
 
           {loading ? (
-            <LoadingState />
+            <TableSkeleton rows={5} cols={4} />
           ) : users.length ? (
             <>
               <div className="table-responsive">
@@ -201,7 +202,10 @@ const ManageUsers = () => {
                   </tbody>
                 </table>
               </div>
-              <Pagination />
+              <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
+                <small className="text-muted">Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, total)} of {total}</small>
+                <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
             </>
           ) : (
             <div className="text-center py-4 text-muted">No users found</div>

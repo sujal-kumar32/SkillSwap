@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import UserLink from "../shared/UserLink";
+import { CardSkeleton, SessionCardSkeleton, TableSkeleton, StatsCardSkeleton, ListSkeleton } from "../ui/Skeleton";
 
 export const PageHeader = ({ title, subtitle, action }) => (
   <div className="learner-page-header d-flex flex-column flex-lg-row justify-content-between mb-4" style={{ gap: 10 }}>
@@ -181,6 +182,8 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
     </div>
   );
 };
+
+export { CardSkeleton, SessionCardSkeleton, TableSkeleton, StatsCardSkeleton, ListSkeleton };
 
 export const ProgressBar = ({ value }) => (
   <div className="progress learner-progress">

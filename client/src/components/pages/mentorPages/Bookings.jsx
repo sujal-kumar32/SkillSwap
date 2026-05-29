@@ -4,7 +4,7 @@ import { showToast } from "../../../utils/toastUtils";
 import { confirmAlert } from "../../../utils/alertUtils";
 import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader, LoadingState } from "../../learner/LearnerUI";
+import { PageHeader, CardSkeleton } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { useXpCelebration, BadgeUnlockModal } from "../../ui/XpCelebration";
 import UserLink from "../../../components/shared/UserLink";
@@ -199,7 +199,9 @@ const Bookings = () => {
           {/* REQUEST CARDS */}
           <div className="row g-4">
             {loading ? (
-              <div className="col-12"><LoadingState /></div>
+              Array.from({ length: 6 }).map((_, i) => (
+                <div className="col-lg-4 col-md-6" key={i}><CardSkeleton lines={4} /></div>
+              ))
             ) : bookings.length ? (
               bookings.map((booking) => {
                     const learnerName = booking.learnerId?.name || "Learner";

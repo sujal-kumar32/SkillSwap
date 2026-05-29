@@ -1,19 +1,25 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
 import { deleteConfirmAlert } from "../../../utils/alertUtils";
 import Apiservices from "../../../../Apiservices";
-import { EmptyState, LoadingState, PageHeader, StatCard, StatusBadge } from "../../learner/LearnerUI";
+import { EmptyState, PageHeader, StatCard, StatusBadge, TableSkeleton } from "../../learner/LearnerUI";
+import Pagination from "../../Pagination";
 import { getSessionState } from "../../../utils/sessionTimeUtils";
+
+const PAGE_SIZE = 10;
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [tick, setTick] = useState(0);
   const navigate = useNavigate();
 
@@ -21,10 +27,14 @@ const MyBookings = () => {
     const loadBookings = async () => {
       try {
         setError("");
-        const response = await Apiservices.fetchBookings();
+        setLoading(true);
+        const params = { page, limit: PAGE_SIZE };
+        if (filter !== "all") params.status = filter;
+        const response = await Apiservices.fetchBookings(params);
         setBookings(response.data.data || []);
+        setTotalPages(response.data.pages || 1);
+        setTotal(response.data.total || 0);
       } catch (error) {
-        console.log(error);
         setBookings([]);
         setError(error.response?.data?.message || "Failed to load bookings");
       } finally {
@@ -33,7 +43,7 @@ const MyBookings = () => {
     };
 
     loadBookings();
-  }, []);
+  }, [page, filter]);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 30000);
@@ -44,20 +54,13 @@ const MyBookings = () => {
     return bookings.map((b) => ({ ...b, _sessionState: getSessionState(b.sessionId) }));
   }, [bookings, tick]);
 
-  const filtered = useMemo(
-    () =>
-      bookingsWithState.filter((booking) => {
-        const title = booking.sessionId?.title?.toLowerCase() || "";
-        const matchQuery = title.includes(query.toLowerCase());
-        const matchFilter = filter === "all" || booking.requestStatus === filter;
-        return matchQuery && matchFilter;
-      }),
-    [bookingsWithState, query, filter],
+  const filtered = useMemo(() =>
+    bookingsWithState.filter((b) => {
+      const title = b.sessionId?.title?.toLowerCase() || "";
+      return title.includes(query.toLowerCase());
+    }),
+    [bookingsWithState, query],
   );
-
-  const pageSize = 10;
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => { setPage(1); }, [query, filter]);
 
@@ -66,7 +69,7 @@ const MyBookings = () => {
       <PageHeader title="My Bookings" subtitle="Manage upcoming, pending, completed, and cancelled learning sessions." />
       {error && <div className="alert alert-danger rounded-4">{error}</div>}
       <div className="row g-4 mb-4">
-        <StatCard icon="fa-calendar-alt" label="All Bookings" value={bookings.length} />
+        <StatCard icon="fa-calendar-alt" label="All Bookings" value={total} />
         <StatCard icon="fa-clock" label="Pending" value={bookings.filter((b) => b.requestStatus === "pending").length} tone="warning" />
         <StatCard icon="fa-video" label="Upcoming" value={bookings.filter((b) => b._sessionState === "upcoming" || b._sessionState === "live").length} tone="success" />
         <StatCard icon="fa-circle-check" label="Completed" value={bookings.filter((b) => b._sessionState === "completed" || b.requestStatus === "completed" || b.requestStatus === "rejected" || b.requestStatus === "cancelled").length} tone="info" />
@@ -89,7 +92,7 @@ const MyBookings = () => {
         </div>
       </div>
 
-      {loading ? <LoadingState /> : filtered.length ? (
+      {loading ? <TableSkeleton rows={5} cols={5} /> : filtered.length ? (
         <div className="learner-card learner-table-card">
           <div className="table-responsive">
             <table className="table align-middle mb-0">
@@ -103,7 +106,7 @@ const MyBookings = () => {
                 </tr>
               </thead>
               <tbody>
-                {paginated.map((booking) => (
+                {filtered.map((booking) => (
                   <tr key={booking._id}>
                     <td>
                       <div className="d-flex align-items-center" style={{ gap: 10 }}>
@@ -112,7 +115,7 @@ const MyBookings = () => {
                           <h6 className="fw-bold mb-1 d-flex align-items-center" style={{ gap: 8 }}>
                             {booking.sessionId?.title}
                             {booking._sessionState === "live" && booking.requestStatus === "accepted" && (
-                              <span style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }}>🔴 Live</span>
+                              <span style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }}>Live</span>
                             )}
                             {booking._sessionState === "upcoming" && booking.requestStatus === "accepted" && (
                               <span style={{ background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.65rem", fontWeight: 600, letterSpacing: "0.3px" }}>Upcoming</span>
@@ -163,7 +166,6 @@ const MyBookings = () => {
                               );
                               showToast.success("Booking cancelled");
                             } catch (error) {
-                              console.log(error);
                               showToast.error(error.response?.data?.message || "Failed to cancel booking");
                             }
                           }}
@@ -177,18 +179,10 @@ const MyBookings = () => {
               </tbody>
             </table>
           </div>
-          {totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
-              <small className="text-muted">Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} of {filtered.length}</small>
-              <div className="d-flex align-items-center" style={{ gap: 8 }}>
-                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === 1} onClick={() => setPage((p) => p - 1)}><i className="fa fa-chevron-left" /> Prev</button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                  <button key={p} className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold ${p === page ? "btn-primary" : "btn-outline-secondary"}`} onClick={() => setPage(p)}>{p}</button>
-                ))}
-                <button className="btn btn-sm btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>Next <i className="fa fa-chevron-right" /></button>
-              </div>
-            </div>
-          )}
+          <div className="d-flex justify-content-between align-items-center px-3 py-4 border-top">
+            <small className="text-muted">Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, total)} of {total}</small>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+          </div>
         </div>
       ) : (
         <EmptyState title="No bookings found" text="Book sessions to start your learning journey." actionLabel="Explore Sessions" actionTo="/learner/explore" />

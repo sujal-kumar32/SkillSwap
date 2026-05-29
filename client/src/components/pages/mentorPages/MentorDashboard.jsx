@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Apiservices from "../../../../Apiservices";
-import { PageHeader } from "../../learner/LearnerUI";
+import { PageHeader, CardSkeleton } from "../../learner/LearnerUI";
+import { DashboardSkeleton } from "../../ui/Skeleton";
 import UserLink from "../../../components/shared/UserLink";
 import { useAuth } from "../../../App";
 
@@ -90,6 +91,7 @@ const MentorDashboard = () => {
         </div>
       )}
 
+      {loading ? <DashboardSkeleton /> : (
       <div className="row g-4">
         <div className="col-lg-7">
           <div className="learner-card p-4 h-100">
@@ -99,9 +101,7 @@ const MentorDashboard = () => {
               </div>
               <h5 className="fw-bold mb-0">Recent Bookings</h5>
             </div>
-            {loading ? (
-              <div className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary" /></div>
-            ) : recentBookings.length > 0 ? (
+            {recentBookings.length > 0 ? (
               <div className="list-group list-group-flush">
                 {recentBookings.map((b) => (
                   <div key={b._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
@@ -130,9 +130,7 @@ const MentorDashboard = () => {
               </div>
               <h5 className="fw-bold mb-0">Your Sessions</h5>
             </div>
-            {loading ? (
-              <div className="text-center py-4"><div className="spinner-border spinner-border-sm text-primary" /></div>
-            ) : recentSessions.length > 0 ? (
+            {recentSessions.length > 0 ? (
               <div className="list-group list-group-flush">
                 {recentSessions.map((s) => (
                   <div key={s._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
@@ -151,6 +149,7 @@ const MentorDashboard = () => {
           </div>
         </div>
       </div>
+      )}
     </>
   );
 };

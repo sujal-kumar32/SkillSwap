@@ -5,12 +5,12 @@ import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import {
   EmptyState,
-  LoadingState,
   PageHeader,
   SessionCard,
-  StatCard,
+  StatsCardSkeleton,
   StatusBadge,
 } from "../../learner/LearnerUI";
+import { DashboardSkeleton } from "../../ui/Skeleton";
 
 const LearnerDashboard = () => {
   const navigate = useNavigate();
@@ -83,8 +83,6 @@ const LearnerDashboard = () => {
     navigate(`/learner/book/${session._id}`);
   };
 
-  if (loading) return <LoadingState label="Preparing your learner dashboard..." />;
-
   return (
     <>
       <PageHeader
@@ -99,6 +97,8 @@ const LearnerDashboard = () => {
 
       {error && <div className="alert alert-danger rounded-4">{error}</div>}
 
+      {loading ? <DashboardSkeleton /> : (
+      <>
       <div className="row g-4 mb-4">
         <StatCard icon="fa-calendar-check" label="Total Bookings" value={stats.total} />
         <StatCard icon="fa-video" label="Active Sessions" value={stats.active} tone="success" />
@@ -170,6 +170,8 @@ const LearnerDashboard = () => {
             </div>
           ))}
         </div>
+      )}
+      </>
       )}
     </>
   );
