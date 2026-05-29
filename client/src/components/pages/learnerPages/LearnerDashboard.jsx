@@ -13,6 +13,7 @@ import {
 } from "../../learner/LearnerUI";
 import { DashboardSkeleton } from "../../ui/Skeleton";
 import { useAuth } from "../../../App";
+import OnboardingChecklist from "../../../components/shared/OnboardingChecklist";
 const LearnerDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -99,6 +100,8 @@ const LearnerDashboard = () => {
       />
 
       {error && <div className="alert alert-danger rounded-4">{error}</div>}
+
+      <OnboardingChecklist role="learner" />
 
       {loading ? <DashboardSkeleton /> : (
       <>

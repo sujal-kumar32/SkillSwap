@@ -180,14 +180,17 @@ exports.getSessions = asyncHandler(async (req, res) => {
     else if (price === "paid") filter.price = { $gt: 0 };
 
     if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { description: { $regex: search, $options: "i" } },
-      ];
+      filter.$text = { $search: search };
     }
 
     let sortObj = {};
     if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
+    else if (sort === "oldest") sortObj = { createdAt: 1 };
+    else if (sort === "price") sortObj = { price: 1 };
+    else if (sort === "price-desc") sortObj = { price: -1 };
+    else if (sort === "name") sortObj = { title: 1 };
+    else if (search) sortObj = { score: { $meta: "textScore" } };
+    else sortObj = { createdAt: -1 };
     else if (sort === "oldest") sortObj = { createdAt: 1 };
     else if (sort === "price") sortObj = { price: 1 };
     else if (sort === "price-desc") sortObj = { price: -1 };

@@ -37,14 +37,13 @@ const setTokenCookies = (res, accessToken, refreshToken) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    path: "/api/auth/refresh",
     maxAge: REFRESH_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
   });
 };
 
 const clearTokenCookies = (res) => {
   res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
-  res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/auth/refresh" });
+  res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
 };
 
 if (!SECRET) {
@@ -308,6 +307,13 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
       });
     }
 
+    if (user.resetPasswordExpires && user.resetPasswordExpires > Date.now() + 58 * 60 * 1000) {
+      return res.status(429).json({
+        success: false,
+        message: "Please wait at least 2 minutes before requesting another reset.",
+      });
+    }
+
     const token = crypto.randomBytes(32).toString("hex");
     const hash = crypto.createHash("sha256").update(token).digest("hex");
 
@@ -317,12 +323,14 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
 
     const resetLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${token}`;
 
+    let emailSent = false;
     try {
       await sendEmail({
         to: user.email,
         subject: "Password Reset - SkillSwap",
         html: passwordResetEmail(user.name, resetLink),
       });
+      emailSent = true;
     } catch (err) {
       console.error("Reset email failed:", err.message);
       console.log("Password reset link (fallback):", resetLink);
@@ -331,6 +339,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     res.json({
       success: true,
       message: "If that email exists, a reset link has been sent.",
+      ...(process.env.NODE_ENV !== "production" && !emailSent ? { devResetLink: resetLink } : {}),
     });
 
 });

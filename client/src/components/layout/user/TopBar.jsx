@@ -11,6 +11,10 @@ const TopBar = () => {
   const notifRef = useRef(null);
   const { unreadCount, unreadChatCount, setUnreadCount } = useSocket();
   const location = useLocation();
+  const isActive = (path) =>
+    path === "/workspace"
+      ? location.pathname === "/workspace"
+      : location.pathname.startsWith(path);
   const isNotifsPage = location.pathname === "/notifications";
 
   useEffect(() => {
@@ -46,8 +50,12 @@ const TopBar = () => {
     gap: "6px",
   };
 
+  const activeCss = ".topbar-btn.active{background:#eef2ff!important;color:#0d6efd!important;border-color:#c7d2fe!important;font-weight:700!important}";
+
   return (
-    <div className="topbar-wrapper" style={{
+    <>
+      <style>{activeCss}</style>
+      <div className="topbar-wrapper" style={{
       background: "rgba(255,255,255,0.75)",
       backdropFilter: "blur(16px)",
       WebkitBackdropFilter: "blur(16px)",
@@ -76,13 +84,13 @@ const TopBar = () => {
       </div>
 
       <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Link to="/workspace" className="topbar-btn" style={btnStyle}
+        <Link to="/workspace" className={`topbar-btn${isActive("/workspace") ? " active" : ""}`} style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-th-large" /> <span className="topbar-btn-text">Workspace</span>
         </Link>
 
-        <Link to="/messages" className="topbar-btn" style={btnStyle}
+        <Link to="/messages" className={`topbar-btn${isActive("/messages") ? " active" : ""}`} style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-comment" /> <span className="topbar-btn-text">Messages</span>
@@ -96,7 +104,7 @@ const TopBar = () => {
         </Link>
 
           <div ref={notifRef} style={{ position: "relative" }}>
-            <button className="topbar-btn" style={btnStyle}
+            <button className={`topbar-btn${isNotifsPage ? " active" : ""}`} style={btnStyle}
               onClick={() => {
                 if (isNotifsPage) return;
                 setShowNotifs(!showNotifs);
@@ -118,19 +126,19 @@ const TopBar = () => {
           {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} />}
         </div>
 
-        <Link to="/feed" className="topbar-btn" style={btnStyle}
+        <Link to="/feed" className={`topbar-btn${isActive("/feed") ? " active" : ""}`} style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-stream" /> <span className="topbar-btn-text">Feed</span>
         </Link>
 
-        <Link to="/leaderboard" className="topbar-btn" style={btnStyle}
+        <Link to="/leaderboard" className={`topbar-btn${isActive("/leaderboard") ? " active" : ""}`} style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-trophy" /> <span className="topbar-btn-text">Leaderboard</span>
         </Link>
 
-        <Link to="/settings" className="topbar-btn" style={btnStyle}
+        <Link to="/settings" className={`topbar-btn${isActive("/settings") ? " active" : ""}`} style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-cog" /> <span className="topbar-btn-text">Settings</span>
@@ -163,6 +171,7 @@ const TopBar = () => {
         </button>
       </div>
     </div>
+    </>
   );
 };
 

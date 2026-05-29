@@ -237,6 +237,63 @@ exports.getXpHistory = asyncHandler(async (req, res) => {
   });
 });
 
+exports.getOnboarding = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id).select("onboardingDismissed profileImage bio roles").lean();
+  const { role } = req.query;
+  const isLearner = role === "learner" || (!role && user.roles.includes("learner"));
+  const isMentor = role === "mentor" || (!role && user.roles.includes("mentor"));
+
+  const steps = [];
+
+  const profileDone = !!(user.profileImage && user.bio);
+
+  if (isLearner) {
+    const [bookingCount, wishlistCount] = await Promise.all([
+      Request.countDocuments({ learnerId: req.user.id }),
+      require("../Wishlist/wishlistModel").countDocuments({ userId: req.user.id }),
+    ]);
+    steps.push(
+      { id: "profile", label: "Complete your profile", done: profileDone, icon: "fa-user-circle", link: "/settings" },
+      { id: "explore", label: "Browse and save skills", done: wishlistCount > 0, icon: "fa-heart", link: "/learner/skills" },
+      { id: "booking", label: "Book your first session", done: bookingCount > 0, icon: "fa-calendar-check", link: "/learner/explore" },
+    );
+  }
+
+  if (isMentor) {
+    const [skillCount, sessionCount, availCount] = await Promise.all([
+      Skill.countDocuments({ createdBy: req.user.id, isDeleted: { $ne: true } }),
+      Session.countDocuments({ mentorId: req.user.id }),
+      require("../Availability/availabilityModel").countDocuments({ mentorId: req.user.id }),
+    ]);
+    steps.push(
+      { id: "profile", label: "Complete your profile", done: profileDone, icon: "fa-user-circle", link: "/settings" },
+      { id: "skill", label: "Create your first skill", done: skillCount > 0, icon: "fa-code", link: "/mentor/create-skill" },
+      { id: "session", label: "Create your first session", done: sessionCount > 0, icon: "fa-video", link: "/mentor/create-session" },
+      { id: "availability", label: "Set your availability", done: availCount > 0, icon: "fa-clock", link: "/mentor/availability" },
+    );
+  }
+
+  const doneCount = steps.filter((s) => s.done).length;
+  const progress = steps.length > 0 ? Math.round((doneCount / steps.length) * 100) : 100;
+
+  res.json({
+    success: true,
+    data: {
+      dismissed: user.onboardingDismissed,
+      progress,
+      doneCount,
+      total: steps.length,
+      allDone: doneCount === steps.length,
+      steps,
+    },
+  });
+});
+
+exports.dismissOnboarding = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(req.user.id, { onboardingDismissed: true });
+  res.json({ success: true });
+});
+
 exports.getPublicProfile = asyncHandler(async (req, res) => {
   const { userId } = req.params;
 

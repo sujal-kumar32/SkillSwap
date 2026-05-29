@@ -31,7 +31,14 @@ async function sendEmail({ to, subject, html, attachments }) {
     mailOptions.attachments = attachments;
   }
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${subject}`);
+  } catch (err) {
+    console.error(`Failed to send email to ${to}:`, err.message);
+    if (err.response) console.error("SMTP response:", err.response);
+    throw err;
+  }
 }
 
 module.exports = { sendEmail };

@@ -28,6 +28,7 @@ import AdminCategories from "./components/adminPages/AdminCategories";
 import MentorRequests from "./components/adminPages/MentorRequests";
 import AdminBroadcast from "./components/adminPages/AdminBroadcast";
 import AdminPayments from "./components/adminPages/AdminPayments";
+import AdminDisputes from "./components/adminPages/AdminDisputes";
 import MentorMaster from "./components/layout/user/mentor/MentorMaster";
 import MentorDashboard from "./components/pages/mentorPages/MentorDashboard";
 import CreateSession from "./components/pages/mentorPages/CreateSession";
@@ -157,11 +158,8 @@ function RequireLearner({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
-  return user.roles?.includes("admin") ? (
-    <Navigate to="/admin" replace />
-  ) : (
-    children
-  );
+  if (!user.roles?.includes("learner")) return <Navigate to="/" replace />;
+  return children;
 }
 
 function App() {
@@ -292,6 +290,7 @@ function App() {
             <Route path="/admin/progress" element={<AdminProgress />} />
             <Route path="/admin/mentor-requests" element={<MentorRequests />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/disputes" element={<AdminDisputes />} />
             <Route path="/admin/broadcast" element={<AdminBroadcast />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
           </Route>

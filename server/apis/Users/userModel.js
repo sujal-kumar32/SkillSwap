@@ -74,6 +74,8 @@ const userSchema = new mongoose.Schema(
     isOnline: { type: Boolean, default: false },
     lastActive: { type: Date, default: Date.now },
 
+    onboardingDismissed: { type: Boolean, default: false },
+
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
     blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

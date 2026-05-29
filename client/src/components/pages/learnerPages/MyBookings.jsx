@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserLink from "../../../components/shared/UserLink";
 import { showToast } from "../../../utils/toastUtils";
@@ -7,6 +7,7 @@ import Apiservices from "../../../../Apiservices";
 import { EmptyState, PageHeader, StatCard, StatusBadge, TableSkeleton } from "../../learner/LearnerUI";
 import Pagination from "../../Pagination";
 import { getSessionState } from "../../../utils/sessionTimeUtils";
+import DisputeModal from "../../../components/shared/DisputeModal";
 
 const PAGE_SIZE = 10;
 
@@ -21,29 +22,28 @@ const MyBookings = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [tick, setTick] = useState(0);
+  const [disputeBooking, setDisputeBooking] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadBookings = async () => {
-      try {
-        setError("");
-        setLoading(true);
-        const params = { page, limit: PAGE_SIZE };
-        if (filter !== "all") params.status = filter;
-        const response = await Apiservices.fetchBookings(params);
-        setBookings(response.data.data || []);
-        setTotalPages(response.data.pages || 1);
-        setTotal(response.data.total || 0);
-      } catch (error) {
-        setBookings([]);
-        setError(error.response?.data?.message || "Failed to load bookings");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadBookings();
+  const loadBookings = useCallback(async () => {
+    try {
+      setError("");
+      setLoading(true);
+      const params = { page, limit: PAGE_SIZE };
+      if (filter !== "all") params.status = filter;
+      const response = await Apiservices.fetchBookings(params);
+      setBookings(response.data.data || []);
+      setTotalPages(response.data.pages || 1);
+      setTotal(response.data.total || 0);
+    } catch (error) {
+      setBookings([]);
+      setError(error.response?.data?.message || "Failed to load bookings");
+    } finally {
+      setLoading(false);
+    }
   }, [page, filter]);
+
+  useEffect(() => { loadBookings(); }, [loadBookings]);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 30000);
@@ -172,6 +172,12 @@ const MyBookings = () => {
                         >
                           Cancel
                         </button>
+                        <button
+                          className="btn btn-sm btn-outline-warning rounded-pill px-3 py-2 fw-semibold"
+                          onClick={() => setDisputeBooking(booking)}
+                        >
+                          <i className="fa fa-gavel" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -186,6 +192,13 @@ const MyBookings = () => {
         </div>
       ) : (
         <EmptyState title="No bookings found" text="Book sessions to start your learning journey." actionLabel="Explore Sessions" actionTo="/learner/explore" />
+      )}
+      {disputeBooking && (
+        <DisputeModal
+          requestId={disputeBooking._id}
+          onClose={() => setDisputeBooking(null)}
+          onCreated={() => { setDisputeBooking(null); loadBookings(); }}
+        />
       )}
     </>
   );

@@ -5,6 +5,7 @@ import { PageHeader, CardSkeleton } from "../../learner/LearnerUI";
 import { DashboardSkeleton } from "../../ui/Skeleton";
 import UserLink from "../../../components/shared/UserLink";
 import { useAuth } from "../../../App";
+import OnboardingChecklist from "../../../components/shared/OnboardingChecklist";
 
 const MentorDashboard = () => {
   const [stats, setStats] = useState({ sessions: 0, learners: 0, reviews: 0, rating: "—" });
@@ -80,6 +81,8 @@ const MentorDashboard = () => {
           </div>
         ))}
       </div>
+
+      <OnboardingChecklist role="mentor" />
 
       {error && (
         <div className="alert alert-danger d-flex align-items-center gap-3 mb-4" style={{ borderRadius: 16 }}>

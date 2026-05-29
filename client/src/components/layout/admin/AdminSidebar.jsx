@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import { useAuth } from "../../../App";
+import { useSocket } from "../../../context/SocketContext";
 
 const links = [
   { to: "/admin", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
@@ -14,6 +15,7 @@ const links = [
   { to: "/admin/manage-paid-sessions", label: "Manage Sessions", icon: "fa-video" },
   { to: "/admin/view-requests", label: "View Requests", icon: "fa-envelope" },
   { to: "/admin/bookings", label: "All Bookings", icon: "fa-calendar" },
+  { to: "/admin/disputes", label: "Disputes", icon: "fa-gavel" },
   { to: "/admin/payments", label: "Payment Ledger", icon: "fa-credit-card" },
   { to: "/admin/reviews", label: "Reviews & Ratings", icon: "fa-star" },
   { to: "/admin/broadcast", label: "Broadcast", icon: "fa-bullhorn" },
@@ -23,6 +25,7 @@ const links = [
 const AdminSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { unreadChatCount, unreadCount } = useSocket();
 
   const handleLogout = async () => {
     await logout();
@@ -62,6 +65,31 @@ const AdminSidebar = ({ sidebarOpen, onClose }) => {
             <span>{link.label}</span>
           </NavLink>
         ))}
+        <div style={{ height: 1, background: "#eef2f7", margin: "8px 12px" }} />
+        <NavLink to="/messages" className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-comment" />
+          <span>Messages</span>
+          {unreadChatCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadChatCount > 99 ? "99+" : unreadChatCount}
+            </span>
+          )}
+        </NavLink>
+        <NavLink to="/notifications" className={({ isActive }) => `admin-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-bell" />
+          <span>Notifications</span>
+          {unreadCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </NavLink>
       </nav>
 
       <div className="p-3" style={{ borderTop: "1px solid rgba(0,0,0,0.04)" }}>

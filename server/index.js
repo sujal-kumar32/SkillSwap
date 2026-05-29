@@ -6,6 +6,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
 const app = express();
 const server = http.createServer(app);
 
@@ -107,6 +108,7 @@ app.use("/api/follow", followRoutes);
 app.use("/api/feed", feedRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/disputes", require("./routes/disputeRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {
@@ -124,6 +126,12 @@ app.use((err, req, res, next) => {
 
 process.on("uncaughtException", (err) => {
   console.error("FATAL:", err.message);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err.message);
+  process.exit(1);
 });
 
 const { initSocket } = require("./socket");
@@ -142,3 +150,24 @@ server.listen(PORT, (err) => {
     console.log("Server is Listening on", PORT);
   }
 });
+
+const gracefulShutdown = async (signal) => {
+  console.log(`\n${signal} received. Shutting down gracefully...`);
+  server.close(() => {
+    console.log("HTTP server closed.");
+  });
+  try {
+    await mongoose.disconnect();
+    console.log("MongoDB disconnected.");
+  } catch (e) {
+    console.error("Error disconnecting MongoDB:", e.message);
+  }
+  io?.close(() => {
+    console.log("Socket.io closed.");
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(0), 5000);
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));

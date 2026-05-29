@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../../utils/toastUtils";
 import { useAuth } from "../../../../App";
+import { useSocket } from "../../../../context/SocketContext";
 
 const links = [
   { to: "/mentor", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
@@ -49,6 +50,7 @@ const XpWidget = ({ user }) => {
 const MentorSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { unreadChatCount, unreadCount } = useSocket();
 
   const handleLogout = async () => {
     await logout();
@@ -88,6 +90,31 @@ const MentorSidebar = ({ sidebarOpen, onClose }) => {
             <span>{link.label}</span>
           </NavLink>
         ))}
+        <div style={{ height: 1, background: "#eef2f7", margin: "8px 12px" }} />
+        <NavLink to="/messages" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-comment" />
+          <span>Messages</span>
+          {unreadChatCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadChatCount > 99 ? "99+" : unreadChatCount}
+            </span>
+          )}
+        </NavLink>
+        <NavLink to="/notifications" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
+          <i className="fa fa-bell" />
+          <span>Notifications</span>
+          {unreadCount > 0 && (
+            <span style={{
+              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+            }}>
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </NavLink>
       </nav>
 
       <XpWidget user={user} />

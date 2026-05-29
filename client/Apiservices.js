@@ -384,6 +384,15 @@ class Apiservices {
     return axios.get(baseUrl + `profile/public/${userId}`);
   }
 
+  getOnboarding(role) {
+    const params = role ? { role } : {};
+    return axios.get(baseUrl + "profile/onboarding", { params });
+  }
+
+  dismissOnboarding() {
+    return axios.put(baseUrl + "profile/onboarding/dismiss");
+  }
+
   getFeed(params = {}) {
     return axios.get(baseUrl + "feed", { params });
   }
@@ -478,6 +487,26 @@ class Apiservices {
 
   getAdminPayments(params = {}) {
     return axios.get(baseUrl + "admin/payments", { params });
+  }
+
+  createDispute(data) {
+    return axios.post(baseUrl + "disputes", data);
+  }
+
+  getMyDisputes() {
+    return axios.get(baseUrl + "disputes");
+  }
+
+  getDispute(id) {
+    return axios.get(baseUrl + `disputes/${id}`);
+  }
+
+  getAllDisputes(params = {}) {
+    return axios.get(baseUrl + "disputes/all", { params });
+  }
+
+  resolveDispute(id, data) {
+    return axios.put(baseUrl + `disputes/${id}/resolve`, data);
   }
 
 }
