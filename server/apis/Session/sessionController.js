@@ -9,6 +9,7 @@ const getPagination = require("../../utilities/paginate");
 const Wishlist = require("../Wishlist/wishlistModel");
 const Wallet = require("../Wallet/walletModel");
 const Transaction = require("../Wallet/transactionModel");
+const SessionMaterial = require("../SessionMaterial/sessionMaterialModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 const { createFeedEvent } = require("../../services/feedService");
 
@@ -519,6 +520,12 @@ exports.deleteSession = asyncHandler(async (req, res) => {
         await wallet.save();
       }
     }
+
+    await Promise.all([
+      SessionMaterial.deleteMany({ sessionId: session._id }),
+      Request.deleteMany({ sessionId: session._id }),
+      Wishlist.deleteMany({ sessionId: session._id }),
+    ]);
 
     await session.deleteOne();
 

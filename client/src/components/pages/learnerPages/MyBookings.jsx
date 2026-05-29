@@ -107,7 +107,7 @@ const MyBookings = () => {
               </thead>
               <tbody>
                 {filtered.map((booking) => (
-                  <tr key={booking._id}>
+                  <tr key={booking._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
                     <td>
                       <div className="d-flex align-items-center" style={{ gap: 10 }}>
                         <img src={booking.sessionId?.thumbnail} alt="" className="rounded-3" width="72" height="54" style={{ objectFit: "cover" }} />
@@ -129,7 +129,7 @@ const MyBookings = () => {
                     <td>{booking.paymentStatus}</td>
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">
-                      <div className="d-flex justify-content-end" style={{ gap: 8 }}>
+                      <div className="d-flex justify-content-end flex-wrap" style={{ gap: 6 }}>
                         <button onClick={() => {
                           Apiservices.getOrCreateBookingChat(booking._id).then((res) => {
                             navigate(`/messages/${res.data.data._id}`);

@@ -36,8 +36,8 @@ exports.toggleFollow = asyncHandler(async (req, res) => {
   });
   const follower = await User.findById(currentUserId).select("name").lean();
   sendNotification(userId, currentUserId, "follow", `${follower?.name || "Someone"} started following you`, `/profile/${currentUserId}`);
-  awardXP(userId, 5, "New follower", currentUserId, "User");
-  checkAndAwardBadges(userId);
+  await awardXP(userId, 5, "New follower", currentUserId, "User");
+  await checkAndAwardBadges(userId);
   res.json({ success: true, following: true, message: "Followed" });
 });
 

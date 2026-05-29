@@ -4,7 +4,7 @@ const validate = require("../middleware/validate");
 const { auth } = require("../validations");
 const protect = require("../middleware/authMiddleware");
 
-const { register, login, changePassword, forgotPassword, resetPassword, verifyEmail, resendVerification, deleteAccount, getMe, logout } = require("../apis/Auth/authController");
+const { register, login, changePassword, forgotPassword, resetPassword, verifyEmail, resendVerification, deleteAccount, getMe, logout, refresh } = require("../apis/Auth/authController");
 
 router.post("/register", validate(auth.register), register);
 router.post("/login", validate(auth.login), login);
@@ -15,6 +15,7 @@ router.post("/change-password", protect, validate(auth.changePassword), changePa
 router.post("/forgot-password", validate(auth.forgotPassword), forgotPassword);
 router.post("/reset-password", validate(auth.resetPassword), resetPassword);
 router.get("/me", protect, getMe);
+router.post("/refresh", refresh);
 router.post("/logout", protect.optional, logout);
 
 module.exports = router;

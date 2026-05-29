@@ -172,23 +172,23 @@ const AdminCategories = () => {
                     </thead>
                     <tbody>
                       {categories.map((cat) => (
-                        <tr key={cat._id}>
+                        <tr key={cat._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
                           <td className="fw-semibold py-3">{cat.name}</td>
                           <td style={{ color: "#64748b" }} className="py-3">{cat.slug}</td>
                           <td className="py-3">
                             <span style={{ background: cat.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{cat.status}</span>
                           </td>
                           <td className="text-end py-3">
-                            <div className="d-flex gap-3 justify-content-end">
+                            <div className="d-flex flex-wrap justify-content-end" style={{ gap: 6, maxWidth: 260, marginLeft: "auto" }}>
                               <button className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3 py-2" onClick={() => startEdit(cat)}>
-                                <i className="fa fa-pen me-1" />Edit
+                                <i className="fa fa-pen" style={{ marginRight: 10 }} />Edit
                               </button>
                               <button className={`btn btn-sm rounded-pill fw-semibold px-3 py-2 ${cat.status === "active" ? "btn-outline-warning" : "btn-outline-success"}`}
                                 onClick={() => toggleStatus(cat._id, cat.status)}>
-                                <i className={`fa ${cat.status === "active" ? "fa-pause" : "fa-play"} me-1`} />{cat.status === "active" ? "Deactivate" : "Activate"}
+                                <i className={`fa ${cat.status === "active" ? "fa-pause" : "fa-play"}`} style={{ marginRight: 10 }} />{cat.status === "active" ? "Deactivate" : "Activate"}
                               </button>
-                              <button className="btn btn-sm btn-outline-danger rounded-pill fw-semibold px-3 py-2" onClick={() => handleDelete(cat._id)}>
-                                <i className="fa fa-trash me-1" />Delete
+                              <button className="btn btn-sm btn-outline-danger rounded-pill fw-semibold px-3 py-2" style={{ flexBasis: "100%" }} onClick={() => handleDelete(cat._id)}>
+                                <i className="fa fa-trash" style={{ marginRight: 10 }} />Delete
                               </button>
                             </div>
                           </td>

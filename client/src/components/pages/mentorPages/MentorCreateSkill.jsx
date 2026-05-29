@@ -209,7 +209,7 @@ const MentorCreateSkill = () => {
                   </select>
                 </div>
 
-                <div className="col-md-6">
+                <div className="col-md-6" style={{ marginBottom: 10 }}>
                   <label className="form-label fw-bold">Level</label>
                   <select className="skill-select" value={level} onChange={(e) => setLevel(e.target.value)}>
                     <option value="all">All Levels</option>

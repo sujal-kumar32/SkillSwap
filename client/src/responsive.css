@@ -31,6 +31,12 @@ img { max-width: 100%; height: auto; }
 }
 
 /* ── TopBar: responsive ── */
+.topbar-btn { gap: 6px; }
+
+/* Notification page: gap between check icon and Mark All Read text */
+[style*="max-width: 720"] .btn-outline-primary .fa-check-double { margin-right: 10px !important; }
+
+
 @media (max-width: 1199.98px) {
   .topbar-btn-text { display: none; }
   .topbar-btn-icon { margin: 0; }
@@ -241,8 +247,8 @@ img { max-width: 100%; height: auto; }
   height: clamp(32px, 6vw, 40px) !important;
 }
 .avatar-responsive-lg {
-  width: clamp(80px, 18vw, 120px) !important;
-  height: clamp(80px, 18vw, 120px) !important;
+  width: clamp(64px, 14vw, 100px) !important;
+  height: clamp(64px, 14vw, 100px) !important;
 }
 
 /* ── Workspace decorative orbs ── */

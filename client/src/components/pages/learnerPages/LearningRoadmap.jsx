@@ -59,7 +59,7 @@ const LearningRoadmap = () => {
               onChange={(e) => setTargetSkill(e.target.value)}
               autoComplete="off"
             />
-            <div className="d-flex flex-wrap gap-2 mt-3">
+            <div className="d-flex flex-wrap" style={{ marginTop: 12, marginBottom: 8, gap: 10 }}>
               {skillSuggestions.filter((s) => s.toLowerCase().includes(targetSkill.toLowerCase())).slice(0, 6).map((s) => (
                 <span key={s} className="badge border rounded-pill px-3 py-2 fw-normal"
                   style={{ cursor: "pointer", background: targetSkill === s ? "#198754" : "#f1f5f9", color: targetSkill === s ? "#fff" : "#475569", transition: "all 0.15s" }}
@@ -70,12 +70,14 @@ const LearningRoadmap = () => {
             </div>
           </div>
           <div className="col-md-3">
-            <label className="form-label fw-semibold">Your Level</label>
-            <select className="form-select form-select-lg rounded-pill" value={currentLevel} onChange={(e) => setCurrentLevel(e.target.value)}>
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
-            </select>
+            <div className="d-flex align-items-center" style={{ gap: 14 }}>
+              <label className="form-label fw-semibold mb-0" style={{ whiteSpace: "nowrap" }}>Your Level</label>
+              <select className="form-select form-select-lg rounded-pill" value={currentLevel} onChange={(e) => setCurrentLevel(e.target.value)}>
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+            </div>
           </div>
           <div className="col-md-4 d-flex flex-column justify-content-end">
             <button

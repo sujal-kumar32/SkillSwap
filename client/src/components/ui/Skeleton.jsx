@@ -126,30 +126,6 @@ export const DashboardSkeleton = () => (
   </>
 );
 
-export const ProfileSkeleton = () => (
-  <div className="learner-card p-4 mb-4">
-    <div className="d-flex align-items-center gap-4 mb-4">
-      <SkeletonBox width={80} height={80} style={{ borderRadius: "50%", flexShrink: 0 }} />
-      <div style={{ flex: 1 }}>
-        <SkeletonBox height={22} width="35%" style={{ marginBottom: 8 }} />
-        <SkeletonBox height={12} width="55%" />
-      </div>
-    </div>
-    <div className="row g-3">
-      <div className="col-md-6">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <SkeletonBox key={i} height={14} width={`${70 - i * 10}%`} style={{ marginBottom: 10 }} />
-        ))}
-      </div>
-      <div className="col-md-6">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <SkeletonBox key={i} height={14} width={`${60 - i * 8}%`} style={{ marginBottom: 10 }} />
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
 export const SkeletonInjector = () => <style>{styles}</style>;
 
 export default SkeletonBox;

@@ -185,10 +185,3 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
 
 export { CardSkeleton, SessionCardSkeleton, TableSkeleton, StatsCardSkeleton, ListSkeleton };
 
-export const ProgressBar = ({ value }) => (
-  <div className="progress learner-progress">
-    <div className="progress-bar" style={{ width: `${value}%` }}>
-      {value}%
-    </div>
-  </div>
-);

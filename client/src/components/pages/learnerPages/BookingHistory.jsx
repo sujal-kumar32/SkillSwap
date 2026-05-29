@@ -61,9 +61,15 @@ const BookingHistory = () => {
                     <td>{booking.date || booking.sessionId?.date || "—"}</td>
                     <td>{booking.paymentStatus}</td>
                     <td>
-                      <div className="d-flex align-items-center gap-2">
+                      <div className="d-flex align-items-center" style={{ gap: 14 }}>
                         <StatusBadge status={booking.requestStatus} />
-                        <span className="text-muted small">Requested → Confirmed → Completed</span>
+                        <span className="text-muted small">
+                          {booking.requestStatus === "completed" ? "Requested → Confirmed → Completed"
+                          : booking.requestStatus === "cancelled" ? "Requested → Confirmed → Cancelled"
+                          : booking.requestStatus === "rejected" ? "Requested → Rejected"
+                          : booking.requestStatus === "accepted" ? "Requested → Confirmed"
+                          : "Requested"}
+                        </span>
                       </div>
                     </td>
                     <td className="text-end">

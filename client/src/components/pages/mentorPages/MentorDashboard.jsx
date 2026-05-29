@@ -136,7 +136,7 @@ const MentorDashboard = () => {
                   <div key={s._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
                     <div>
                       <h6 className="fw-bold mb-0 small">{s.title}</h6>
-                      <small className="text-muted">{s.date || "Flexible"} • {s.duration || 60}min</small>
+                      <small className="text-muted">{s.date ? new Date(s.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Flexible"}{s.time ? ` at ${s.time}` : ""} • {s.duration || 60}min</small>
                     </div>
                     <span style={{ background: s.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : s.status === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{s.status}</span>
                   </div>

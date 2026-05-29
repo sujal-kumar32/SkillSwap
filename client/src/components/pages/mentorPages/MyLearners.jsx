@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { showToast } from "../../../utils/toastUtils";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader, LoadingState } from "../../learner/LearnerUI";
@@ -10,10 +10,20 @@ const avatarFor = (name = "Learner", image) =>
   image || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0d6efd&color=fff`;
 
 const Learners = () => {
+  const navigate = useNavigate();
   const [learners, setLearners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  const handleMessage = async (learnerId) => {
+    try {
+      const res = await Apiservices.getOrCreateDM(learnerId);
+      navigate(`/messages/${res.data.data._id}`);
+    } catch {
+      showToast.error("Failed to open chat");
+    }
+  };
 
   useEffect(() => {
     const fetchLearners = async () => {
@@ -120,7 +130,7 @@ const Learners = () => {
           </div>
 
           {/* LEARNERS GRID */}
-          <div className="row g-4">
+          <div className="row g-4" style={{ rowGap: 32 }}>
             {loading ? (
               <div className="col-12"><LoadingState /></div>
             ) : learners.length ? (
@@ -131,7 +141,7 @@ const Learners = () => {
                     {/* IMAGE */}
                     <img
                       src={avatarFor(learner.name, learner.profileImage)}
-                      alt=<UserLink user={learner} />
+                      alt={learner.name || "Learner"}
                       className="learner-image mb-3"
                     />
 
@@ -164,15 +174,12 @@ const Learners = () => {
                     </div>
 
                     {/* BUTTONS */}
-                    <div className="d-flex mt-3" style={{ gap: "10px" }}>
-                      <button className="btn btn-primary rounded-pill flex-fill py-2" disabled>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-user"></i>
-                        Profile</span>
+                    <div className="d-flex flex-wrap mt-3" style={{ gap: 8 }}>
+                      <button className="btn btn-primary rounded-pill flex-fill py-2" onClick={() => navigate(`/profile/${learner._id}`)}>
+                        <i className="fa fa-user" style={{ marginRight: 10 }} />Profile
                       </button>
-
-                      <button className="btn btn-outline-dark rounded-pill flex-fill py-2" disabled>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "10px" }}><i className="fa fa-envelope"></i>
-                        Message</span>
+                      <button className="btn btn-outline-dark rounded-pill flex-fill py-2" onClick={() => handleMessage(learner._id)}>
+                        <i className="fa fa-envelope" style={{ marginRight: 10 }} />Message
                       </button>
                     </div>
                   </div>

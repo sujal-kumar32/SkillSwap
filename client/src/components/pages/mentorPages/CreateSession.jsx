@@ -335,7 +335,7 @@ const CreateSession = () => {
                         </select>
                       </div>
 
-                      <div className="col-md-6">
+                      <div className="col-md-6" style={{ marginBottom: 10 }}>
                         <label className="form-label fw-bold">
                           Session Type
                         </label>

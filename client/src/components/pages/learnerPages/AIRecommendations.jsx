@@ -112,7 +112,7 @@ const AIRecommendations = () => {
       <div className="row g-4 mb-4">
         <div className="col-lg-8">
           <div className="learner-card p-4 h-100">
-            <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }} className="mb-3">Smart Suggestions</span>
+            <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px", display: "inline-block", marginBottom: 14 }}>Smart Suggestions</span>
             <h4 className="fw-bold">Your next best learning moves</h4>
             <p className="text-muted mb-0">
               Sessions recommended by SwapMind AI based on your interests and activity.
@@ -126,7 +126,7 @@ const AIRecommendations = () => {
                 <><span className="spinner-border spinner-border-sm me-2" />Loading...</>
               ) : "Trending Skills"}
             </h5>
-            <div className="d-flex flex-wrap gap-2 mt-3">
+            <div className="d-flex flex-wrap" style={{ gap: 10, marginTop: 14 }}>
               {trendingSkills.map((skill) => (
                 <span style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }} key={skill}>{skill}</span>
               ))}
@@ -138,7 +138,7 @@ const AIRecommendations = () => {
       <div className="row g-4 mb-4">
         <div className="col-lg-6">
           <div className="learner-card p-4 h-100">
-            <div className="d-flex align-items-center gap-2 mb-3">
+            <div className="d-flex align-items-center mb-3" style={{ gap: 12 }}>
               <span className="d-inline-flex align-items-center" style={{ gap: 6, background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                 <i className="fa fa-robot" />SwapMind AI
               </span>
@@ -186,7 +186,7 @@ const AIRecommendations = () => {
 
         <div className="col-lg-6">
           <div className="learner-card p-4 h-100">
-            <div className="d-flex align-items-center gap-2 mb-3">
+            <div className="d-flex align-items-center mb-3" style={{ gap: 12 }}>
               <span className="d-inline-flex align-items-center" style={{ gap: 6, background: "linear-gradient(135deg, #16a34a, #15803d)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                 <i className="fa fa-lightbulb" />AI Learning Insights
               </span>

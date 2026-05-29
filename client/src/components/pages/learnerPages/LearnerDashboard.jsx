@@ -12,8 +12,9 @@ import {
   StatusBadge,
 } from "../../learner/LearnerUI";
 import { DashboardSkeleton } from "../../ui/Skeleton";
-
+import { useAuth } from "../../../App";
 const LearnerDashboard = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [sessions, setSessions] = useState([]);
@@ -47,11 +48,12 @@ const LearnerDashboard = () => {
             (b) => !reviewedSessionIds.has(b.sessionId?._id || b.sessionId),
           );
           if (unreviewed.length > 0) {
-            const key = "dismiss_review_prompt";
-            if (!sessionStorage.getItem(key)) {
+            const key = `dismiss_review_prompt_${user?._id || "anon"}`;
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, "1");
               showToast.info(
                 `${unreviewed.length} completed session${unreviewed.length > 1 ? "s" : ""} awaiting your review! Tap to review.`,
-                { autoClose: 10000, onClick: () => { sessionStorage.setItem(key, "1"); navigate("/learner/reviews"); } },
+                { autoClose: 10000, onClick: () => navigate("/learner/reviews") },
               );
             }
           }
@@ -130,7 +132,7 @@ const LearnerDashboard = () => {
             )}
           </div>
 
-          <div className="learner-card p-4">
+          <div className="learner-card p-4" style={{ marginBottom: 6 }}>
             <h5 className="fw-bold mb-3">Progress Snapshot</h5>
             <div className="bg-light rounded-4 p-5 text-center">
               <i className="fa fa-chart-column fa-2x text-primary mb-3" />
@@ -142,8 +144,8 @@ const LearnerDashboard = () => {
 
         <div className="col-xl-4">
           <div className="learner-card p-4 mb-4">
-            <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }} className="mb-3">AI Recommendations</span>
-            <h5 className="fw-bold">Smart picks for your goals</h5>
+            <span style={{ background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px", display: "inline-block" }}>AI Recommendations</span>
+            <h5 className="fw-bold" style={{ marginTop: 12 }}>Smart picks for your goals</h5>
             <p className="text-muted small">Based on your booked sessions and interests.</p>
             <Link to="/learner/ai" className="btn btn-outline-primary rounded-pill w-100">Open AI Picks</Link>
           </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { confirmAlert } from "../../utils/alertUtils";
+import { confirmAlert, deleteConfirmAlert } from "../../utils/alertUtils";
 import { showToast } from "../../utils/toastUtils";
 import LoadingButton from "../../utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
@@ -167,14 +167,14 @@ const ManageUsers = () => {
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr key={user._id}>
+                      <tr key={user._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
                         <td>
-                          <div className="d-flex align-items-center gap-2">
+                          <div className="d-flex align-items-center" style={{ gap: 14 }}>
                             <img src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0d6efd&color=fff`}
-                              alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
-                            <div>
-                              <div className="fw-semibold" style={{ color: "#1e293b" }}><UserLink user={user} /></div>
-                              <small style={{ color: "#64748b" }}>{user.email}</small>
+                              alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                            <div className="min-w-0">
+                              <div className="fw-semibold text-truncate" style={{ color: "#1e293b" }}><UserLink user={user} /></div>
+                              <small style={{ color: "#64748b" }} className="text-truncate d-block">{user.email}</small>
                             </div>
                           </div>
                         </td>
@@ -182,19 +182,45 @@ const ManageUsers = () => {
                         <td>
                           <span style={{ background: user.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : user.status === "deleted" ? "linear-gradient(135deg, #374151, #1f2937)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{user.status}</span>
                         </td>
-                        <td className="text-end">
-                          {user.status === "active" ? (
-                            <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
-                              style={{ fontSize: "0.8rem" }} onClick={() => handleBlock(user._id)}>
-                              <i className="fa fa-ban me-1" /> Block
-                            </LoadingButton>
-                          ) : user.status === "deleted" ? (
-                            <span className="text-muted small fw-semibold">User deleted their account</span>
+                        <td className="text-end" style={{ whiteSpace: "nowrap" }}>
+                          {user.status === "deleted" ? (
+                            <span className="text-muted small fw-semibold">{user.deletedBy === "self" ? "Deleted by user" : user.deletedBy === "admin" ? "Deleted by admin" : "Account deleted"}</span>
                           ) : (
-                            <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-success rounded-pill fw-semibold"
-                              style={{ fontSize: "0.8rem" }} onClick={() => handleUnblock(user._id)}>
-                              <i className="fa fa-check me-1" /> Unblock
-                            </LoadingButton>
+                            <>
+                              {user.status === "active" ? (
+                                <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold"
+                                  style={{ fontSize: "0.8rem" }} onClick={() => handleBlock(user._id)}>
+                                  <i className="fa fa-ban me-1" /> Block
+                                </LoadingButton>
+                              ) : (
+                                <LoadingButton loading={actionLoading === user._id} className="btn btn-sm btn-outline-success rounded-pill fw-semibold"
+                                  style={{ fontSize: "0.8rem" }} onClick={() => handleUnblock(user._id)}>
+                                  <i className="fa fa-check me-1" /> Unblock
+                                </LoadingButton>
+                              )}
+                              <button className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
+                                style={{ fontSize: "0.8rem", marginLeft: 6 }}
+                                onClick={async () => {
+                                  const ok = await deleteConfirmAlert(`user "${user.name}"`);
+                                  if (!ok) return;
+                                  try {
+                                    setActionLoading(user._id);
+                                    const res = await Apiservices.updateUserStatus(user._id, "deleted");
+                                    setUsers((prev) =>
+                                      prev.map((u) =>
+                                        u._id === user._id ? { ...u, ...res.data.data } : u,
+                                      ),
+                                    );
+                                    showToast.success("User deleted");
+                                  } catch (err) {
+                                    showToast.error(err.response?.data?.message || "Failed to delete user");
+                                  } finally {
+                                    setActionLoading(null);
+                                  }
+                                }}>
+                                <i className="fa fa-trash me-1" /> Delete
+                              </button>
+                            </>
                           )}
                         </td>
                       </tr>

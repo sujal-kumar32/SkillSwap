@@ -152,7 +152,7 @@ const ManagePaidSessions = () => {
                   <tbody>
                     {filteredSessions.length ? (
                       filteredSessions.map((s) => (
-                        <tr key={s._id}>
+                        <tr key={s._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
                           <td className="fw-semibold" style={{ color: "#1e293b" }}>{s.title}</td>
                           <td style={{ color: "#64748b" }}><UserLink user={s.mentorId} name={s.mentorId?.name || "Unknown"} /></td>
                           <td className="fw-semibold">₹{s.price ?? 0}</td>
@@ -161,12 +161,12 @@ const ManagePaidSessions = () => {
                             <span style={{ background: s.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : s.status === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                               {s.status}</span>
                           </td>
-                          <td className="text-end">
-                            <LoadingButton className="btn btn-sm btn-outline-primary rounded-pill me-2 fw-semibold px-3 py-2"
-                              style={{ fontSize: "0.8rem" }}
+                          <td className="text-end" style={{ whiteSpace: "nowrap" }}>
+                            <LoadingButton className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3 py-2"
+                              style={{ fontSize: "0.8rem", marginRight: 8 }}
                               onClick={() => navigate(`/admin/session/${s._id}`)}>View</LoadingButton>
-                            <LoadingButton className="btn btn-sm btn-outline-warning rounded-pill me-2 fw-semibold px-3 py-2"
-                              style={{ fontSize: "0.8rem" }}
+                            <LoadingButton className="btn btn-sm btn-outline-warning rounded-pill fw-semibold px-3 py-2"
+                              style={{ fontSize: "0.8rem", marginRight: 8 }}
                               onClick={() => navigate(`/admin/session/${s._id}/edit`)}>Edit</LoadingButton>
                             <LoadingButton loading={actionLoading === s._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold px-3 py-2"
                               style={{ fontSize: "0.8rem" }}

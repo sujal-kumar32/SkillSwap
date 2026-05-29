@@ -1,11 +1,7 @@
 ﻿const Category = require("./categoryModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
-
-// TEMP image upload (replace with Cloudinary later)
-const uploadImg = async (buffer) => {
-  return "uploaded-image-placeholder";
-};
+const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 
 exports.createCategory = asyncHandler(async (req, res) => {
 
@@ -18,10 +14,13 @@ exports.createCategory = asyncHandler(async (req, res) => {
       });
     }
 
-    let imageUrl = "";
+    let image = { url: "", publicId: "" };
     if (req.file) {
       try {
-        imageUrl = await uploadImg(req.file.buffer);
+        const result = await uploadBuffer(req.file.buffer, {
+          public_id: `category_${Date.now()}`,
+        });
+        image = { url: result.secure_url, publicId: result.public_id };
       } catch (e) {
         return res.status(500).json({
           success: false,
@@ -33,7 +32,8 @@ exports.createCategory = asyncHandler(async (req, res) => {
     const category = await Category.create({
       name: name.trim(),
       description: description?.trim() || "",
-      image: imageUrl,
+      image: image.url,
+      imagePublicId: image.publicId,
     });
 
     res.status(201).json({
@@ -129,7 +129,14 @@ exports.updateCategory = asyncHandler(async (req, res) => {
 
     if (req.file) {
       try {
-        category.image = await uploadImg(req.file.buffer);
+        if (category.imagePublicId) {
+          await destroyImage(category.imagePublicId).catch(() => {});
+        }
+        const result = await uploadBuffer(req.file.buffer, {
+          public_id: `category_${Date.now()}`,
+        });
+        category.image = result.secure_url;
+        category.imagePublicId = result.public_id;
       } catch (e) {
         return res.status(500).json({
           success: false,
@@ -157,6 +164,10 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
         success: false,
         message: "Category not found",
       });
+    }
+
+    if (category.imagePublicId) {
+      await destroyImage(category.imagePublicId).catch(() => {});
     }
 
     await Category.findByIdAndDelete(req.params.id);

@@ -277,7 +277,7 @@ const Settings = () => {
                   <input className="form-control rounded-pill" value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })} />
                 </div>
-                <div className="col-md-6">
+                <div className="col-md-6" style={{ marginBottom: 12 }}>
                   <label className="form-label fw-semibold small">Email</label>
                   <input className="form-control rounded-pill" type="email" value={form.email} readOnly
                     style={{ background: "#e9ecef", cursor: "not-allowed" }} />
