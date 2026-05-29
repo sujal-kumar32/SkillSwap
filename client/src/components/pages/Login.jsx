@@ -18,6 +18,7 @@ function Login() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [registeredEmail, setRegisteredEmail] = useState("");
   const cooldownRef = useRef(null);
 
   useEffect(() => {
@@ -28,9 +29,9 @@ function Login() {
   }, [resendCooldown]);
 
   const handleResendVerification = async () => {
-    if (resendCooldown > 0 || !email) return;
+    if (resendCooldown > 0 || !registeredEmail) return;
     try {
-      const res = await Apiservices.resendVerification({ email });
+      const res = await Apiservices.resendVerification({ email: registeredEmail });
       showToast.success(res.data?.message || "Verification email resent!");
       setResendCooldown(60);
     } catch (err) {
@@ -68,6 +69,7 @@ function Login() {
       const msg = error.response?.data?.message || "Login failed";
       if (msg.toLowerCase().includes("verify your email")) {
         setVerificationSent(true);
+        setRegisteredEmail(loginEmail);
       } else {
         showToast.error(msg);
       }
@@ -118,7 +120,7 @@ function Login() {
 
         showToast.success("Verification email sent! Please check your inbox.");
         setIsSignup(false);
-        setVerificationSent(true);
+        setRegisteredEmail(email);
         setName("");
         setEmail("");
         setPassword("");
@@ -407,7 +409,7 @@ padding: 0;
                       <span style={{ cursor: "pointer", color: "#4285F4", fontWeight: "600", textDecoration: "none", transition: "all 0.3s ease" }}
                         onMouseEnter={(e) => (e.target.style.color = "#3367D6")}
                         onMouseLeave={(e) => (e.target.style.color = "#4285F4")}
-                        onClick={() => { setVerificationSent(false); setIsSignup(!isSignup); }}>
+                        onClick={() => { setVerificationSent(false); setRegisteredEmail(""); setIsSignup(!isSignup); }}>
                         {isSignup ? "Login" : "Sign up"}
                       </span>
                     </p>
