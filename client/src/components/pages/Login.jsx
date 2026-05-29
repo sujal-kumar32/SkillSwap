@@ -120,6 +120,7 @@ function Login() {
 
         showToast.success("Verification email sent! Please check your inbox.");
         setIsSignup(false);
+        setVerificationSent(true);
         setRegisteredEmail(email);
         setName("");
         setEmail("");
