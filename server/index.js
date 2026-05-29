@@ -41,6 +41,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 
 app.use(helmet());
+app.set("trust proxy", 1);
 app.use(cors({
   origin: true,
   credentials: true
