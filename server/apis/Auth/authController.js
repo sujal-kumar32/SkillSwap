@@ -91,14 +91,12 @@ exports.register = asyncHandler(async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
-    let emailSent = false;
     try {
       await sendEmail({
         to: user.email,
         subject: "Verify your email - SkillSwap",
         html: emailVerification(user.name, verifyLink),
       });
-      emailSent = true;
     } catch (err) {
       console.error("Register: verification email failed:", err.message);
       console.log("Verification link (fallback):", verifyLink);
@@ -107,7 +105,6 @@ exports.register = asyncHandler(async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Registration successful! Verification email sent.",
-      ...(process.env.NODE_ENV !== "production" && !emailSent ? { devVerifyLink: verifyLink } : {}),
     });
 
 });
@@ -187,14 +184,12 @@ exports.resendVerification = asyncHandler(async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
-    let emailSent = false;
     try {
       await sendEmail({
         to: user.email,
         subject: "Verify your email - SkillSwap",
         html: emailVerification(user.name, verifyLink),
       });
-      emailSent = true;
       resendCooldowns.set(email, Date.now());
     } catch (err) {
       console.error("Resend verification email failed:", err.message);
@@ -204,7 +199,6 @@ exports.resendVerification = asyncHandler(async (req, res) => {
     res.json({
       success: true,
       message: "Verification email sent. Please check your inbox.",
-      ...(process.env.NODE_ENV !== "production" && !emailSent ? { devVerifyLink: verifyLink } : {}),
     });
 
 });
