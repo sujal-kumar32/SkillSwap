@@ -124,20 +124,20 @@ function Home() {
       <>
         {/* Header Start */}
         <div
-          className="jumbotron jumbotron-fluid position-relative overlay-bottom"
+          className="jumbotron jumbotron-fluid position-relative overlay-bottom home-hero"
           style={{ marginBottom: 90 }}
         >
           <div className="container text-center my-5 py-5">
-            <h1 className="text-white mt-4 mb-4">
+            <h1 className="text-white mt-4 mb-4" style={{ fontSize: "clamp(1rem, 3vw, 1.5rem)" }}>
               "Learn Skills. Share Knowledge. Grow Together."
             </h1>
-            <h1 className="text-white display-1 mb-5">SkillSwap Platform</h1>
+            <h1 className="text-white display-1 mb-5" style={{ fontSize: "clamp(1.8rem, 5vw, 4.5rem)" }}>SkillSwap Platform</h1>
             <div
               className="mx-auto mb-5"
               style={{ width: "100%", maxWidth: 600 }}
             >
               <div className="input-group">
-                <select style={{ width: 140, padding: "10px", border: "1px solid #dee2e6", borderRadius: "0", background: "#fff" }}
+                <select style={{ width: "auto", minWidth: 120, maxWidth: "100%", padding: "10px", border: "1px solid #dee2e6", borderRadius: "0", background: "#fff" }}
                   value={catSearch} onChange={(e) => setCatSearch(e.target.value)}
                   disabled={catLoading}>
                   <option value="">{catLoading ? "Loading..." : catError ? "Unavailable" : "All Skills"}</option>
@@ -146,7 +146,7 @@ function Home() {
                   ))}
                 </select>
                 <input id="h-search" type="text" className="form-control border-light"
-                  style={{ padding: "30px 25px" }} placeholder="Search skills, mentors, sessions..."
+                  style={{ padding: "clamp(12px, 2vw, 30px) clamp(12px, 2vw, 25px)" }} placeholder="Search skills, mentors, sessions..."
                   onKeyDown={(e) => { if (e.key === "Enter") navigate(`/courses?q=${encodeURIComponent(document.getElementById("h-search")?.value || "")}&cat=${catSearch}`); }} />
                 <div className="input-group-append">
                   <button className="btn btn-secondary px-4 px-lg-5" onClick={() => navigate(`/courses?q=${encodeURIComponent(document.getElementById("h-search")?.value || "")}&cat=${catSearch}`)}>
@@ -162,7 +162,7 @@ function Home() {
         <div className="container-fluid py-5">
           <div className="container py-5">
             <div className="row">
-              <div className="col-lg-5 mb-5 mb-lg-0" style={{ minHeight: 500 }}>
+              <div className="col-lg-5 mb-5 mb-lg-0 home-about-img" style={{ minHeight: "clamp(250px, 40vw, 500px)" }}>
                 <div className="position-relative h-100">
                   <img
                     className="position-absolute w-100 h-100"
@@ -287,7 +287,7 @@ function Home() {
                   </div>
                 </div>
               </div>
-              <div className="col-lg-5" style={{ minHeight: 500 }}>
+              <div className="col-lg-5 home-feature-img" style={{ minHeight: "clamp(250px, 40vw, 500px)" }}>
                 <div className="position-relative h-100">
                   <img
                     className="position-absolute w-100 h-100"
@@ -707,8 +707,8 @@ function Home() {
             <div className="row align-items-center">
               <div className="col-lg-5 mb-5 mb-lg-0">
                 <div
-                  className="bg-light d-flex flex-column justify-content-center px-5"
-                  style={{ height: 450 }}
+                  className="bg-light d-flex flex-column justify-content-center px-5 home-contact-box"
+                  style={{ minHeight: 300 }}
                 >
                   <div className="d-flex align-items-center mb-5">
                     <div className="btn-icon bg-primary mr-4">

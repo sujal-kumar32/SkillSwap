@@ -147,7 +147,7 @@ exports.getSuggestions = asyncHandler(async (req, res) => {
       },
       { $match: { overlap: { $gt: 0 } } },
       { $sort: { overlap: -1, followerCount: -1 } },
-      { $limit },
+      { $limit: limit },
       { $project: { name: 1, profileImage: 1, bio: 1, xp: 1, level: 1, followerCount: 1, interests: 1, overlap: 1 } },
     ]);
   }

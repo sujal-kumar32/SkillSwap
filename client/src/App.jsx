@@ -67,6 +67,7 @@ import MessagesPage from "./components/pages/MessagesPage";
 import { SocketProvider } from "./context/SocketContext";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 import { SkeletonInjector } from "./components/ui/Skeleton";
+import "./responsive.css";
 import Apiservices from "../Apiservices";
 
 const AuthContext = createContext(null);

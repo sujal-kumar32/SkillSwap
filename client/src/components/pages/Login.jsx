@@ -292,10 +292,10 @@ padding: 0;
         <nav className="navbar navbar-expand-lg pt-4 px-4">
           <div className="container-fluid"></div>
         </nav>
-        <div className="container-fluid bg-image h-100 px-4 py-5">
+        <div className="container-fluid bg-image h-100 px-4 py-5 login-container">
           <div className="row align-items-center min-vh-75">
             {/* LEFT */}
-            <div className="col-lg-7">
+            <div className="col-lg-7 login-features">
               <h1 className="headline">
                 Exchange Skills.
                 <br />
@@ -326,7 +326,7 @@ padding: 0;
             <div className="col-lg-5 px-lg-4">
               <div className="glass-card">
                 <div className="text-center mb-4">
-                  <h3 className="fw-bold mb-1" style={{ color: "#333", fontSize: "1.8rem" }}>
+                  <h3 className="fw-bold mb-1" style={{ color: "#333", fontSize: "clamp(1.3rem, 4vw, 1.8rem)" }}>
                     {isSignup ? "Create Account" : "Welcome back"}
                   </h3>
                   <p className="text-muted small" style={{ fontSize: "1rem" }}>

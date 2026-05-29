@@ -539,7 +539,7 @@ const MessagesPage = () => {
           </div>
         )}
 
-        <div className={`d-flex flex-column flex-grow-1 ${showMobileList && !chatId ? "d-none d-md-flex" : "d-flex"}`}>
+        <div className={`d-flex flex-column flex-grow-1 ${showMobileList ? "d-none d-md-flex" : "d-flex"}`}>
           {!chatId ? (
             <div className="d-flex align-items-center justify-content-center flex-grow-1" style={{ background: "#fafbfc" }}>
               <div className="text-center">

@@ -161,7 +161,7 @@ const Profile = () => {
             </Link>
             <div className="d-flex flex-wrap align-items-end gap-4">
               <img src={profile.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=0d6efd&color=fff&size=128`}
-                alt="" className="rounded-circle border border-4 border-white shadow-sm" style={{ width: 120, height: 120, objectFit: "cover", marginTop: -60 }} />
+                alt="" className="rounded-circle border border-4 border-white shadow-sm avatar-responsive-lg profile-avatar-neg" style={{ objectFit: "cover" }} />
               <div className="flex-grow-1">
                 <div className="d-flex flex-wrap align-items-center" style={{ gap: "10px" }}>
                   <h2 className="fw-bold mb-0">{profile.name}</h2>

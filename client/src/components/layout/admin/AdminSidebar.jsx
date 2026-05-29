@@ -18,7 +18,7 @@ const links = [
   { to: "/admin/settings", label: "Settings", icon: "fa-gear" },
 ];
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
@@ -28,8 +28,10 @@ const AdminSidebar = () => {
     navigate("/", { replace: true });
   };
 
+  const handleNav = () => { if (onClose) onClose(); };
+
   return (
-    <aside className="admin-sidebar">
+    <aside className={`admin-sidebar${sidebarOpen ? " open" : ""}`}>
       <div className="p-4 border-bottom" style={{ borderColor: "rgba(0,0,0,0.04)" }}>
         <Link to="/" className="text-decoration-none">
           <div className="d-flex align-items-center gap-2">
@@ -44,7 +46,7 @@ const AdminSidebar = () => {
         </Link>
       </div>
 
-      <nav className="p-3 flex-grow-1">
+      <nav className="p-3 flex-grow-1" onClick={handleNav}>
         {links.map((link) => (
           <NavLink
             key={link.to}

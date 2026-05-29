@@ -7,6 +7,7 @@ import {
   EmptyState,
   PageHeader,
   SessionCard,
+  StatCard,
   StatsCardSkeleton,
   StatusBadge,
 } from "../../learner/LearnerUI";

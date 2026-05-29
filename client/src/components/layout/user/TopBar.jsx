@@ -47,7 +47,7 @@ const TopBar = () => {
   };
 
   return (
-    <div style={{
+    <div className="topbar-wrapper" style={{
       background: "rgba(255,255,255,0.75)",
       backdropFilter: "blur(16px)",
       WebkitBackdropFilter: "blur(16px)",
@@ -61,7 +61,7 @@ const TopBar = () => {
       top: 0,
       zIndex: 1000,
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+      <div className="topbar-left" style={{ display: "flex", alignItems: "center", gap: 32 }}>
         <Link to="/workspace" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 10,
@@ -75,15 +75,15 @@ const TopBar = () => {
         </Link>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Link to="/workspace" style={btnStyle}
+      <div className="topbar-right" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Link to="/workspace" className="topbar-btn" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-th-large" /> Workspace
+          <i className="fa fa-th-large" /> <span className="topbar-btn-text">Workspace</span>
         </Link>
 
           <div ref={notifRef} style={{ position: "relative" }}>
-            <button style={btnStyle}
+            <button className="topbar-btn" style={btnStyle}
               onClick={() => {
                 if (isNotifsPage) return;
                 setShowNotifs(!showNotifs);
@@ -93,7 +93,7 @@ const TopBar = () => {
               }}
             onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
             onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-            <i className="fa fa-bell" /> Notifications
+            <i className="fa fa-bell" /> <span className="topbar-btn-text">Notifications</span>
             {unreadCount > 0 && (
               <span style={{
                 background: "#ef4444", color: "white", fontSize: "0.65rem",
@@ -105,16 +105,16 @@ const TopBar = () => {
           {showNotifs && <NotificationDropdown onClose={() => setShowNotifs(false)} />}
         </div>
 
-        <Link to="/feed" style={btnStyle}
+        <Link to="/feed" className="topbar-btn" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-stream" /> Feed
+          <i className="fa fa-stream" /> <span className="topbar-btn-text">Feed</span>
         </Link>
 
-        <Link to="/messages" style={btnStyle}
+        <Link to="/messages" className="topbar-btn" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-comment" /> Messages
+          <i className="fa fa-comment" /> <span className="topbar-btn-text">Messages</span>
           {unreadChatCount > 0 && (
             <span style={{
               background: "#ef4444", color: "white", fontSize: "0.65rem",
@@ -124,19 +124,19 @@ const TopBar = () => {
           )}
         </Link>
 
-        <Link to="/leaderboard" style={btnStyle}
+        <Link to="/leaderboard" className="topbar-btn" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-trophy" /> Leaderboard
+          <i className="fa fa-trophy" /> <span className="topbar-btn-text">Leaderboard</span>
         </Link>
 
-        <Link to="/settings" style={btnStyle}
+        <Link to="/settings" className="topbar-btn" style={btnStyle}
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-cog" /> Settings
+          <i className="fa fa-cog" /> <span className="topbar-btn-text">Settings</span>
         </Link>
 
-        <div style={{ width: 1, height: 28, background: "#e5e7eb", margin: "0 8px" }} />
+        <div className="topbar-divider" style={{ width: 1, height: 28, background: "#e5e7eb", margin: "0 8px" }} />
 
         <Link to="/profile" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}>
           <div style={{
@@ -147,10 +147,10 @@ const TopBar = () => {
           }}>
             {userName.charAt(0).toUpperCase()}
           </div>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1e293b" }}>{userName}</span>
+          <span className="topbar-user-name" style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1e293b" }}>{userName}</span>
         </Link>
 
-        <button onClick={handleLogout} style={{
+        <button className="topbar-btn" onClick={handleLogout} style={{
           ...btnStyle,
           background: "rgba(254,242,242,0.8)",
           color: "#ef4444",
@@ -159,7 +159,7 @@ const TopBar = () => {
         }}
           onMouseEnter={(e) => { e.target.style.background = "#fef2f2"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(254,242,242,0.8)"; }}>
-          <i className="fa fa-sign-out-alt" /> Logout
+          <i className="fa fa-sign-out-alt" /> <span className="topbar-btn-text">Logout</span>
         </button>
       </div>
     </div>

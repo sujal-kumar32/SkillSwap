@@ -46,7 +46,7 @@ const XpWidget = ({ user }) => {
   );
 };
 
-const LearnerSidebar = () => {
+const LearnerSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -56,8 +56,10 @@ const LearnerSidebar = () => {
     navigate("/", { replace: true });
   };
 
+  const handleNav = () => { if (onClose) onClose(); };
+
   return (
-    <aside className="learner-sidebar">
+    <aside className={`learner-sidebar${sidebarOpen ? " open" : ""}`}>
       <div className="p-4 border-bottom" style={{ borderColor: "rgba(0,0,0,0.04)" }}>
         <Link to="/workspace" className="text-decoration-none">
           <div className="d-flex align-items-center gap-2">
@@ -72,7 +74,7 @@ const LearnerSidebar = () => {
         </Link>
       </div>
 
-      <nav className="p-3 flex-grow-1">
+      <nav className="p-3 flex-grow-1" onClick={handleNav}>
         {links.map((link) => (
           <NavLink
             key={link.to}
