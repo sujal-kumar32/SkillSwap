@@ -54,11 +54,11 @@ exports.register = asyncHandler(async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: "Verify your email - SkillSwap",
       html: emailVerification(user.name, verifyLink),
-    });
+    }).catch((err) => console.error("Register: verification email failed:", err.message));
 
     res.status(201).json({
       success: true,
@@ -125,11 +125,11 @@ exports.resendVerification = asyncHandler(async (req, res) => {
 
     const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
-    await sendEmail({
+    sendEmail({
       to: user.email,
       subject: "Verify your email - SkillSwap",
       html: emailVerification(user.name, verifyLink),
-    });
+    }).catch((err) => console.error("Resend verification email failed:", err.message));
 
     res.json({
       success: true,
