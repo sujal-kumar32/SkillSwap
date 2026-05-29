@@ -191,11 +191,6 @@ exports.getSessions = asyncHandler(async (req, res) => {
     else if (sort === "name") sortObj = { title: 1 };
     else if (search) sortObj = { score: { $meta: "textScore" } };
     else sortObj = { createdAt: -1 };
-    else if (sort === "oldest") sortObj = { createdAt: 1 };
-    else if (sort === "price") sortObj = { price: 1 };
-    else if (sort === "price-desc") sortObj = { price: -1 };
-    else if (sort === "name") sortObj = { title: 1 };
-    else sortObj = { createdAt: -1 };
 
     const [sessions, total] = await Promise.all([
       Session.find(filter).sort(sortObj).skip(skip).limit(limit)
