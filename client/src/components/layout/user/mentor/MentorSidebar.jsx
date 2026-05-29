@@ -5,10 +5,10 @@ import { useAuth } from "../../../../App";
 
 const links = [
   { to: "/mentor", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
-  { to: "/mentor/create-skill", label: "Create Skill", icon: "fa-lightbulb" },
   { to: "/mentor/my-skills", label: "My Skills", icon: "fa-code" },
-  { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
+  { to: "/mentor/create-skill", label: "Create Skill", icon: "fa-lightbulb" },
   { to: "/mentor/my-sessions", label: "My Sessions", icon: "fa-chalkboard-teacher" },
+  { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
   { to: "/mentor/availability", label: "Availability", icon: "fa-clock" },
   { to: "/mentor/bookings", label: "Bookings", icon: "fa-calendar-check" },
   { to: "/mentor/learners", label: "Learners", icon: "fa-users" },

@@ -472,6 +472,14 @@ class Apiservices {
     return axios.get(baseUrl + "analytics/mentor");
   }
 
+  broadcastNotification(data) {
+    return axios.post(baseUrl + "admin/broadcast", data);
+  }
+
+  getAdminPayments(params = {}) {
+    return axios.get(baseUrl + "admin/payments", { params });
+  }
+
 }
 
 let isRefreshing = false;

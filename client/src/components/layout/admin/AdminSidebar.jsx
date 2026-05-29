@@ -6,15 +6,17 @@ import { useAuth } from "../../../App";
 const links = [
   { to: "/admin", label: "Dashboard", icon: "fa-tachometer-alt", end: true },
   { to: "/admin/manage-users", label: "Manage Users", icon: "fa-users-cog" },
+  { to: "/admin/mentor-requests", label: "Mentors", icon: "fa-handshake" },
+  { to: "/admin/progress", label: "Learner Progress", icon: "fa-chart-line" },
   { to: "/admin/categories", label: "Categories", icon: "fa-tags" },
   { to: "/admin/add-skill", label: "Add Skill", icon: "fa-plus-circle" },
   { to: "/admin/skill-approval", label: "Skill Approval", icon: "fa-clipboard-check" },
   { to: "/admin/manage-paid-sessions", label: "Manage Sessions", icon: "fa-video" },
   { to: "/admin/view-requests", label: "View Requests", icon: "fa-envelope" },
   { to: "/admin/bookings", label: "All Bookings", icon: "fa-calendar" },
+  { to: "/admin/payments", label: "Payment Ledger", icon: "fa-credit-card" },
   { to: "/admin/reviews", label: "Reviews & Ratings", icon: "fa-star" },
-  { to: "/admin/progress", label: "Learner Progress", icon: "fa-chart-line" },
-  { to: "/admin/mentor-requests", label: "Mentors", icon: "fa-handshake" },
+  { to: "/admin/broadcast", label: "Broadcast", icon: "fa-bullhorn" },
   { to: "/admin/settings", label: "Settings", icon: "fa-gear" },
 ];
 

@@ -131,6 +131,7 @@ const { setSocketIO: setNotifIO } = require("./services/notificationService");
 const { setSocketIO: setChatIO } = require("./apis/Chat/chatController");
 
 const io = initSocket(server);
+app.set("io", io);
 setNotifIO(io);
 setChatIO(io);
 

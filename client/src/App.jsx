@@ -26,6 +26,8 @@ import AdminBookings from "./components/adminPages/AdminBookings";
 import AdminSettings from "./components/adminPages/AdminSettings";
 import AdminCategories from "./components/adminPages/AdminCategories";
 import MentorRequests from "./components/adminPages/MentorRequests";
+import AdminBroadcast from "./components/adminPages/AdminBroadcast";
+import AdminPayments from "./components/adminPages/AdminPayments";
 import MentorMaster from "./components/layout/user/mentor/MentorMaster";
 import MentorDashboard from "./components/pages/mentorPages/MentorDashboard";
 import CreateSession from "./components/pages/mentorPages/CreateSession";
@@ -289,6 +291,8 @@ function App() {
             <Route path="/admin/reviews" element={<AdminReviews />} />
             <Route path="/admin/progress" element={<AdminProgress />} />
             <Route path="/admin/mentor-requests" element={<MentorRequests />} />
+            <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/broadcast" element={<AdminBroadcast />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
           </Route>
 

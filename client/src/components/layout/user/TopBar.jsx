@@ -82,6 +82,19 @@ const TopBar = () => {
           <i className="fa fa-th-large" /> <span className="topbar-btn-text">Workspace</span>
         </Link>
 
+        <Link to="/messages" className="topbar-btn" style={btnStyle}
+          onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
+          onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
+          <i className="fa fa-comment" /> <span className="topbar-btn-text">Messages</span>
+          {unreadChatCount > 0 && (
+            <span style={{
+              background: "#ef4444", color: "white", fontSize: "0.65rem",
+              fontWeight: 700, padding: "2px 7px", borderRadius: 999,
+              marginLeft: 2, lineHeight: 1,
+            }}>{unreadChatCount > 99 ? "99+" : unreadChatCount}</span>
+          )}
+        </Link>
+
           <div ref={notifRef} style={{ position: "relative" }}>
             <button className="topbar-btn" style={btnStyle}
               onClick={() => {
@@ -109,19 +122,6 @@ const TopBar = () => {
           onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
           onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
           <i className="fa fa-stream" /> <span className="topbar-btn-text">Feed</span>
-        </Link>
-
-        <Link to="/messages" className="topbar-btn" style={btnStyle}
-          onMouseEnter={(e) => { e.target.style.background = "#eef2ff"; e.target.style.color = "#0d6efd"; }}
-          onMouseLeave={(e) => { e.target.style.background = "rgba(255,255,255,0.8)"; e.target.style.color = "#475569"; }}>
-          <i className="fa fa-comment" /> <span className="topbar-btn-text">Messages</span>
-          {unreadChatCount > 0 && (
-            <span style={{
-              background: "#ef4444", color: "white", fontSize: "0.65rem",
-              fontWeight: 700, padding: "2px 7px", borderRadius: 999,
-              marginLeft: 2, lineHeight: 1,
-            }}>{unreadChatCount > 99 ? "99+" : unreadChatCount}</span>
-          )}
         </Link>
 
         <Link to="/leaderboard" className="topbar-btn" style={btnStyle}
