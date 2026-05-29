@@ -27,23 +27,25 @@ const generateRefreshToken = async (userId) => {
 };
 
 const setTokenCookies = (res, accessToken, refreshToken) => {
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     maxAge: 15 * 60 * 1000,
   });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
     maxAge: REFRESH_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
   });
 };
 
 const clearTokenCookies = (res) => {
-  res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
-  res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
+  const opts = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" };
+  res.clearCookie("token", opts);
+  res.clearCookie("refreshToken", opts);
 };
 
 if (!SECRET) {
@@ -280,31 +282,10 @@ exports.login = asyncHandler(async (req, res) => {
       });
     }
 
-<<<<<<< HEAD
-    // PAYLOAD
-    const payload = {
-      id: user._id,
-      roles: user.roles,
-    };
-
-    const token = jwt.sign(payload, SECRET, {
-      expiresIn: TOKEN_EXPIRES_IN,
-    });
-
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
-    res.cookie("token", token, cookieOptions);
-=======
     const payload = { id: user._id, roles: user.roles };
     const accessToken = generateAccessToken(payload);
     const refreshToken = await generateRefreshToken(user._id);
     setTokenCookies(res, accessToken, refreshToken);
->>>>>>> main
 
     res.send({
       success: true,
@@ -519,13 +500,6 @@ exports.refresh = asyncHandler(async (req, res) => {
 // LOGOUT
 exports.logout = asyncHandler(async (req, res) => {
 
-<<<<<<< HEAD
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-    });
-=======
     const rawToken = req.cookies?.refreshToken;
     if (rawToken) {
       const hash = crypto.createHash("sha256").update(rawToken).digest("hex");
@@ -533,7 +507,6 @@ exports.logout = asyncHandler(async (req, res) => {
     }
 
     clearTokenCookies(res);
->>>>>>> main
 
     res.json({ success: true, message: "Logged out successfully" });
 
