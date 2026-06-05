@@ -24,7 +24,9 @@
   },
   "devDependencies": {
     "compression": "^1.8.1",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "name": "server",
   "version": "1.0.0",

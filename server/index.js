@@ -49,6 +49,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/uploads", express.static("uploads"));
+app.use("/api-docs", require("./swagger").swaggerServe, require("./swagger").swaggerSetup);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
