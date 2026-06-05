@@ -129,6 +129,10 @@ const session = {
     sessionType: Joi.string().valid("online", "offline"),
     meetLink: Joi.string().uri().allow(""),
     thumbnail: Joi.string().allow(""),
+    bookingTypes: Joi.alternatives().try(
+      Joi.array().items(Joi.string().valid("paid", "credits")),
+      Joi.string().valid("paid", "credits")
+    ),
   }),
   update: Joi.object({
     title: Joi.string().trim().min(3).max(200),
@@ -150,13 +154,14 @@ const request = {
       "string.empty": "Session ID is required",
     }),
     note: Joi.string().trim().max(500).allow(""),
+    bookingSource: Joi.string().valid("paid", "credits").default("paid"),
   }),
   updateStatus: Joi.object({
     status: Joi.string()
-      .valid("pending", "accepted", "rejected", "completed", "cancelled")
+      .valid("pending", "accepted", "rejected", "completed", "cancelled", "disputed")
       .required()
       .messages({
-        "any.only": "Status must be one of: pending, accepted, rejected, completed, cancelled",
+        "any.only": "Status must be one of: pending, accepted, rejected, completed, cancelled, disputed",
         "string.empty": "Status is required",
       }),
   }),

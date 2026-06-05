@@ -109,7 +109,7 @@ const MentorDashboard = () => {
                 {recentBookings.map((b) => (
                   <div key={b._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
                     <div>
-                      <h6 className="fw-bold mb-0 small">{b.sessionId?.title || "Session"}</h6>
+                      <h6 className="fw-bold mb-0 small">{b.sessionId?.title || "Session"}{b.sessionId?.bookingTypes?.includes("credits") ? <span className="d-inline-flex align-items-center" style={{ gap: 3, padding: "1px 5px", borderRadius: 999, fontSize: "0.6rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 6, verticalAlign: "middle" }}><i className="fa fa-coins" />{b.sessionId?.creditCost || ""}</span> : ""}</h6>
                       <small className="text-muted"><UserLink user={b.learnerId} name={b.learnerId?.name || "Learner"} />{b.sessionId?.maxLearners > 0 ? " • Group" : ""}</small>
                     </div>
                     <span style={{ background: b.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : b.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : b.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #64748b, #475569)", color: b.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
@@ -138,7 +138,7 @@ const MentorDashboard = () => {
                 {recentSessions.map((s) => (
                   <div key={s._id} className="list-group-item px-0 d-flex justify-content-between align-items-center">
                     <div>
-                      <h6 className="fw-bold mb-0 small">{s.title}</h6>
+                      <h6 className="fw-bold mb-0 small">{s.title}{s.bookingTypes?.includes("credits") && s.creditCost > 0 ? <span className="d-inline-flex align-items-center" style={{ gap: 3, padding: "1px 5px", borderRadius: 999, fontSize: "0.6rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 6, verticalAlign: "middle" }}><i className="fa fa-coins" />{s.creditCost}</span> : ""}</h6>
                       <small className="text-muted">{s.date ? new Date(s.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Flexible"}{s.time ? ` at ${s.time}` : ""} • {s.duration || 60}min</small>
                     </div>
                     <span style={{ background: s.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : s.status === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{s.status}</span>

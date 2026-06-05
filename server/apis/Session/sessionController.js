@@ -1,8 +1,11 @@
-﻿const crypto = require("crypto");
+﻿const mongoose = require("mongoose");
+const crypto = require("crypto");
+const { recalculateTrustScore } = require("../../services/trustService");
 const Session = require("./sessionModel");
 const Skill = require("../Skills/skillModel");
 const Request = require("../Request/requestModel");
 const Review = require("../Reviews/reviewModel");
+const User = require("../Users/userModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
@@ -12,6 +15,8 @@ const Transaction = require("../Wallet/transactionModel");
 const SessionMaterial = require("../SessionMaterial/sessionMaterialModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 const { createFeedEvent } = require("../../services/feedService");
+const { releaseCredits, transferCredits } = require("../../services/creditService");
+const CREDIT_RATES = require("../../config/creditRates");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
@@ -33,6 +38,7 @@ exports.createSession = asyncHandler(async (req, res) => {
       sessionType,
       meetLink,
       thumbnail: thumbnailUrl,
+      bookingTypes,
     } = req.body;
 
     if (!title || !skillId) {
@@ -62,6 +68,30 @@ exports.createSession = asyncHandler(async (req, res) => {
 
     const numericPrice = Number(price) || 0;
 
+    let sessionBookingTypes = ["paid"];
+    let creditCost = 0;
+    let creditSnapshot = null;
+
+    if (bookingTypes) {
+      let types = Array.isArray(bookingTypes) ? bookingTypes : [bookingTypes];
+      if (types.length === 1 && typeof types[0] === "string" && types[0].includes(",")) {
+        types = types[0].split(",").map((t) => t.trim());
+      }
+      sessionBookingTypes = types.filter((t) => ["paid", "credits"].includes(t));
+      if (!sessionBookingTypes.length) sessionBookingTypes = ["paid"];
+    }
+
+    if (sessionBookingTypes.includes("credits")) {
+      const user = await User.findById(req.user.id).select("skills").lean();
+      const skillName = skill.name?.toLowerCase();
+      const userSkill = user?.skills?.find((s) => s.name?.toLowerCase() === skillName);
+      const level = userSkill?.level || "beginner";
+      const hourlyRate = CREDIT_RATES[level] || CREDIT_RATES.beginner;
+      const dur = Number(duration) || 60;
+      creditCost = Math.round(hourlyRate * (dur / 60));
+      creditSnapshot = { level, hourlyRate, duration: dur };
+    }
+
     const session = await Session.create({
       title,
       skillId,
@@ -78,6 +108,9 @@ exports.createSession = asyncHandler(async (req, res) => {
       meetLink,
       thumbnail,
       thumbnailPublicId,
+      bookingTypes: sessionBookingTypes,
+      creditCost,
+      creditSnapshot,
     });
 
     if (session.sessionType === "online" && !session.meetLink) {
@@ -360,6 +393,7 @@ exports.updateSession = asyncHandler(async (req, res) => {
       "meetLink",
       "thumbnail",
       "status",
+      "bookingTypes",
     ];
 
     allowedFields.forEach((field) => {
@@ -368,6 +402,30 @@ exports.updateSession = asyncHandler(async (req, res) => {
       }
     });
     session.isPaid = session.price > 0;
+
+    if (req.body.bookingTypes !== undefined) {
+      let types = Array.isArray(req.body.bookingTypes) ? req.body.bookingTypes : [req.body.bookingTypes];
+      if (types.length === 1 && typeof types[0] === "string" && types[0].includes(",")) {
+        types = types[0].split(",").map((t) => t.trim());
+      }
+      session.bookingTypes = types.filter((t) => ["paid", "credits"].includes(t));
+      if (!session.bookingTypes.length) session.bookingTypes = ["paid"];
+    }
+
+    if (session.bookingTypes.includes("credits")) {
+      const skill = await Skill.findById(session.skillId).lean();
+      const user = await User.findById(session.mentorId).select("skills").lean();
+      const skillName = skill?.name?.toLowerCase();
+      const userSkill = user?.skills?.find((s) => s.name?.toLowerCase() === skillName);
+      const level = userSkill?.level || "beginner";
+      const hourlyRate = CREDIT_RATES[level] || CREDIT_RATES.beginner;
+      const dur = Number(session.duration) || 60;
+      session.creditCost = Math.round(hourlyRate * (dur / 60));
+      session.creditSnapshot = { level, hourlyRate, duration: dur };
+    } else {
+      session.creditCost = 0;
+      session.creditSnapshot = null;
+    }
 
     if (req.file) {
       if (session.thumbnailPublicId) {
@@ -397,7 +455,7 @@ exports.updateSession = asyncHandler(async (req, res) => {
         }).lean();
 
         for (const req of activeRequests) {
-          await Request.findByIdAndUpdate(req._id, { requestStatus: "cancelled" });
+          let updateFields = { requestStatus: "cancelled" };
 
           if (req.paymentStatus === "paid" && session.price > 0) {
             let wallet = await Wallet.findOne({ userId: req.learnerId });
@@ -416,39 +474,59 @@ exports.updateSession = asyncHandler(async (req, res) => {
             });
             wallet.balance += session.price;
             await wallet.save();
-            await Request.findByIdAndUpdate(req._id, { paymentStatus: "refunded" });
+            updateFields.paymentStatus = "refunded";
+          }
+
+          if (req.bookingSource === "credits" && req.creditsLocked > 0) {
+            const mongoSession = await mongoose.startSession();
+            try {
+              mongoSession.startTransaction();
+              await releaseCredits(req.learnerId, req.creditsLocked, mongoSession);
+              await Transaction.create([{
+                userId: req.learnerId,
+                type: "credit_refunded",
+                amount: req.creditsLocked,
+                reference: String(req._id),
+                referenceModel: "Request",
+                description: "Credits refunded — session cancelled by mentor",
+                status: "completed",
+              }], { session: mongoSession });
+              await Request.findByIdAndUpdate(req._id, { ...updateFields, creditsLocked: 0 }, { session: mongoSession });
+              await mongoSession.commitTransaction();
+            } catch (creditErr) {
+              await mongoSession.abortTransaction().catch(() => {});
+              console.error("Credit release failed:", creditErr.message);
+            } finally {
+              mongoSession.endSession();
+            }
+          } else {
+            await Request.findByIdAndUpdate(req._id, updateFields);
           }
         }
+        const affectedUsers = [...new Set(activeRequests.flatMap(r => [r.learnerId?.toString(), r.mentorId?.toString()].filter(Boolean)))];
+        affectedUsers.forEach((userId) => recalculateTrustScore(userId).catch((err) => console.error("Trust score recalc failed:", err.message)));
       } else if (session.status === "completed") {
-        const paidRequests = await Request.find({
+        const requests = await Request.find({
           sessionId: session._id,
           requestStatus: { $in: ["pending", "accepted"] },
         }).lean();
 
-        for (const req of paidRequests) {
-          req.requestStatus = "completed";
-          await Request.findByIdAndUpdate(req._id, { requestStatus: "completed" });
-
-          if (req.paymentStatus === "paid" && session.price > 0) {
-            let wallet = await Wallet.findOne({ userId: req.mentorId });
-            if (!wallet) wallet = await Wallet.create({ userId: req.mentorId });
-            await Transaction.create({
-              walletId: wallet._id,
-              userId: req.mentorId,
-              type: "earning",
-              amount: session.price,
-              balanceBefore: wallet.balance,
-              balanceAfter: wallet.balance + session.price,
-              reference: String(req._id),
-              referenceModel: "Request",
-              description: `Earnings from session completion`,
-              status: "completed",
-            });
-            wallet.balance += session.price;
-            wallet.totalEarned += session.price;
-            await wallet.save();
-          }
+        const hasStarted = requests.some((r) => r.startedAt);
+        if (!hasStarted) {
+          session.status = oldStatus;
+          await session.save();
+          return res.status(400).json({
+            success: false,
+            message: "Cannot complete — no learners have started this session. Start the session first or let it auto-complete.",
+          });
         }
+
+        for (const req of requests) {
+          const newStatus = req.startedAt ? "completed" : "cancelled";
+          await Request.findByIdAndUpdate(req._id, { requestStatus: newStatus });
+        }
+        const affectedUsers = [...new Set(requests.flatMap(r => [r.learnerId?.toString(), r.mentorId?.toString()].filter(Boolean)))];
+        affectedUsers.forEach((userId) => recalculateTrustScore(userId).catch((err) => console.error("Trust score recalc failed:", err.message)));
       }
     }
 

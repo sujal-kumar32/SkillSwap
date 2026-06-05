@@ -155,7 +155,7 @@ const ManagePaidSessions = () => {
                         <tr key={s._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
                           <td className="fw-semibold" style={{ color: "#1e293b" }}>{s.title}</td>
                           <td style={{ color: "#64748b" }}><UserLink user={s.mentorId} name={s.mentorId?.name || "Unknown"} /></td>
-                          <td className="fw-semibold">₹{s.price ?? 0}</td>
+                          <td className="fw-semibold">₹{s.price ?? 0}{s.bookingTypes?.includes("credits") && s.creditCost > 0 ? <span className="d-inline-flex align-items-center" style={{ gap: 3, padding: "1px 5px", borderRadius: 999, fontSize: "0.6rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 6, verticalAlign: "middle" }}><i className="fa fa-coins" />{s.creditCost}</span> : ""}</td>
                           <td>{s.bookings ?? 0}</td>
                           <td>
                             <span style={{ background: s.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : s.status === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>

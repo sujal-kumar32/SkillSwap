@@ -37,6 +37,23 @@ const sessionSchema = new mongoose.Schema(
       default: 0,
     },
 
+    bookingTypes: {
+      type: [String],
+      enum: ["paid", "credits"],
+      default: ["paid"],
+    },
+
+    creditCost: {
+      type: Number,
+      default: 0,
+    },
+
+    creditSnapshot: {
+      level: { type: String },
+      hourlyRate: { type: Number },
+      duration: { type: Number },
+    },
+
     price: {
       type: Number,
       default: 0,

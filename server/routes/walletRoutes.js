@@ -10,12 +10,14 @@ const {
   verifyFunds,
   getTransactions,
   payWithWallet,
+  getCreditHistory,
 } = require("../apis/Wallet/walletController");
 
 router.get("/", protect, getWallet);
 router.post("/add-funds", protect, validate(wallet.addFunds), addFunds);
 router.post("/verify-funds", protect, validate(wallet.verifyFunds), verifyFunds);
 router.get("/transactions", protect, getTransactions);
+router.get("/credit-history", protect, getCreditHistory);
 router.post("/pay", protect, payWithWallet);
 
 module.exports = router;

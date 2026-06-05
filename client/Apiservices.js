@@ -359,6 +359,22 @@ class Apiservices {
     return axios.get(baseUrl + "earnings");
   }
 
+  getCreditHistory(params = {}) {
+    return axios.get(baseUrl + "wallet/credit-history", { params });
+  }
+
+  disputeRequest(id, reason) {
+    return axios.put(baseUrl + `requests/${id}/dispute`, { reason });
+  }
+
+  resolveDispute(id, action) {
+    return axios.put(baseUrl + `admin/disputes/${id}/resolve`, { action });
+  }
+
+  getBookingAnalytics() {
+    return axios.get(baseUrl + "admin/analytics/bookings");
+  }
+
   getEarningTransactions(params = {}) {
     return axios.get(baseUrl + "earnings/transactions", { params });
   }

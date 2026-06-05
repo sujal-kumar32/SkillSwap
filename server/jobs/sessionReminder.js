@@ -1,8 +1,10 @@
+const mongoose = require("mongoose");
 const Request = require("../apis/Request/requestModel");
 const Session = require("../apis/Session/sessionModel");
 const User = require("../apis/Users/userModel");
 const { sendEmail } = require("../utilities/emailService");
 const { sessionReminder } = require("../utilities/emailTemplates");
+const { releaseCredits, transferCredits } = require("../services/creditService");
 
 let isAutoCompleting = false;
 
@@ -40,7 +42,7 @@ async function autoCompleteSessions() {
         for (const req of requests) {
           if (req.startedAt) {
             hadStarted = true;
-            await Request.findByIdAndUpdate(req._id, { requestStatus: "completed" });
+            const updates = { requestStatus: "completed" };
             if (req.paymentStatus === "paid" && session.price > 0) {
               let wallet = await Wallet.findOne({ userId: req.mentorId });
               if (!wallet) wallet = await Wallet.create({ userId: req.mentorId });
@@ -60,8 +62,25 @@ async function autoCompleteSessions() {
               wallet.totalEarned += session.price;
               await wallet.save();
             }
+            if (req.bookingSource === "credits" && req.creditsLocked > 0) {
+              const mongoSession = await mongoose.startSession();
+              try {
+                mongoSession.startTransaction();
+                await transferCredits(req.learnerId, req.mentorId, req.creditsLocked, req._id, mongoSession);
+                updates.creditsLocked = 0;
+                await Request.findByIdAndUpdate(req._id, updates, { session: mongoSession });
+                await mongoSession.commitTransaction();
+              } catch (creditErr) {
+                await mongoSession.abortTransaction().catch(() => {});
+                console.error("Credit transfer failed in auto-complete:", creditErr.message);
+              } finally {
+                mongoSession.endSession();
+              }
+            } else {
+              await Request.findByIdAndUpdate(req._id, updates);
+            }
           } else {
-            await Request.findByIdAndUpdate(req._id, { requestStatus: "cancelled" });
+            const updates = { requestStatus: "cancelled" };
             if (req.paymentStatus === "paid" && session.price > 0) {
               let wallet = await Wallet.findOne({ userId: req.learnerId });
               if (!wallet) wallet = await Wallet.create({ userId: req.learnerId });
@@ -79,6 +98,32 @@ async function autoCompleteSessions() {
               });
               wallet.balance += session.price;
               await wallet.save();
+            }
+            if (req.bookingSource === "credits" && req.creditsLocked > 0) {
+              const mongoSession = await mongoose.startSession();
+              try {
+                mongoSession.startTransaction();
+                await releaseCredits(req.learnerId, req.creditsLocked, mongoSession);
+                await Transaction.create([{
+                  userId: req.learnerId,
+                  type: "credit_refunded",
+                  amount: req.creditsLocked,
+                  reference: String(req._id),
+                  referenceModel: "Request",
+                  description: "Credits refunded — mentor did not start the session",
+                  status: "completed",
+                }], { session: mongoSession });
+                updates.creditsLocked = 0;
+                await Request.findByIdAndUpdate(req._id, updates, { session: mongoSession });
+                await mongoSession.commitTransaction();
+              } catch (creditErr) {
+                await mongoSession.abortTransaction().catch(() => {});
+                console.error("Credit release failed in auto-cancel:", creditErr.message);
+              } finally {
+                mongoSession.endSession();
+              }
+            } else {
+              await Request.findByIdAndUpdate(req._id, updates);
             }
           }
         }
@@ -101,6 +146,20 @@ async function autoCompleteSessions() {
       if (now >= startTime && now < new Date(startTime.getTime() + (session.duration || 60) * 60000)) {
         await Session.findByIdAndUpdate(session._id, { status: "ongoing" });
         console.log(`Session "${session.title}" (${session._id}) is now ongoing`);
+      }
+    }
+
+    // Auto-cancel active sessions past their end time with no bookings
+    for (const session of activeSessions) {
+      if (!session.date) continue;
+      const startTime = getStartDateTime(session);
+      const endTime = new Date(startTime.getTime() + (session.duration || 60) * 60000);
+      if (now >= endTime) {
+        const bookingCount = await Request.countDocuments({ sessionId: session._id });
+        if (bookingCount === 0) {
+          await Session.findByIdAndUpdate(session._id, { status: "cancelled" });
+          console.log(`Auto-cancelled expired session "${session.title}" (${session._id}) — no bookings`);
+        }
       }
     }
   } catch (err) {

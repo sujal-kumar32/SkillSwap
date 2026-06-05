@@ -27,6 +27,7 @@ const CreateSession = () => {
     maxLearners: "",
     meetLink: "",
     thumbnail: "",
+    bookingTypes: ["paid"],
   });
 
   const [aiLoading, setAiLoading] = useState({ title: false, description: false, outcomes: false, tags: false, mentor: false });
@@ -230,6 +231,9 @@ const CreateSession = () => {
       payload.append("price", Number(form.price) || 0);
       payload.append("maxLearners", Number(form.maxLearners) || 0);
       payload.append("meetLink", form.meetLink);
+      if (form.bookingTypes.includes("credits")) {
+        payload.append("bookingTypes", "credits");
+      }
 
       if (thumbnailFile) {
         payload.append("thumbnail", thumbnailFile);
@@ -468,6 +472,41 @@ const CreateSession = () => {
                             />
                           </div>
                         )}
+                      </div>
+
+                      {form.bookingTypes.includes("credits") && (
+                        <div className="col-12">
+                          <div className="p-3 rounded-4" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                            <div className="d-flex align-items-center" style={{ gap: 8 }}>
+                              <i className="fa fa-coins" style={{ color: "#16a34a" }} />
+                              <span className="fw-semibold" style={{ fontSize: "0.9rem", color: "#166534" }}>
+                                Credit cost: ~{Math.round((Number(form.duration) || 60) / 60 * 10)} credits
+                              </span>
+                              <small className="text-muted" style={{ fontSize: "0.72rem" }}>
+                                (based on your skill level × duration)
+                              </small>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="col-12">
+                        <div className="d-flex align-items-center" style={{ gap: 10 }}>
+                          <label className="form-label fw-bold mb-0">Accept Credit Payments</label>
+                          <button type="button"
+                            className={`px-3 py-1 fw-semibold rounded-pill border-0 ${form.bookingTypes.includes("credits") ? "btn btn-success" : "btn btn-outline-secondary"}`}
+                            style={{ fontSize: "0.8rem", transition: "all 0.2s" }}
+                            onClick={() => setForm((prev) => {
+                              const has = prev.bookingTypes.includes("credits");
+                              return { ...prev, bookingTypes: has ? ["paid"] : ["paid", "credits"] };
+                            })}>
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                              <i className={`fa ${form.bookingTypes.includes("credits") ? "fa-check-circle" : "fa-coins"}`} />
+                              {form.bookingTypes.includes("credits") ? "Credits Enabled" : "Enable Credits"}
+                            </span>
+                          </button>
+                        </div>
+                        <small className="text-muted" style={{ fontSize: "0.72rem" }}>Students can pay with skill credits instead of money</small>
                       </div>
 
                       <div className="col-md-6">

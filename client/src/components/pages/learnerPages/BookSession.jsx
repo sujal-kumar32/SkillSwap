@@ -19,13 +19,23 @@ const BookSession = () => {
   const [insufficientFunds, setInsufficientFunds] = useState(false);
   const [requiredAmount, setRequiredAmount] = useState(0);
   const [error, setError] = useState("");
+  const [bookingSource, setBookingSource] = useState("paid");
+  const [walletData, setWalletData] = useState(null);
 
   useEffect(() => {
     const loadSession = async () => {
       try {
         setError("");
-        const response = await Apiservices.fetchSessionDetails(id);
-        setSession(response.data.data);
+        const [sessionRes, walletRes] = await Promise.all([
+          Apiservices.fetchSessionDetails(id),
+          Apiservices.getWallet().catch(() => null),
+        ]);
+        setSession(sessionRes.data.data);
+        if (walletRes?.data?.data) setWalletData(walletRes.data.data);
+        const s = sessionRes.data.data;
+        if (s?.bookingTypes?.includes("credits") && !s?.bookingTypes?.includes("paid")) {
+          setBookingSource("credits");
+        }
       } catch (error) {
         console.log(error);
         setSession(null);
@@ -45,7 +55,7 @@ const BookSession = () => {
       setSubmitting(true);
       setInsufficientFunds(false);
 
-      const payload = { sessionId: session._id };
+      const payload = { sessionId: session._id, bookingSource };
       if (note.trim()) payload.note = note.trim();
 
       const bookRes = await Apiservices.bookSession(payload);
@@ -55,7 +65,10 @@ const BookSession = () => {
         try { await Apiservices.updateRequest(requestId, "cancelled"); } catch {}
       };
 
-      if (session.price && session.price > 0) {
+      if (bookingSource === "credits") {
+        showToast.success("Session booked with credits!");
+        setSuccess(true);
+      } else if (session.price && session.price > 0) {
         try {
           await Apiservices.payWithWallet(requestId);
           showToast.success("Payment successful! Booking confirmed.");
@@ -111,11 +124,13 @@ const BookSession = () => {
         <div className="learner-empty-icon mx-auto mb-3 text-success bg-success bg-opacity-10">
           <i className="fa fa-check" />
         </div>
-        <h3 className="fw-bold">Booking {session.price ? "& Payment" : "Request"} Successful</h3>
+        <h3 className="fw-bold">Booking {session.price && bookingSource !== "credits" ? "& Payment" : "Request"} Successful</h3>
         <p className="text-muted mb-4">
-          {session.price
-            ? "Your payment has been processed and booking is confirmed."
-            : "You will see this session in My Bookings after confirmation."}
+          {bookingSource === "credits"
+            ? "Your credits have been locked and booking is confirmed."
+            : session.price
+              ? "Your payment has been processed and booking is confirmed."
+              : "You will see this session in My Bookings after confirmation."}
         </p>
         <Link to="/learner/bookings" className="btn btn-primary rounded-pill px-4">Go to My Bookings</Link>
       </div>
@@ -142,6 +157,30 @@ const BookSession = () => {
               </div>
             </div>
 
+            {session.bookingTypes?.length > 1 && (
+              <div className="mb-4">
+                <label className="form-label fw-semibold">Payment Method</label>
+                <div className="d-flex gap-2">
+                  {session.bookingTypes.includes("paid") && (
+                    <button type="button"
+                      className={`px-4 py-2 fw-semibold rounded-pill border-0 ${bookingSource === "paid" ? "btn btn-primary" : "btn btn-outline-secondary"}`}
+                      style={{ fontSize: "0.85rem", transition: "all 0.2s" }}
+                      onClick={() => setBookingSource("paid")}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-credit-card" /> Pay with Money</span>
+                    </button>
+                  )}
+                  {session.bookingTypes.includes("credits") && (
+                    <button type="button"
+                      className={`px-4 py-2 fw-semibold rounded-pill border-0 ${bookingSource === "credits" ? "btn btn-success" : "btn btn-outline-secondary"}`}
+                      style={{ fontSize: "0.85rem", transition: "all 0.2s" }}
+                      onClick={() => setBookingSource("credits")}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-coins" /> Pay with Credits</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="mb-4">
               <label className="form-label fw-semibold">Add a note (optional)</label>
               <textarea className="form-control rounded-4" rows="3" value={note} onChange={(e) => setNote(e.target.value)}
@@ -157,13 +196,21 @@ const BookSession = () => {
                   <Link to="/learner/wallet" className="alert-link">Add funds to your SkillWallet</Link> to continue.
                 </div>
               </div>
+            ) : bookingSource === "credits" ? (
+              <div className="alert alert-success rounded-4 d-flex align-items-center" style={{ gap: 8 }}>
+                <i className="fa fa-coins" />
+                <div>
+                  Paying with credits. Your balance: <strong>{walletData?.skillCredits || 0} credits</strong>
+                  {session.creditCost > 0 && <> &middot; Cost: <strong>{session.creditCost} credits</strong></>}
+                </div>
+              </div>
             ) : (
               <div className="alert alert-info rounded-4">
                 {session.price ? "Payment will be deducted from your SkillWallet balance." : "This is a free session. No payment required."}
               </div>
             )}
             <LoadingButton loading={submitting} className="btn btn-primary rounded-pill px-4" disabled={submitting || success}>
-              {session.price ? `Pay ₹${session.price} & Book` : "Confirm Free Booking"}
+              {bookingSource === "credits" ? `Book with Credits` : session.price ? `Pay ₹${session.price} & Book` : "Confirm Free Booking"}
             </LoadingButton>
           </form>
         </div>
@@ -178,7 +225,10 @@ const BookSession = () => {
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Time</span><strong>{session.time || "Flexible"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Duration</span><strong>{session.duration || 60} min</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Type</span><strong>{session.sessionType || "online"}</strong></div>
-              <div className="list-group-item px-0 d-flex justify-content-between"><span>Total</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
+              <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
+              {session.bookingTypes?.includes("credits") && (
+                <div className="list-group-item px-0 d-flex justify-content-between"><span>Credit Cost</span><strong>{session.creditCost || "—"} credits</strong></div>
+              )}
             </div>
           </div>
         </div>

@@ -216,6 +216,7 @@ const Profile = () => {
             {[
               { label: "Sessions", value: stats.sessions, icon: "fa-video", color: "primary" },
               { label: "Reviews", value: stats.reviews, icon: "fa-star", color: "warning" },
+              { label: "Trust Score", value: `${profile?.trustScore || 100}/100`, icon: "fa-shield", color: "success" },
               ...(isMentor && avgRating ? [{ label: "Avg Rating", value: avgRating, icon: "fa-star-half-stroke", color: "warning" }] : []),
               { label: "Skills", value: stats.skills, icon: "fa-code", color: "success" },
               { label: profile.skills.length ? "Profile Skills" : "Interests", value: profile.skills.length || profile.interests.split(",").filter(Boolean).length, icon: "fa-lightbulb", color: "info" },

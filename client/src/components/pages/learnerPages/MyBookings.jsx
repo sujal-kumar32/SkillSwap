@@ -126,7 +126,11 @@ const MyBookings = () => {
                       </div>
                     </td>
                     <td>{booking.date || booking.sessionId?.date || "—"} <span className="text-muted">{booking.timeSlot || booking.sessionId?.time || ""}</span></td>
-                    <td>{booking.paymentStatus}</td>
+                    <td>{booking.bookingSource === "credits" ? (
+                        <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
+                          <i className="fa fa-coins" />{booking.sessionId?.creditCost || "Credits"}
+                        </span>
+                      ) : booking.paymentStatus}</td>
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">
                       <div className="d-flex justify-content-end flex-wrap" style={{ gap: 6 }}>

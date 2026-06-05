@@ -144,6 +144,10 @@ exports.payWithWallet = asyncHandler(async (req, res) => {
     return res.status(403).json({ success: false, message: "Not your booking" });
   }
 
+  if (request.bookingSource === "credits") {
+    return res.status(400).json({ success: false, message: "Credit bookings use credits, not wallet balance" });
+  }
+
   if (request.paymentStatus === "paid") {
     return res.status(400).json({ success: false, message: "Already paid" });
   }
@@ -189,5 +193,38 @@ exports.payWithWallet = asyncHandler(async (req, res) => {
     success: true,
     message: "Payment successful",
     data: { balance: wallet.balance, transaction, request },
+  });
+});
+
+// GET CREDIT TRANSACTION HISTORY
+exports.getCreditHistory = asyncHandler(async (req, res) => {
+  const { page, limit, skip } = getPagination(req.query);
+
+  const filter = {
+    userId: req.user.id,
+    type: { $in: ["credit_earned", "credit_spent", "credit_refunded"] },
+  };
+
+  const [transactions, total] = await Promise.all([
+    Transaction.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Transaction.countDocuments(filter),
+  ]);
+
+  const wallet = await Wallet.findOne({ userId: req.user.id }).select("skillCredits lockedCredits").lean();
+
+  res.json({
+    success: true,
+    total,
+    page,
+    pages: Math.ceil(total / limit),
+    data: {
+      skillCredits: wallet?.skillCredits || 0,
+      lockedCredits: wallet?.lockedCredits || 0,
+      transactions,
+    },
   });
 });

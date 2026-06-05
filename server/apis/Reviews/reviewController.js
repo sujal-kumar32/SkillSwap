@@ -5,6 +5,7 @@ const { createFeedEvent } = require("../../services/feedService");
 const { sendNotification } = require("../../services/notificationService");
 const getPagination = require("../../utilities/paginate");
 const { awardXP } = require("../../services/xpService");
+const { recalculateTrustScore } = require("../../services/trustService");
 
 const idsEqual = (left, right) => {
   return left && right && left.toString() === right.toString();
@@ -151,6 +152,8 @@ exports.createReview = asyncHandler(async (req, res) => {
     if (mentorId) {
       sendNotification(mentorId, req.user.id, "new_review", `${user?.name || "Someone"} reviewed "${sessionName}"`, `/learner/sessions/${sessionId}`);
     }
+
+    recalculateTrustScore(mentorId).catch((err) => console.error("Trust score recalc failed on review:", err.message));
 
     res.status(201).json({
       success: true,

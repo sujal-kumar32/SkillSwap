@@ -122,7 +122,7 @@ const LearnerDashboard = () => {
             {bookings.slice(0, 3).map((booking) => (
               <div key={booking._id} className="d-flex align-items-center justify-content-between border-top py-3">
                 <div>
-                  <h6 className="fw-bold mb-1">{booking.sessionId?.title}</h6>
+                  <h6 className="fw-bold mb-1">{booking.sessionId?.title}{booking.sessionId?.bookingTypes?.includes("credits") ? <span className="d-inline-flex align-items-center" style={{ gap: 3, padding: "1px 5px", borderRadius: 999, fontSize: "0.6rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 6, verticalAlign: "middle" }}><i className="fa fa-coins" />{booking.sessionId?.creditCost || ""}</span> : ""}</h6>
                   <small className="text-muted">
                     {booking.date} at {booking.timeSlot || booking.sessionId?.time}
                   </small>
@@ -157,7 +157,7 @@ const LearnerDashboard = () => {
             <h5 className="fw-bold mb-3">Recommended Sessions</h5>
             {sessions.slice(0, 2).map((session) => (
               <div key={session._id} className="border-top py-3">
-                <h6 className="fw-bold mb-1">{session.title}</h6>
+                <h6 className="fw-bold mb-1">{session.title}{session.bookingTypes?.includes("credits") ? <span className="d-inline-flex align-items-center" style={{ gap: 3, padding: "1px 5px", borderRadius: 999, fontSize: "0.6rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 6, verticalAlign: "middle" }}><i className="fa fa-coins" />{session.creditCost || ""}</span> : ""}</h6>
                 <small className="text-muted"><UserLink user={session.mentorId} name={session.mentorId?.name} /> • {session.duration || 60} min</small>
               </div>
             ))}

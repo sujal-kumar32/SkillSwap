@@ -1,9 +1,15 @@
+const mongoose = require("mongoose");
 const Notification = require("../Notification/notificationModel");
 const Payment = require("../Payment/paymentModel");
 const User = require("../Users/userModel");
+const Request = require("../Request/requestModel");
+const Wallet = require("../Wallet/walletModel");
+const Transaction = require("../Wallet/transactionModel");
 const BroadcastMessage = require("./broadcastMessageModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
+const { releaseCredits, transferCredits } = require("../../services/creditService");
+const { recalculateTrustScore } = require("../../services/trustService");
 
 exports.broadcastNotification = asyncHandler(async (req, res) => {
   const { message, targetType, targetRole, targetUserId, link } = req.body;
@@ -239,6 +245,107 @@ exports.getPayments = asyncHandler(async (req, res) => {
       limit: Math.min(50, Math.max(1, parseInt(limit))),
       total,
       pages: Math.ceil(total / limit),
+    },
+  });
+});
+
+// RESOLVE DISPUTE
+exports.resolveDispute = asyncHandler(async (req, res) => {
+  const { action } = req.body;
+  if (!["release", "refund"].includes(action)) {
+    return res.status(400).json({ success: false, message: "Action must be 'release' or 'refund'" });
+  }
+
+  const request = await Request.findById(req.params.id);
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  if (request.requestStatus !== "disputed") {
+    return res.status(400).json({ success: false, message: "Request is not in disputed status" });
+  }
+
+  const mongoSession = await mongoose.startSession();
+  try {
+    mongoSession.startTransaction();
+
+    if (action === "release") {
+      await transferCredits(request.learnerId, request.mentorId, request.creditsLocked, request._id, mongoSession);
+      request.requestStatus = "completed";
+    } else {
+      const learnerWallet = await Wallet.findOne({ userId: request.learnerId }).session(mongoSession);
+      await releaseCredits(request.learnerId, request.creditsLocked, mongoSession);
+      await Transaction.create([{
+        walletId: learnerWallet._id,
+        userId: request.learnerId,
+        type: "credit_refunded",
+        amount: request.creditsLocked,
+        balanceBefore: learnerWallet.skillCredits,
+        balanceAfter: learnerWallet.skillCredits,
+        reference: String(request._id),
+        referenceModel: "Request",
+        referenceType: "request",
+        description: "Credits refunded via dispute resolution",
+        status: "completed",
+      }], { session: mongoSession });
+      request.requestStatus = "cancelled";
+    }
+
+    request.creditsLocked = 0;
+    await request.save({ session: mongoSession });
+    await mongoSession.commitTransaction();
+
+    Promise.all([
+      recalculateTrustScore(request.learnerId),
+      recalculateTrustScore(request.mentorId),
+    ]).catch((err) => console.error("Trust score update failed:", err.message));
+
+    res.json({ success: true, message: `Dispute resolved — credits ${action === "release" ? "released to mentor" : "refunded to learner"}`, data: request });
+  } catch (err) {
+    await mongoSession.abortTransaction();
+    console.error("Dispute resolution failed:", err.message);
+    res.status(500).json({ success: false, message: "Dispute resolution failed" });
+  } finally {
+    mongoSession.endSession();
+  }
+});
+
+// BOOKING ANALYTICS
+exports.bookingAnalytics = asyncHandler(async (req, res) => {
+  const [aggregation, walletAgg] = await Promise.all([
+    Request.aggregate([
+      {
+        $group: {
+          _id: "$bookingSource",
+          count: { $sum: 1 },
+          completedCount: { $sum: { $cond: [{ $eq: ["$requestStatus", "completed"] }, 1, 0] } },
+        },
+      },
+    ]),
+    Wallet.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalSkillCredits: { $sum: "$skillCredits" },
+          totalLockedCredits: { $sum: "$lockedCredits" },
+        },
+      },
+    ]),
+  ]);
+
+  const paidStats = aggregation.find((a) => a._id === "paid") || { count: 0, completedCount: 0 };
+  const creditStats = aggregation.find((a) => a._id === "credits") || { count: 0, completedCount: 0 };
+  const walletStats = walletAgg[0] || { totalSkillCredits: 0, totalLockedCredits: 0 };
+
+  res.json({
+    success: true,
+    data: {
+      paidSessions: paidStats.count,
+      paidCompleted: paidStats.completedCount,
+      creditSessions: creditStats.count,
+      creditCompleted: creditStats.completedCount,
+      totalSkillCredits: walletStats.totalSkillCredits,
+      totalLockedCredits: walletStats.totalLockedCredits,
     },
   });
 });

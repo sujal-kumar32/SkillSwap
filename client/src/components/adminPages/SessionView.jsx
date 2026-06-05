@@ -61,7 +61,7 @@ const SessionView = () => {
               <p style={{ color: "#64748b", lineHeight: 1.7 }}>{session.description || "No description provided."}</p>
               <div className="d-flex flex-wrap gap-4 mt-4">
                 <div><span className="text-muted small">Status</span><br /><span className="fw-semibold">{session.status}</span></div>
-                <div><span className="text-muted small">Price</span><br /><span className="fw-semibold">₹{session.price ?? 0}</span></div>
+                <div><span className="text-muted small">Price</span><br /><span className="fw-semibold">₹{session.price ?? 0}{session.bookingTypes?.includes("credits") && session.creditCost > 0 ? <span className="d-inline-flex align-items-center" style={{ gap: 3, padding: "1px 5px", borderRadius: 999, fontSize: "0.6rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 6, verticalAlign: "middle" }}><i className="fa fa-coins" />{session.creditCost}</span> : ""}</span></div>
                 <div><span className="text-muted small">Bookings</span><br /><span className="fw-semibold">{session.bookings ?? 0}</span></div>
               </div>
             </div>

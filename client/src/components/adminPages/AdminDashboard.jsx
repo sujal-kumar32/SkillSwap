@@ -8,14 +8,19 @@ import DashboardCharts from "./DashboardCharts";
 
 const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
+  const [creditAnalytics, setCreditAnalytics] = useState(null);
   const [period, setPeriod] = useState("6mo");
   const [loading, setLoading] = useState(true);
 
   const fetchAnalytics = useCallback(async (p) => {
     try {
       setLoading(true);
-      const res = await Apiservices.getAdminAnalytics(p);
-      setAnalytics(res.data.data);
+      const [analyticsRes, creditRes] = await Promise.all([
+        Apiservices.getAdminAnalytics(p),
+        Apiservices.getBookingAnalytics().catch(() => ({ data: { data: {} } })),
+      ]);
+      setAnalytics(analyticsRes.data.data);
+      setCreditAnalytics(creditRes.data.data);
     } catch (err) {
       console.log(err);
     } finally {
@@ -29,6 +34,7 @@ const AdminDashboard = () => {
 
   const s = analytics?.summary;
   const c = analytics?.changes;
+  const cr = creditAnalytics;
   const ready = !loading && analytics;
 
   const cards = [
@@ -102,6 +108,45 @@ const AdminDashboard = () => {
             </Link>
           </div>
         ))}
+      </div>
+
+      <div className="row g-4 mb-4">
+        <div className="col-sm-6 col-xl-3">
+          <div className="admin-card p-4 h-100">
+            <div className="d-flex align-items-center justify-content-between mb-1">
+              <div>
+                <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>Credit Sessions</p>
+                <h3 className="fw-bold mb-0" style={{ fontSize: "1.6rem" }}>
+                  {loading ? <span className="spinner-border spinner-border-sm text-primary" /> : (cr?.creditSessions ?? 0)}
+                </h3>
+              </div>
+              <div className="admin-stat-icon" style={{ background: "#16a34a15", color: "#16a34a" }}>
+                <i className="fa fa-coins" />
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-2 mt-2">
+              <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{cr?.creditCompleted ?? 0} completed · {cr?.totalSkillCredits ?? 0} credits in circulation</span>
+            </div>
+          </div>
+        </div>
+        <div className="col-sm-6 col-xl-3">
+          <div className="admin-card p-4 h-100">
+            <div className="d-flex align-items-center justify-content-between mb-1">
+              <div>
+                <p className="text-muted mb-1 small fw-semibold text-uppercase" style={{ fontSize: "0.75rem", letterSpacing: "0.3px" }}>Locked Credits</p>
+                <h3 className="fw-bold mb-0" style={{ fontSize: "1.6rem" }}>
+                  {loading ? <span className="spinner-border spinner-border-sm text-primary" /> : (cr?.totalLockedCredits ?? 0)}
+                </h3>
+              </div>
+              <div className="admin-stat-icon" style={{ background: "#d9770615", color: "#d97706" }}>
+                <i className="fa fa-lock" />
+              </div>
+            </div>
+            <div className="d-flex align-items-center gap-2 mt-2">
+              <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>Credits held in pending bookings</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {ready ? <DashboardCharts analytics={analytics} /> : (

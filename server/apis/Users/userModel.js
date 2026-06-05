@@ -76,6 +76,11 @@ const userSchema = new mongoose.Schema(
 
     onboardingDismissed: { type: Boolean, default: false },
 
+    trustScore: { type: Number, default: 100, min: 0, max: 100 },
+    totalCompletedSessions: { type: Number, default: 0 },
+    totalCancelledSessions: { type: Number, default: 0 },
+    totalBookings: { type: Number, default: 0 },
+
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
     blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

@@ -160,7 +160,9 @@ const SessionDetails = () => {
           <div className="learner-card p-4 mb-4">
             <h5 className="fw-bold">Mentor</h5>
             <div className="d-flex align-items-center my-3" style={{ gap: "10px" }}>
-              <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" className="rounded-circle" width="56" height="56" style={{ objectFit: "cover" }} />
+              <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "#0d6efd" }}>
+                <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </div>
               <div>
                 <h6 className="fw-bold mb-0"><UserLink user={session.mentorId} name={session.mentorId?.name || "SkillSwap Mentor"} /></h6>
                 <small className="text-muted">{session.mentorId?.email || "mentor@skillswap.com"}</small>
@@ -184,6 +186,9 @@ const SessionDetails = () => {
                 </div>
               )}
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
+              {session.bookingTypes?.includes("credits") && session.creditCost > 0 && (
+                <div className="list-group-item px-0 d-flex justify-content-between"><span>Credit Cost</span><strong className="text-success">{session.creditCost} credits</strong></div>
+              )}
             </div>
             <div className="d-flex flex-column" style={{ gap: 10 }}>
               {!existingBooking ? (
