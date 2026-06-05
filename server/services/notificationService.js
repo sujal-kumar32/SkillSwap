@@ -37,6 +37,7 @@ async function sendNotification(recipientId, actorId, type, message, link = "") 
     if (_io) {
       const count = await Notification.countDocuments({ recipient: recipientId, read: false });
       _io.to(`user:${recipientId}`).emit("unread_count", count);
+      _io.to(`user:${recipientId}`).emit("sidebar_update");
     }
 
     return notification;

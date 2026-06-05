@@ -11,7 +11,7 @@ const links = [
   { to: "/mentor/my-sessions", label: "My Sessions", icon: "fa-chalkboard-teacher" },
   { to: "/mentor/create-session", label: "Create Session", icon: "fa-plus-circle" },
   { to: "/mentor/availability", label: "Availability", icon: "fa-clock" },
-  { to: "/mentor/bookings", label: "Bookings", icon: "fa-calendar-check" },
+  { to: "/mentor/bookings", label: "Bookings", icon: "fa-calendar-check", badgeKey: "pendingBookings" },
   { to: "/mentor/learners", label: "Learners", icon: "fa-users" },
   { to: "/mentor/reviews", label: "Reviews", icon: "fa-star" },
   { to: "/mentor/analytics", label: "Analytics", icon: "fa-chart-bar" },
@@ -47,10 +47,15 @@ const XpWidget = ({ user }) => {
   );
 };
 
+const badgeStyle = {
+  marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
+  padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
+};
+
 const MentorSidebar = ({ sidebarOpen, onClose }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { unreadChatCount, unreadCount } = useSocket();
+  const { sidebarCounts } = useSocket();
 
   const handleLogout = async () => {
     await logout();
@@ -77,44 +82,23 @@ const MentorSidebar = ({ sidebarOpen, onClose }) => {
       </div>
 
       <nav className="p-3 flex-grow-1" onClick={handleNav}>
-        {links.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.end}
-            className={({ isActive }) =>
-              `learner-nav-link ${isActive ? "active" : ""}`
-            }
-          >
-            <i className={`fa ${link.icon}`} />
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
-        <div style={{ height: 1, background: "#eef2f7", margin: "8px 12px" }} />
-        <NavLink to="/messages" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
-          <i className="fa fa-comment" />
-          <span>Messages</span>
-          {unreadChatCount > 0 && (
-            <span style={{
-              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
-              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
-            }}>
-              {unreadChatCount > 99 ? "99+" : unreadChatCount}
-            </span>
-          )}
-        </NavLink>
-        <NavLink to="/notifications" className={({ isActive }) => `learner-nav-link ${isActive ? "active" : ""}`}>
-          <i className="fa fa-bell" />
-          <span>Notifications</span>
-          {unreadCount > 0 && (
-            <span style={{
-              marginLeft: "auto", background: "#ef4444", color: "#fff", fontSize: "0.6rem", fontWeight: 700,
-              padding: "1px 6px", borderRadius: 999, minWidth: 18, textAlign: "center",
-            }}>
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
-        </NavLink>
+        {links.map((link) => {
+          const count = link.badgeKey ? sidebarCounts[link.badgeKey] : 0;
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.end}
+              className={({ isActive }) =>
+                `learner-nav-link ${isActive ? "active" : ""}`
+              }
+            >
+              <i className={`fa ${link.icon}`} />
+              <span>{link.label}</span>
+              {count > 0 && <span style={badgeStyle}>{count > 99 ? "99+" : count}</span>}
+            </NavLink>
+          );
+        })}
       </nav>
 
       <XpWidget user={user} />

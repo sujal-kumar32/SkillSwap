@@ -17,6 +17,7 @@ export function SocketProvider({ children }) {
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [latestNotifications, setLatestNotifications] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState(new Set());
+  const [sidebarCounts, setSidebarCounts] = useState({});
 
   useEffect(() => {
     if (!user) {
@@ -41,6 +42,10 @@ export function SocketProvider({ children }) {
       setUnreadChatCount(res.data.data?.count || 0);
     }).catch(() => {});
 
+    Apiservices.getSidebarCounts().then((res) => {
+      if (res.data?.success) setSidebarCounts(res.data.data || {});
+    }).catch(() => {});
+
     const backendUrl = import.meta.env.DEV ? "http://localhost:3000" : window.location.origin;
     const s = io(backendUrl, {
       withCredentials: true,
@@ -50,7 +55,9 @@ export function SocketProvider({ children }) {
     s.on("notification", (data) => {
       setLatestNotifications((prev) => [data, ...prev].slice(0, 3));
       setUnreadCount((c) => c + 1);
-      showToast.info(data.message, { autoClose: 4000 });
+      if (data.type !== "system") {
+        showToast.info(data.message, { autoClose: 4000 });
+      }
     });
 
     s.on("unread_count", (count) => {
@@ -59,6 +66,12 @@ export function SocketProvider({ children }) {
 
     s.on("new_message", () => {
       refreshUnreadChatCount();
+    });
+
+    s.on("sidebar_update", () => {
+      Apiservices.getSidebarCounts().then((res) => {
+        if (res.data?.success) setSidebarCounts(res.data.data || {});
+      }).catch(() => {});
     });
 
     s.on("user_online", ({ userId }) => {
@@ -71,7 +84,16 @@ export function SocketProvider({ children }) {
 
     setSocket(s);
 
-    return () => { s.close(); };
+    const pollInterval = setInterval(() => {
+      Apiservices.getSidebarCounts().then((res) => {
+        if (res.data?.success) setSidebarCounts(res.data.data || {});
+      }).catch(() => {});
+    }, 60000);
+
+    return () => {
+      s.close();
+      clearInterval(pollInterval);
+    };
   }, [user]);
 
   const refreshUnreadCount = () => {
@@ -92,8 +114,14 @@ export function SocketProvider({ children }) {
     }).catch(() => {});
   }, []);
 
+  const refreshSidebarCounts = useCallback(() => {
+    Apiservices.getSidebarCounts().then((res) => {
+      if (res.data?.success) setSidebarCounts(res.data.data || {});
+    }).catch(() => {});
+  }, []);
+
   return (
-    <SocketContext.Provider value={{ socket, unreadCount, unreadChatCount, latestNotifications, onlineUsers, setUnreadCount, refreshUnreadCount, refreshNotifications, refreshUnreadChatCount }}>
+    <SocketContext.Provider value={{ socket, unreadCount, unreadChatCount, latestNotifications, onlineUsers, sidebarCounts, setUnreadCount, refreshUnreadCount, refreshNotifications, refreshUnreadChatCount, refreshSidebarCounts }}>
       {children}
     </SocketContext.Provider>
   );

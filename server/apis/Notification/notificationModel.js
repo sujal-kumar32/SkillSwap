@@ -27,6 +27,7 @@ const notificationSchema = new mongoose.Schema(
     message: { type: String, required: true },
     link: { type: String, default: "" },
     read: { type: Boolean, default: false },
+    broadcastRef: { type: mongoose.Schema.Types.ObjectId, ref: "BroadcastMessage", default: null },
   },
   { timestamps: true },
 );

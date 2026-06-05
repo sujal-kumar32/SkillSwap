@@ -212,9 +212,12 @@ exports.searchUsers = asyncHandler(async (req, res) => {
   }
   const users = await User.find({
     _id: { $ne: req.user.id },
-    name: { $regex: escapeRegex(q.trim()), $options: "i" },
+    $or: [
+      { name: { $regex: escapeRegex(q.trim()), $options: "i" } },
+      { email: { $regex: escapeRegex(q.trim()), $options: "i" } },
+    ],
   })
-    .select("name profileImage")
+    .select("name email profileImage")
     .limit(20)
     .lean();
   res.json({ success: true, data: users });

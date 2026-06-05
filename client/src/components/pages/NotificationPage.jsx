@@ -94,10 +94,18 @@ const NotificationPage = () => {
                   onMouseLeave={(e) => e.currentTarget.style.boxShadow = "none"}>
                   <div style={{
                     width: 38, height: 38, borderRadius: 12, flexShrink: 0, overflow: "hidden",
-                    background: `${typeColors[n.type] || "#64748b"}15`,
+                    background: n.type === "system" ? "#0d6efd" : `${typeColors[n.type] || "#64748b"}15`,
                     display: "grid", placeItems: "center", color: typeColors[n.type] || "#64748b", fontSize: "0.85rem",
                   }}>
-                    {n.actor?.profileImage ? (
+                    {n.type === "system" ? (
+                      <div style={{
+                        width: "100%", height: "100%",
+                        background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                        display: "grid", placeItems: "center",
+                      }}>
+                        <i className="fa fa-book-reader" style={{ color: "#fff", fontSize: "0.95rem" }} />
+                      </div>
+                    ) : n.actor?.profileImage ? (
                       <img src={n.actor.profileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     ) : n.actor?.name ? (
                       <span style={{ fontWeight: 700, fontSize: "0.75rem" }}>{n.actor.name.charAt(0).toUpperCase()}</span>

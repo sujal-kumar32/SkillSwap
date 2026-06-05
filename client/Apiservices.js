@@ -180,6 +180,10 @@ class Apiservices {
     return axios.get(baseUrl + "profile/stats");
   }
 
+  getSidebarCounts() {
+    return axios.get(baseUrl + "sidebar/counts");
+  }
+
   getXpHistory(params = {}) {
     return axios.get(baseUrl + "profile/xp-history", { params });
   }
@@ -483,6 +487,18 @@ class Apiservices {
 
   broadcastNotification(data) {
     return axios.post(baseUrl + "admin/broadcast", data);
+  }
+
+  getBroadcasts(params = {}) {
+    return axios.get(baseUrl + "admin/broadcasts", { params });
+  }
+
+  deleteBroadcast(id) {
+    return axios.delete(baseUrl + `admin/broadcast/${id}`);
+  }
+
+  updateBroadcast(id, data) {
+    return axios.put(baseUrl + `admin/broadcast/${id}`, data);
   }
 
   getAdminPayments(params = {}) {

@@ -82,6 +82,13 @@ exports.createSkill = asyncHandler(async (req, res) => {
       data: skill,
     });
 
+    if (!approved) {
+      User.find({ roles: "admin", status: "active" }).select("_id").lean().then((admins) => {
+        const io = req.app.get("io");
+        if (io) admins.forEach((a) => io.to(`user:${a._id}`).emit("sidebar_update"));
+      }).catch(() => {});
+    }
+
 });
 
 // GET ALL SKILLS
