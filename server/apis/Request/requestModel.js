@@ -50,4 +50,8 @@ const requestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+requestSchema.index({ learnerId: 1, createdAt: -1 });
+requestSchema.index({ mentorId: 1, createdAt: -1 });
+requestSchema.index({ sessionId: 1, requestStatus: 1 });
+
 module.exports = mongoose.model("Request", requestSchema);

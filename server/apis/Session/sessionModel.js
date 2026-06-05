@@ -68,5 +68,7 @@ const sessionSchema = new mongoose.Schema(
 );
 
 sessionSchema.index({ title: "text", description: "text" });
+sessionSchema.index({ mentorId: 1 });
+sessionSchema.index({ status: 1 });
 
 module.exports = mongoose.model("Session", sessionSchema);
