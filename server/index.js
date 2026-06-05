@@ -4,6 +4,7 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const helmet = require("helmet");
+const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
@@ -42,6 +43,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 
 app.use(helmet());
+app.use(compression());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
