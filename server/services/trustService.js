@@ -15,7 +15,7 @@ async function recalculateTrustScore(userId) {
   const completionRate = totalAttempted > 0 ? totalCompleted / totalAttempted : 1;
 
   const ratingAgg = await Review.aggregate([
-    { $match: { $or: [{ mentorId: oid }, { learnerId: oid }] } },
+    { $match: { mentorId: oid } },
     { $group: { _id: null, avg: { $avg: "$rating" } } },
   ]);
   const avgRating = ratingAgg[0]?.avg || 0;

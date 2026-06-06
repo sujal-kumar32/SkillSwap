@@ -127,6 +127,17 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
         <p className="text-muted small mb-3 d-flex align-items-center" style={{ gap: 6 }}>
           <i className="fa fa-user-tie text-primary" />
           <UserLink user={session.mentorId} name={mentor} />
+          {session.mentorId?.trustScore != null && (() => {
+            const ts = session.mentorId.trustScore;
+            const bg = ts >= 90 ? "#d1fae5" : ts >= 70 ? "#fef3c7" : ts >= 50 ? "#ffedd5" : "#fee2e2";
+            const color = ts >= 90 ? "#065f46" : ts >= 70 ? "#92400e" : ts >= 50 ? "#9a3412" : "#991b1b";
+            const iconColor = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626";
+            return (
+              <span className="badge" style={{ background: bg, color, fontSize: "0.6rem", fontWeight: 500, marginLeft: 5 }}>
+                <i className="fa fa-shield-alt" style={{ marginRight: 5, color: iconColor }} />{ts}
+              </span>
+            );
+          })()}
         </p>
         <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: 8 }}>
           {session.rating ? <span className="d-flex align-items-center" style={{ gap: 5 }}>

@@ -180,6 +180,10 @@ class Apiservices {
     return axios.get(baseUrl + "profile/stats");
   }
 
+  getPublicProfile(userId) {
+    return axios.get(baseUrl + "users/public/" + userId);
+  }
+
   getSidebarCounts() {
     return axios.get(baseUrl + "sidebar/counts");
   }

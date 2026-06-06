@@ -227,7 +227,7 @@ exports.getPayments = asyncHandler(async (req, res) => {
       .skip(skip)
       .limit(Math.min(50, Math.max(1, parseInt(limit))))
       .populate("learnerId", "name email profileImage")
-      .populate("mentorId", "name email profileImage")
+      .populate("mentorId", "name email profileImage trustScore")
       .populate("sessionId", "title")
       .populate({
         path: "requestId",

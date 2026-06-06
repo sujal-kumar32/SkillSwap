@@ -45,7 +45,7 @@ exports.getReviews = asyncHandler(async (req, res) => {
     const [reviews, total] = await Promise.all([
       Review.find(filter).sort(sortObj).skip(skip).limit(limit)
         .populate("sessionId", "title")
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .populate("learnerId", "name email profileImage")
         .lean(),
       Review.countDocuments(filter),
@@ -99,7 +99,7 @@ exports.createReview = asyncHandler(async (req, res) => {
         learnerId: req.user.id,
       })
         .populate("sessionId", "title mentorId status")
-        .populate("mentorId", "name profileImage")
+        .populate("mentorId", "name profileImage trustScore")
         .lean();
 
       if (!booking) {

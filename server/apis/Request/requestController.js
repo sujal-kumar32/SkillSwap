@@ -216,7 +216,7 @@ exports.getRequests = asyncHandler(async (req, res) => {
       Request.find(filter).sort(sortObj).skip(skip).limit(limit)
         .populate("sessionId")
         .populate("learnerId", "name email profileImage")
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .lean(),
       Request.countDocuments(filter),
     ]);
@@ -251,7 +251,7 @@ exports.getMyBookings = asyncHandler(async (req, res) => {
         ],
       })
       .populate("learnerId", "name email profileImage")
-      .populate("mentorId", "name email profileImage")
+      .populate("mentorId", "name email profileImage trustScore")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -285,7 +285,7 @@ exports.getMentorBookings = asyncHandler(async (req, res) => {
           populate: { path: "skillId", select: "name categoryId" },
         })
         .populate("learnerId", "name email profileImage")
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .sort({ createdAt: -1 })
         .lean(),
       Request.countDocuments(filter),

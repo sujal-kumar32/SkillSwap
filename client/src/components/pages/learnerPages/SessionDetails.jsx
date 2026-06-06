@@ -166,6 +166,19 @@ const SessionDetails = () => {
               <div>
                 <h6 className="fw-bold mb-0"><UserLink user={session.mentorId} name={session.mentorId?.name || "SkillSwap Mentor"} /></h6>
                 <small className="text-muted">{session.mentorId?.email || "mentor@skillswap.com"}</small>
+                {session.mentorId?.trustScore != null && (() => {
+                  const ts = session.mentorId.trustScore;
+                  const bg = ts >= 90 ? "#d1fae5" : ts >= 70 ? "#fef3c7" : ts >= 50 ? "#ffedd5" : "#fee2e2";
+                  const color = ts >= 90 ? "#065f46" : ts >= 70 ? "#92400e" : ts >= 50 ? "#9a3412" : "#991b1b";
+                  const iconColor = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626";
+                  return (
+                    <div style={{ marginTop: 5 }}>
+                      <span className="badge" style={{ background: bg, color, fontSize: "0.7rem" }}>
+                        <i className="fa fa-shield-alt" style={{ marginRight: 5, color: iconColor }} />Trust {ts}/100
+                      </span>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
             {availabilityText && (

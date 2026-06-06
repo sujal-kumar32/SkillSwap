@@ -223,6 +223,17 @@ exports.searchUsers = asyncHandler(async (req, res) => {
   res.json({ success: true, data: users });
 });
 
+// GET PUBLIC PROFILE
+exports.getPublicProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.userId)
+    .select("name email profileImage bio roles skills trustScore totalCompletedSessions totalCancelledSessions totalBookings followerCount followingCount isOnline lastActive")
+    .lean();
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  res.json({ success: true, data: user });
+});
+
 // APPLY FOR MENTOR
 exports.getPresence = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.userId).select("isOnline lastActive");

@@ -146,7 +146,7 @@ exports.getMySessions = asyncHandler(async (req, res) => {
           path: "skillId",
           populate: { path: "categoryId", select: "name" },
         })
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .lean(),
       Session.countDocuments({ mentorId: req.user.id }),
     ]);
@@ -231,7 +231,7 @@ exports.getSessions = asyncHandler(async (req, res) => {
           path: "skillId",
           populate: { path: "categoryId", select: "name" },
         })
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .lean(),
       Session.countDocuments(filter),
     ]);
@@ -288,7 +288,7 @@ exports.getSession = asyncHandler(async (req, res) => {
 
     const session = await Session.findById(req.params.id)
       .populate("skillId")
-      .populate("mentorId", "name email profileImage")
+      .populate("mentorId", "name email profileImage trustScore")
       .lean();
 
     if (!session) {

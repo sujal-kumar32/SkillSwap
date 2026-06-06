@@ -197,16 +197,21 @@ const PublicProfile = () => {
           </div>
 
           <div className="row g-4 mb-4">
-            {[
-              { label: "Sessions", value: profile.sessionCount || 0, icon: "fa-video", color: "primary" },
-              { label: "Reviews", value: profile.reviewCount || 0, icon: "fa-star", color: "warning" },
-              ...(isMentor && profile.rating ? [{ label: "Avg Rating", value: profile.rating, icon: "fa-star-half-stroke", color: "warning" }] : []),
-              { label: "Skills", value: profile.skills?.length || profile.interests?.length || 0, icon: "fa-code", color: "success" },
-            ].map((s) => (
+            {(() => {
+              const ts = profile.trustScore ?? 100;
+              const tsColor = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626";
+              return [
+                { label: "Sessions", value: profile.sessionCount || 0, icon: "fa-video", color: "primary" },
+                { label: "Reviews", value: profile.reviewCount || 0, icon: "fa-star", color: "warning" },
+                ...(isMentor && profile.rating ? [{ label: "Avg Rating", value: profile.rating, icon: "fa-star-half-stroke", color: "warning" }] : []),
+                { label: "Trust Score", value: `${ts}/100`, icon: "fa-shield-alt", iconColor: tsColor },
+                { label: "Skills", value: profile.skills?.length || profile.interests?.length || 0, icon: "fa-code", color: "success" },
+              ];
+            })().map((s) => (
               <div className="col-sm-6 col-lg-3" key={s.label}>
                 <div className="learner-card p-3 d-flex align-items-center h-100">
                   <div style={{ width: 50, textAlign: "center", flexShrink: 0 }}>
-                    <i className={`fa ${s.icon} text-${s.color}`} style={{ fontSize: "1.5rem" }} />
+                    <i className={`fa ${s.icon}${s.iconColor ? '' : ` text-${s.color}`}`} style={{ fontSize: "1.5rem", color: s.iconColor }} />
                   </div>
                   <div style={{ borderLeft: "1px solid #e2e8f0", paddingLeft: 16 }}>
                     <h4 className="fw-bold mb-0">{s.value}</h4>
