@@ -149,9 +149,9 @@ function Login() {
       // ROLE CHECK
       if (userData.data?.roles?.includes("admin")) {
         navigate("/admin");
-      } else {
-        navigate("/workspace");
+        return;
       }
+      navigate("/workspace");
     } catch (error) {
       setSubmitting(false);
       showToast.error(error.message || "Login error");
