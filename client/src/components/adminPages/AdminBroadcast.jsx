@@ -4,6 +4,133 @@ import Apiservices from "../../../Apiservices";
 
 const ic = { marginRight: "5px" };
 
+const AUDIENCE_OPTIONS = [
+  { value: "all", label: "All Users", icon: "fa-globe", desc: "Every active account" },
+  { value: "role", label: "By Role", icon: "fa-users", desc: "Learners or mentors" },
+  { value: "single", label: "Specific User", icon: "fa-user", desc: "Send to one person" },
+];
+
+const buildPayload = (message, link, targetType, targetRole, targetUserId) => {
+  const payload = { message: message.trim(), targetType, link: link.trim() || undefined };
+  if (targetType === "role") payload.targetRole = targetRole;
+  if (targetType === "single") payload.targetUserId = targetUserId;
+  return payload;
+};
+
+const UserSearchDropdown = ({ results, onSelect }) => {
+  if (!results.length) return null;
+  return (
+    <div style={{
+      position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10,
+      background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, marginTop: 4,
+      boxShadow: "0 10px 30px rgba(0,0,0,0.08)", overflow: "hidden",
+    }}>
+      {results.map((u) => (
+        <button key={u._id} type="button" onClick={() => onSelect(u)}
+          style={{
+            display: "flex", alignItems: "center", gap: "5px", width: "100%", padding: "10px 14px",
+            border: "none", background: "#fff", cursor: "pointer", fontSize: "0.82rem",
+            textAlign: "left", borderBottom: "1px solid #f1f5f9",
+          }}
+          onMouseEnter={(e) => e.target.style.background = "#f8fafc"}
+          onMouseLeave={(e) => e.target.style.background = "#fff"}>
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%",
+            background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+            display: "grid", placeItems: "center", color: "#fff",
+            fontSize: "0.65rem", fontWeight: 700, flexShrink: 0,
+          }}>
+            {u.name?.charAt(0).toUpperCase() || "?"}
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, color: "#1e293b", fontSize: "0.8rem" }}>{u.name}</div>
+            <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{u.email}</div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const BroadcastRow = ({ b, deleting, onEdit, onDelete }) => {
+  const audienceLabel = b.targetType === "single"
+    ? (b.targetUserId?.name || "User")
+    : b.targetType === "role"
+      ? (b.targetRole === "mentor" ? "Mentors" : "Learners")
+      : "Everyone";
+  const badgeBg = b.targetType === "single" ? "#ede9fe"
+    : b.targetType === "role" ? "#dbeafe"
+    : "#f0fdf4";
+  const badgeColor = b.targetType === "single" ? "#7c3aed"
+    : b.targetType === "role" ? "#2563eb"
+    : "#16a34a";
+
+  return (
+    <tr style={{ borderBottom: "12px solid #f1f5f9" }}>
+      <td>
+        <div className="d-flex align-items-center" style={{ gap: "5px" }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+            background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+            display: "grid", placeItems: "center", color: "#fff", fontSize: "0.8rem",
+          }}>
+            <i className="fa fa-bullhorn" />
+          </div>
+          <span style={{ fontWeight: 600, color: "#1e293b", fontSize: "0.85rem", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {b.message}
+          </span>
+        </div>
+      </td>
+      <td>
+        <span style={{ background: badgeBg, color: badgeColor, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" }}>
+          {audienceLabel}
+        </span>
+      </td>
+      <td style={{ fontWeight: 600, fontSize: "0.85rem" }}>{b.recipientCount || 0}</td>
+      <td>
+        {b.link ? (
+          <span style={{ color: "#0d6efd", fontSize: "0.8rem", wordBreak: "break-all" }}>
+            <i className="fa fa-link" style={{ ...ic, fontSize: "0.7rem" }} />
+            {b.link.length > 30 ? b.link.substring(0, 30) + "..." : b.link}
+          </span>
+        ) : (
+          <span className="text-muted" style={{ fontSize: "0.8rem" }}>—</span>
+        )}
+      </td>
+      <td style={{ color: "#64748b", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+        {new Date(b.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        <br /><small>{new Date(b.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</small>
+      </td>
+      <td className="text-end">
+        <div className="d-flex justify-content-end" style={{ gap: "5px" }}>
+          <button onClick={() => onEdit(b)}
+            className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3 py-2"
+            style={{ fontSize: "0.75rem" }}>
+            <i className="fa fa-pen" style={ic} />Edit
+          </button>
+          <button onClick={() => onDelete(b._id)} disabled={deleting === b._id}
+            className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
+            style={{ fontSize: "0.75rem" }}>
+            {deleting === b._id ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-trash" style={ic} />Delete</>}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+const BroadcastTableBody = ({ loading, broadcasts, deleting, onEdit, onDelete }) => {
+  if (loading) return (
+    <tr><td colSpan={6} className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm" style={ic} />Loading...</td></tr>
+  );
+  if (!broadcasts.length) return (
+    <tr><td colSpan={6} className="text-center py-4 text-muted">No broadcasts sent yet</td></tr>
+  );
+  return broadcasts.map((b) => (
+    <BroadcastRow key={b._id} b={b} deleting={deleting} onEdit={onEdit} onDelete={onDelete} />
+  ));
+};
+
 const AdminBroadcast = () => {
   const [message, setMessage] = useState("");
   const [link, setLink] = useState("");
@@ -26,6 +153,7 @@ const AdminBroadcast = () => {
       const res = await Apiservices.getBroadcasts({ page: 1, limit: 50 });
       setBroadcasts(res.data.data || []);
     } catch {
+      // fetch failed silently
     } finally {
       setLoading(false);
     }
@@ -77,9 +205,7 @@ const AdminBroadcast = () => {
     if (!message.trim() || (targetType === "single" && !targetUserId) || (targetType === "role" && !targetRole)) return;
     setSending(true);
     try {
-      const payload = { message: message.trim(), targetType, link: link.trim() || undefined };
-      if (targetType === "role") payload.targetRole = targetRole;
-      if (targetType === "single") payload.targetUserId = targetUserId;
+      const payload = buildPayload(message, link, targetType, targetRole, targetUserId);
 
       if (editingId) {
         const res = await Apiservices.updateBroadcast(editingId, payload);
@@ -183,11 +309,7 @@ const AdminBroadcast = () => {
               <i className="fa fa-bullseye" style={{ ...ic, fontSize: "0.75rem" }} />AUDIENCE
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "5px" }}>
-              {[
-                { value: "all", label: "All Users", icon: "fa-globe", desc: "Every active account" },
-                { value: "role", label: "By Role", icon: "fa-users", desc: "Learners or mentors" },
-                { value: "single", label: "Specific User", icon: "fa-user", desc: "Send to one person" },
-              ].map((opt) => (
+              {AUDIENCE_OPTIONS.map((opt) => (
                 <button key={opt.value} type="button"
                   onClick={() => { setTargetType(opt.value); setTargetRole(""); setTargetUserId(""); setTargetUserName(""); }}
                   style={{
@@ -262,37 +384,7 @@ const AdminBroadcast = () => {
                       padding: "10px 14px", fontSize: "0.82rem",
                     }} />
                   {searching && <span className="spinner-border spinner-border-sm" style={{ position: "absolute", right: 12, top: 11 }} />}
-                  {searchResults.length > 0 && (
-                    <div style={{
-                      position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10,
-                      background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, marginTop: 4,
-                      boxShadow: "0 10px 30px rgba(0,0,0,0.08)", overflow: "hidden",
-                    }}>
-                      {searchResults.map((u) => (
-                        <button key={u._id} type="button" onClick={() => selectUser(u)}
-                          style={{
-                            display: "flex", alignItems: "center", gap: "5px", width: "100%", padding: "10px 14px",
-                            border: "none", background: "#fff", cursor: "pointer", fontSize: "0.82rem",
-                            textAlign: "left", borderBottom: "1px solid #f1f5f9",
-                          }}
-                          onMouseEnter={(e) => e.target.style.background = "#f8fafc"}
-                          onMouseLeave={(e) => e.target.style.background = "#fff"}>
-                          <div style={{
-                            width: 28, height: 28, borderRadius: "50%",
-                            background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                            display: "grid", placeItems: "center", color: "#fff",
-                            fontSize: "0.65rem", fontWeight: 700, flexShrink: 0,
-                          }}>
-                            {u.name?.charAt(0).toUpperCase() || "?"}
-                          </div>
-                          <div>
-                            <div style={{ fontWeight: 600, color: "#1e293b", fontSize: "0.8rem" }}>{u.name}</div>
-                            <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{u.email}</div>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <UserSearchDropdown results={searchResults} onSelect={selectUser} />
                 </div>
               )}
             </div>
@@ -377,78 +469,7 @@ const AdminBroadcast = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr><td colSpan={6} className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm" style={ic} />Loading...</td></tr>
-              ) : broadcasts.length === 0 ? (
-                <tr><td colSpan={6} className="text-center py-4 text-muted">No broadcasts sent yet</td></tr>
-              ) : (
-                broadcasts.map((b) => {
-                  const audienceLabel = b.targetType === "single"
-                    ? (b.targetUserId?.name || "User")
-                    : b.targetType === "role"
-                      ? (b.targetRole === "mentor" ? "Mentors" : "Learners")
-                      : "Everyone";
-                  const badgeBg = b.targetType === "single" ? "#ede9fe"
-                    : b.targetType === "role" ? "#dbeafe"
-                    : "#f0fdf4";
-                  const badgeColor = b.targetType === "single" ? "#7c3aed"
-                    : b.targetType === "role" ? "#2563eb"
-                    : "#16a34a";
-
-                  return (
-                    <tr key={b._id} style={{ borderBottom: "12px solid #f1f5f9" }}>
-                      <td>
-                        <div className="d-flex align-items-center" style={{ gap: "5px" }}>
-                          <div style={{
-                            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                            background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                            display: "grid", placeItems: "center", color: "#fff", fontSize: "0.8rem",
-                          }}>
-                            <i className="fa fa-bullhorn" />
-                          </div>
-                          <span style={{ fontWeight: 600, color: "#1e293b", fontSize: "0.85rem", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {b.message}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <span style={{ background: badgeBg, color: badgeColor, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" }}>
-                          {audienceLabel}
-                        </span>
-                      </td>
-                      <td style={{ fontWeight: 600, fontSize: "0.85rem" }}>{b.recipientCount || 0}</td>
-                      <td>
-                        {b.link ? (
-                          <span style={{ color: "#0d6efd", fontSize: "0.8rem", wordBreak: "break-all" }}>
-                            <i className="fa fa-link" style={{ ...ic, fontSize: "0.7rem" }} />
-                            {b.link.length > 30 ? b.link.substring(0, 30) + "..." : b.link}
-                          </span>
-                        ) : (
-                          <span className="text-muted" style={{ fontSize: "0.8rem" }}>—</span>
-                        )}
-                      </td>
-                      <td style={{ color: "#64748b", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
-                        {new Date(b.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        <br /><small>{new Date(b.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</small>
-                      </td>
-                      <td className="text-end">
-                        <div className="d-flex justify-content-end" style={{ gap: "5px" }}>
-                          <button onClick={() => handleEdit(b)}
-                            className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3 py-2"
-                            style={{ fontSize: "0.75rem" }}>
-                            <i className="fa fa-pen" style={ic} />Edit
-                          </button>
-                          <button onClick={() => handleDelete(b._id)} disabled={deleting === b._id}
-                            className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
-                            style={{ fontSize: "0.75rem" }}>
-                            {deleting === b._id ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-trash" style={ic} />Delete</>}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+              <BroadcastTableBody loading={loading} broadcasts={broadcasts} deleting={deleting} onEdit={handleEdit} onDelete={handleDelete} />
             </tbody>
           </table>
         </div>

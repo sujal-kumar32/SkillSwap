@@ -11,6 +11,91 @@ const STATUS_STYLE = {
   refund_initiated: { bg: "#f3e8ff", color: "#6b21a8", icon: "fa-spinner", label: "Refunding" },
 };
 
+const PaymentRow = ({ p, index }) => {
+  const st = STATUS_STYLE[p.paymentStatus] || STATUS_STYLE.pending;
+  return (
+    <tr style={{ borderBottom: "1px solid #f1f5f9", transition: "background 0.15s", background: index % 2 === 0 ? "#fff" : "#fafbfc" }}
+      onMouseEnter={(e) => e.currentTarget.style.background = "#f0f4ff"}
+      onMouseLeave={(e) => e.currentTarget.style.background = index % 2 === 0 ? "#fff" : "#fafbfc"}>
+      <td style={{ padding: "14px 18px" }}>
+        <div style={{ fontFamily: "monospace", fontSize: "0.7rem", color: "#1e293b", fontWeight: 500 }}>{p.transactionId || p.orderId || "—"}</div>
+        {p.requestId?.requestStatus && (
+          <div style={{ fontSize: "0.62rem", color: "#94a3b8", marginTop: 2 }}>Booking: {p.requestId.requestStatus}</div>
+        )}
+      </td>
+      <td style={{ padding: "14px 18px" }}>
+        <div className="d-flex align-items-center" style={{ gap: 10 }}>
+          <img src={p.learnerId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.learnerId?.name || "?")}&background=0d6efd&color=fff&size=28`}
+            alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+          <span style={{ fontWeight: 500, color: "#1e293b" }}>{p.learnerId?.name || "Unknown"}</span>
+        </div>
+      </td>
+      <td style={{ padding: "14px 18px" }}>
+        <div className="d-flex align-items-center" style={{ gap: 10 }}>
+          <img src={p.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.mentorId?.name || "?")}&background=6610f2&color=fff&size=28`}
+            alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+          <span style={{ fontWeight: 500, color: "#1e293b" }}>{p.mentorId?.name || "Unknown"}</span>
+        </div>
+      </td>
+      <td style={{ padding: "14px 18px", color: "#475569", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.sessionId?.title || "—"}</td>
+      <td style={{ padding: "14px 18px", textAlign: "right", fontWeight: 700, color: "#1e293b", fontSize: "0.88rem" }}>₹{p.amount?.toFixed(2)}</td>
+      <td style={{ padding: "14px 18px", textAlign: "center" }}>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "4px 12px", borderRadius: 999,
+          fontSize: "0.7rem", fontWeight: 600,
+          background: st.bg, color: st.color,
+        }}>
+          <i className={`fa ${st.icon}`} style={{ fontSize: "0.6rem" }} />
+          {st.label}
+        </span>
+      </td>
+      <td style={{ padding: "14px 18px", textAlign: "right", color: "#64748b", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+        {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+      </td>
+    </tr>
+  );
+};
+
+const PaginationBar = ({ page, pagination, onPageChange }) => {
+  if (!pagination || pagination.pages <= 1) return null;
+  return (
+    <div className="d-flex align-items-center" style={{ gap: 4 }}>
+      <button className="btn btn-sm" onClick={() => onPageChange(1)} disabled={page <= 1}
+        style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page <= 1 ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
+        <i className="fa fa-angle-double-left" />
+      </button>
+      <button className="btn btn-sm" onClick={() => onPageChange((p) => p - 1)} disabled={page <= 1}
+        style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page <= 1 ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
+        <i className="fa fa-angle-left" />
+      </button>
+      {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+        const start = Math.max(1, Math.min(page - 2, pagination.pages - 4));
+        const num = start + i;
+        if (num > pagination.pages) return null;
+        return (
+          <button key={num} className="btn btn-sm" onClick={() => onPageChange(num)}
+            style={{
+              borderRadius: 8, border: "1px solid #e2e8f0", padding: "6px 12px", fontSize: "0.72rem", fontWeight: 600,
+              background: num === page ? "#0d6efd" : "#fff",
+              color: num === page ? "#fff" : "#475569",
+            }}>
+            {num}
+          </button>
+        );
+      })}
+      <button className="btn btn-sm" onClick={() => onPageChange((p) => p + 1)} disabled={page >= pagination.pages}
+        style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page >= pagination.pages ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
+        <i className="fa fa-angle-right" />
+      </button>
+      <button className="btn btn-sm" onClick={() => onPageChange(pagination.pages)} disabled={page >= pagination.pages}
+        style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page >= pagination.pages ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
+        <i className="fa fa-angle-double-right" />
+      </button>
+    </div>
+  );
+};
+
 const AdminPayments = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,12 +121,6 @@ const AdminPayments = () => {
   }, [page, statusFilter, search]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const stats = {
-    total: payments.reduce((s, p) => p.paymentStatus === "success" ? s + (p.amount || 0) : s, 0),
-    count: payments.filter((p) => p.paymentStatus === "success").length,
-    refunds: payments.filter((p) => p.paymentStatus === "refunded" || p.paymentStatus === "refund_initiated").length,
-  };
 
   return (
     <div>
@@ -95,51 +174,9 @@ const AdminPayments = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {payments.map((p, i) => {
-                    const st = STATUS_STYLE[p.paymentStatus] || STATUS_STYLE.pending;
-                    return (
-                      <tr key={p._id} style={{ borderBottom: "1px solid #f1f5f9", transition: "background 0.15s", background: i % 2 === 0 ? "#fff" : "#fafbfc" }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = "#f0f4ff"}
-                        onMouseLeave={(e) => e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "#fafbfc"}>
-                        <td style={{ padding: "14px 18px" }}>
-                          <div style={{ fontFamily: "monospace", fontSize: "0.7rem", color: "#1e293b", fontWeight: 500 }}>{p.transactionId || p.orderId || "—"}</div>
-                          {p.requestId?.requestStatus && (
-                            <div style={{ fontSize: "0.62rem", color: "#94a3b8", marginTop: 2 }}>Booking: {p.requestId.requestStatus}</div>
-                          )}
-                        </td>
-                        <td style={{ padding: "14px 18px" }}>
-                          <div className="d-flex align-items-center" style={{ gap: 10 }}>
-                            <img src={p.learnerId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.learnerId?.name || "?")}&background=0d6efd&color=fff&size=28`}
-                              alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                            <span style={{ fontWeight: 500, color: "#1e293b" }}>{p.learnerId?.name || "Unknown"}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: "14px 18px" }}>
-                          <div className="d-flex align-items-center" style={{ gap: 10 }}>
-                            <img src={p.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.mentorId?.name || "?")}&background=6610f2&color=fff&size=28`}
-                              alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                            <span style={{ fontWeight: 500, color: "#1e293b" }}>{p.mentorId?.name || "Unknown"}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: "14px 18px", color: "#475569", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.sessionId?.title || "—"}</td>
-                        <td style={{ padding: "14px 18px", textAlign: "right", fontWeight: 700, color: "#1e293b", fontSize: "0.88rem" }}>₹{p.amount?.toFixed(2)}</td>
-                        <td style={{ padding: "14px 18px", textAlign: "center" }}>
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", gap: 5,
-                            padding: "4px 12px", borderRadius: 999,
-                            fontSize: "0.7rem", fontWeight: 600,
-                            background: st.bg, color: st.color,
-                          }}>
-                            <i className={`fa ${st.icon}`} style={{ fontSize: "0.6rem" }} />
-                            {st.label}
-                          </span>
-                        </td>
-                        <td style={{ padding: "14px 18px", textAlign: "right", color: "#64748b", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
-                          {new Date(p.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {payments.map((p, i) => (
+                    <PaymentRow key={p._id} p={p} index={i} />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -149,41 +186,7 @@ const AdminPayments = () => {
             <div style={{ fontSize: "0.75rem", color: "#64748b" }}>
               {pagination ? `Showing page ${pagination.page} of ${pagination.pages} (${pagination.total} total)` : ""}
             </div>
-            {pagination && pagination.pages > 1 && (
-              <div className="d-flex align-items-center" style={{ gap: 4 }}>
-                <button className="btn btn-sm" onClick={() => setPage(1)} disabled={page <= 1}
-                  style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page <= 1 ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
-                  <i className="fa fa-angle-double-left" />
-                </button>
-                <button className="btn btn-sm" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}
-                  style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page <= 1 ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
-                  <i className="fa fa-angle-left" />
-                </button>
-                {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                  const start = Math.max(1, Math.min(page - 2, pagination.pages - 4));
-                  const num = start + i;
-                  if (num > pagination.pages) return null;
-                  return (
-                    <button key={num} className="btn btn-sm" onClick={() => setPage(num)}
-                      style={{
-                        borderRadius: 8, border: "1px solid #e2e8f0", padding: "6px 12px", fontSize: "0.72rem", fontWeight: 600,
-                        background: num === page ? "#0d6efd" : "#fff",
-                        color: num === page ? "#fff" : "#475569",
-                      }}>
-                      {num}
-                    </button>
-                  );
-                })}
-                <button className="btn btn-sm" onClick={() => setPage((p) => p + 1)} disabled={page >= pagination.pages}
-                  style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page >= pagination.pages ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
-                  <i className="fa fa-angle-right" />
-                </button>
-                <button className="btn btn-sm" onClick={() => setPage(pagination.pages)} disabled={page >= pagination.pages}
-                  style={{ borderRadius: 8, border: "1px solid #e2e8f0", color: page >= pagination.pages ? "#cbd5e1" : "#475569", background: "#fff", padding: "6px 10px", fontSize: "0.72rem" }}>
-                  <i className="fa fa-angle-double-right" />
-                </button>
-              </div>
-            )}
+            <PaginationBar page={page} pagination={pagination} onPageChange={setPage} />
           </div>
         </>
       )}
