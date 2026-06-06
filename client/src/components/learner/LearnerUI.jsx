@@ -80,6 +80,23 @@ export const StatusBadge = ({ status }) => {
   );
 };
 
+const getTrustScoreStyle = (ts) => {
+  if (ts >= 90) return { bg: "#d1fae5", color: "#065f46", iconColor: "#16a34a" };
+  if (ts >= 70) return { bg: "#fef3c7", color: "#92400e", iconColor: "#d97706" };
+  if (ts >= 50) return { bg: "#ffedd5", color: "#9a3412", iconColor: "#ea580c" };
+  return { bg: "#fee2e2", color: "#991b1b", iconColor: "#dc2626" };
+};
+
+const TrustBadge = ({ trustScore }) => {
+  if (trustScore == null) return null;
+  const { bg, color, iconColor } = getTrustScoreStyle(trustScore);
+  return (
+    <span className="badge" style={{ background: bg, color, fontSize: "0.6rem", fontWeight: 500, marginLeft: 5 }}>
+      <i className="fa fa-shield-alt" style={{ marginRight: 5, color: iconColor }} />{trustScore}
+    </span>
+  );
+};
+
 export const SessionCard = ({ session, onBook, onToggleSave }) => {
   const skill = session.skillId?.name || session.skill || "Skill";
   const category = session.skillId?.categoryId?.name || "Learning";
@@ -127,17 +144,7 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
         <p className="text-muted small mb-3 d-flex align-items-center" style={{ gap: 6 }}>
           <i className="fa fa-user-tie text-primary" />
           <UserLink user={session.mentorId} name={mentor} />
-          {session.mentorId?.trustScore != null && (() => {
-            const ts = session.mentorId.trustScore;
-            const bg = ts >= 90 ? "#d1fae5" : ts >= 70 ? "#fef3c7" : ts >= 50 ? "#ffedd5" : "#fee2e2";
-            const color = ts >= 90 ? "#065f46" : ts >= 70 ? "#92400e" : ts >= 50 ? "#9a3412" : "#991b1b";
-            const iconColor = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626";
-            return (
-              <span className="badge" style={{ background: bg, color, fontSize: "0.6rem", fontWeight: 500, marginLeft: 5 }}>
-                <i className="fa fa-shield-alt" style={{ marginRight: 5, color: iconColor }} />{ts}
-              </span>
-            );
-          })()}
+          <TrustBadge trustScore={session.mentorId?.trustScore} />
         </p>
         <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: 8 }}>
           {session.rating ? <span className="d-flex align-items-center" style={{ gap: 5 }}>
