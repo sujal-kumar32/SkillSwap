@@ -16,7 +16,8 @@ exports.getMyBadges = asyncHandler(async (req, res) => {
     .map((b) => ({
       ...b.badgeId,
       earnedAt: b.earnedAt,
-    }));
+    }))
+    .sort((a, b) => new Date(b.earnedAt) - new Date(a.earnedAt));
   res.json({ success: true, data: earned });
 });
 

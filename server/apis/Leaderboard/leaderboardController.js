@@ -1,6 +1,7 @@
 const User = require("../Users/userModel");
 const Review = require("../Reviews/reviewModel");
 const Request = require("../Request/requestModel");
+const XpTransaction = require("../../models/XpTransaction");
 const asyncHandler = require("../../utilities/asyncHandler");
 const mongoose = require("mongoose");
 
@@ -9,14 +10,17 @@ exports.getMentorLeaderboard = asyncHandler(async (req, res) => {
   const skip = (parseInt(page) - 1) * parseInt(limit);
 
   let dateFilter = {};
+  let periodThreshold = null;
   if (period === "weekly") {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     dateFilter = { createdAt: { $gte: weekAgo } };
+    periodThreshold = weekAgo;
   } else if (period === "monthly") {
     const monthAgo = new Date();
     monthAgo.setMonth(monthAgo.getMonth() - 1);
     dateFilter = { createdAt: { $gte: monthAgo } };
+    periodThreshold = monthAgo;
   }
 
   const mentors = await User.find({
@@ -24,6 +28,15 @@ exports.getMentorLeaderboard = asyncHandler(async (req, res) => {
   }).select("name email profileImage xp level earnedBadges").lean();
 
   const mentorIds = mentors.map((m) => m._id);
+
+  let xpInPeriod = {};
+  if (periodThreshold) {
+    const xpAgg = await XpTransaction.aggregate([
+      { $match: { userId: { $in: mentorIds }, createdAt: { $gte: periodThreshold } } },
+      { $group: { _id: "$userId", totalXp: { $sum: "$amount" } } },
+    ]);
+    for (const x of xpAgg) xpInPeriod[x._id.toString()] = x.totalXp;
+  }
 
   const [sessionsCount, reviewsAgg] = await Promise.all([
     Request.aggregate([
@@ -57,10 +70,15 @@ exports.getMentorLeaderboard = asyncHandler(async (req, res) => {
       sessionsCompleted: sessionMap[id] || 0,
       avgRating: ratingMap[id]?.avg || 0,
       reviewCount: ratingMap[id]?.count || 0,
+      periodXp: xpInPeriod[id] || 0,
     };
   });
 
-  data.sort((a, b) => b.xp - a.xp);
+  if (periodThreshold) {
+    data.sort((a, b) => b.periodXp - a.periodXp || b.xp - a.xp);
+  } else {
+    data.sort((a, b) => b.xp - a.xp);
+  }
   const total = data.length;
   const paginated = data.slice(skip, skip + parseInt(limit));
 
@@ -74,14 +92,34 @@ exports.getMentorLeaderboard = asyncHandler(async (req, res) => {
 });
 
 exports.getLearnerLeaderboard = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { period = "all", page = 1, limit = 20 } = req.query;
   const skip = (parseInt(page) - 1) * parseInt(limit);
+
+  let periodThreshold = null;
+  if (period === "weekly") {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    periodThreshold = weekAgo;
+  } else if (period === "monthly") {
+    const monthAgo = new Date();
+    monthAgo.setMonth(monthAgo.getMonth() - 1);
+    periodThreshold = monthAgo;
+  }
 
   const learners = await User.find({
     roles: { $in: ["learner"] }, status: "active",
   }).select("name email profileImage xp level earnedBadges").lean();
 
   const learnerIds = learners.map((l) => l._id);
+
+  let xpInPeriod = {};
+  if (periodThreshold) {
+    const xpAgg = await XpTransaction.aggregate([
+      { $match: { userId: { $in: learnerIds }, createdAt: { $gte: periodThreshold } } },
+      { $group: { _id: "$userId", totalXp: { $sum: "$amount" } } },
+    ]);
+    for (const x of xpAgg) xpInPeriod[x._id.toString()] = x.totalXp;
+  }
 
   const sessionsCount = await Request.aggregate([
     { $match: { learnerId: { $in: learnerIds }, requestStatus: "completed" } },
@@ -101,8 +139,14 @@ exports.getLearnerLeaderboard = asyncHandler(async (req, res) => {
       level: l.level || 1,
       badges: l.earnedBadges?.length || 0,
       sessionsCompleted: sessionMap[l._id.toString()] || 0,
-    }))
-    .sort((a, b) => b.xp - a.xp);
+      periodXp: xpInPeriod[l._id.toString()] || 0,
+    }));
+
+  if (periodThreshold) {
+    data.sort((a, b) => b.periodXp - a.periodXp || b.xp - a.xp);
+  } else {
+    data.sort((a, b) => b.xp - a.xp);
+  }
 
   const total = data.length;
   const paginated = data.slice(skip, skip + parseInt(limit));
