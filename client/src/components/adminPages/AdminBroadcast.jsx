@@ -52,18 +52,14 @@ const UserSearchDropdown = ({ results, onSelect }) => {
   );
 };
 
+const getBroadcastAudience = (b) => {
+  if (b.targetType === "single") return { label: b.targetUserId?.name || "User", bg: "#ede9fe", color: "#7c3aed" };
+  if (b.targetType === "role") return { label: b.targetRole === "mentor" ? "Mentors" : "Learners", bg: "#dbeafe", color: "#2563eb" };
+  return { label: "Everyone", bg: "#f0fdf4", color: "#16a34a" };
+};
+
 const BroadcastRow = ({ b, deleting, onEdit, onDelete }) => {
-  const audienceLabel = b.targetType === "single"
-    ? (b.targetUserId?.name || "User")
-    : b.targetType === "role"
-      ? (b.targetRole === "mentor" ? "Mentors" : "Learners")
-      : "Everyone";
-  const badgeBg = b.targetType === "single" ? "#ede9fe"
-    : b.targetType === "role" ? "#dbeafe"
-    : "#f0fdf4";
-  const badgeColor = b.targetType === "single" ? "#7c3aed"
-    : b.targetType === "role" ? "#2563eb"
-    : "#16a34a";
+  const { label: audienceLabel, bg: badgeBg, color: badgeColor } = getBroadcastAudience(b);
 
   return (
     <tr style={{ borderBottom: "12px solid #f1f5f9" }}>
