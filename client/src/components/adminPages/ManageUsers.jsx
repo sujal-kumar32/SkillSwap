@@ -70,8 +70,27 @@ const ManageUsers = () => {
       } else {
         showToast.error(response.data.message);
       }
-    } catch (err) {
+    } catch {
       showToast.error("Failed to update user status");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (userId, userName) => {
+    const ok = await deleteConfirmAlert(`user "${userName}"`);
+    if (!ok) return;
+    try {
+      setActionLoading(userId);
+      const res = await Apiservices.updateUserStatus(userId, "deleted");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === userId ? { ...u, ...res.data.data } : u,
+        ),
+      );
+      showToast.success("User deleted");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to delete user");
     } finally {
       setActionLoading(null);
     }
@@ -202,24 +221,7 @@ const ManageUsers = () => {
                               )}
                               <button className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
                                 style={{ fontSize: "0.8rem", marginLeft: 6 }}
-                                onClick={async () => {
-                                  const ok = await deleteConfirmAlert(`user "${user.name}"`);
-                                  if (!ok) return;
-                                  try {
-                                    setActionLoading(user._id);
-                                    const res = await Apiservices.updateUserStatus(user._id, "deleted");
-                                    setUsers((prev) =>
-                                      prev.map((u) =>
-                                        u._id === user._id ? { ...u, ...res.data.data } : u,
-                                      ),
-                                    );
-                                    showToast.success("User deleted");
-                                  } catch (err) {
-                                    showToast.error(err.response?.data?.message || "Failed to delete user");
-                                  } finally {
-                                    setActionLoading(null);
-                                  }
-                                }}>
+                                onClick={() => handleDelete(user._id, user.name)}>
                                 <i className="fa fa-trash me-1" /> Delete
                               </button>
                             </>
