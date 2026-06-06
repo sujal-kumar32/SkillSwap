@@ -53,10 +53,25 @@ const ManagePaidSessions = () => {
     });
   }, [sessions, search, statusFilter, paidFilter]);
 
-  const totalRevenue = useMemo(
-    () => sessions.reduce((acc, s) => acc + (s.price ?? 0) * (s.bookings ?? 0), 0),
-    [sessions],
-  );
+  const handleDelete = async (sessionId) => {
+    const confirmed = await deleteConfirmAlert("this session");
+    if (!confirmed) return;
+    setActionLoading(sessionId);
+    try {
+      const response = await Apiservices.deleteSession(sessionId);
+      if (response.data.success) {
+        setSessions((prev) => prev.filter((item) => item._id !== sessionId));
+        showToast.success("Session deleted");
+      } else {
+        showToast.error(response.data.message || "Failed to delete session");
+      }
+    } catch (err) {
+      console.log(err);
+      showToast.error("Failed to delete session");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const StatCard = ({ label, value, icon, color }) => (
     <div className="col-md-4 mb-3">
@@ -170,25 +185,7 @@ const ManagePaidSessions = () => {
                               onClick={() => navigate(`/admin/session/${s._id}/edit`)}>Edit</LoadingButton>
                             <LoadingButton loading={actionLoading === s._id} className="btn btn-sm btn-outline-danger rounded-pill fw-semibold px-3 py-2"
                               style={{ fontSize: "0.8rem" }}
-                              onClick={async () => {
-                                const confirmed = await deleteConfirmAlert("this session");
-                                if (!confirmed) return;
-                                setActionLoading(s._id);
-                                try {
-                                  const response = await Apiservices.deleteSession(s._id);
-                                  if (response.data.success) {
-                                    setSessions((prev) => prev.filter((item) => item._id !== s._id));
-                                    showToast.success("Session deleted");
-                                  } else {
-                                    showToast.error(response.data.message || "Failed to delete session");
-                                  }
-                                } catch (err) {
-                                  console.log(err);
-                                  showToast.error("Failed to delete session");
-                                } finally {
-                                  setActionLoading(null);
-                                }
-                              }}>Delete</LoadingButton>
+                              onClick={() => handleDelete(s._id)}>Delete</LoadingButton>
                           </td>
                         </tr>
                       ))
