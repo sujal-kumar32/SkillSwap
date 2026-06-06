@@ -140,6 +140,42 @@ const AudienceOptionButton = ({ opt, targetType, onSelect }) => {
   );
 };
 
+const canSend = (message, sending, targetType, targetUserId, targetRole) =>
+  message.trim() && !sending && (targetType !== "single" || targetUserId) && (targetType !== "role" || targetRole);
+
+const BroadcastStatsCards = ({ broadcasts, totalRecipients }) => (
+  <div className="row g-4 mb-4">
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0">{broadcasts.length}</h3>
+        <p className="text-muted mb-0 small">Total Broadcasts</p>
+      </div>
+    </div>
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0 text-primary">{totalRecipients}</h3>
+        <p className="text-muted mb-0 small">Total Recipients</p>
+      </div>
+    </div>
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0 text-info">{broadcasts.filter((b) => b.targetType === "all").length}</h3>
+        <p className="text-muted mb-0 small">System Wide</p>
+      </div>
+    </div>
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0 text-success">
+          {broadcasts.length > 0
+            ? new Date(broadcasts[0].createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            : "—"}
+        </h3>
+        <p className="text-muted mb-0 small">Latest</p>
+      </div>
+    </div>
+  </div>
+);
+
 const BroadcastTableBody = ({ loading, broadcasts, deleting, onEdit, onDelete }) => {
   if (loading) return (
     <tr><td colSpan={6} className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm" style={ic} />Loading...</td></tr>
@@ -257,7 +293,7 @@ const AdminBroadcast = () => {
   };
 
   const totalRecipients = broadcasts.reduce((sum, b) => sum + (b.recipientCount || 0), 0);
-  const canSend = message.trim() && !sending && (targetType !== "single" || targetUserId) && (targetType !== "role" || targetRole);
+  const sendable = canSend(message, sending, targetType, targetUserId, targetRole);
 
   return (
     <>
@@ -268,36 +304,7 @@ const AdminBroadcast = () => {
         </div>
       </div>
 
-      <div className="row g-4 mb-4">
-        <div className="col-sm-6 col-lg-3">
-          <div className="learner-card p-4 h-100">
-            <h3 className="fw-bold mb-0">{broadcasts.length}</h3>
-            <p className="text-muted mb-0 small">Total Broadcasts</p>
-          </div>
-        </div>
-        <div className="col-sm-6 col-lg-3">
-          <div className="learner-card p-4 h-100">
-            <h3 className="fw-bold mb-0 text-primary">{totalRecipients}</h3>
-            <p className="text-muted mb-0 small">Total Recipients</p>
-          </div>
-        </div>
-        <div className="col-sm-6 col-lg-3">
-          <div className="learner-card p-4 h-100">
-            <h3 className="fw-bold mb-0 text-info">{broadcasts.filter((b) => b.targetType === "all").length}</h3>
-            <p className="text-muted mb-0 small">System Wide</p>
-          </div>
-        </div>
-        <div className="col-sm-6 col-lg-3">
-          <div className="learner-card p-4 h-100">
-            <h3 className="fw-bold mb-0 text-success">
-              {broadcasts.length > 0
-                ? new Date(broadcasts[0].createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                : "—"}
-            </h3>
-            <p className="text-muted mb-0 small">Latest</p>
-          </div>
-        </div>
-      </div>
+      <BroadcastStatsCards broadcasts={broadcasts} totalRecipients={totalRecipients} />
 
       <div className="learner-card p-4 mb-4">
         <div className="d-flex align-items-center justify-content-between mb-3 pb-3" style={{ borderBottom: "1px solid #f1f5f9", gap: "5px" }}>
@@ -428,11 +435,11 @@ const AdminBroadcast = () => {
           </div>
 
           <div style={{ display: "flex", gap: "5px" }}>
-            <button type="submit" disabled={!canSend}
+            <button type="submit" disabled={!sendable}
               style={{
-                padding: "10px 24px", borderRadius: 10, border: "none", cursor: !canSend ? "not-allowed" : "pointer",
-                background: !canSend ? "#e2e8f0" : "linear-gradient(135deg, #0d6efd, #6610f2)",
-                color: !canSend ? "#94a3b8" : "#fff", fontWeight: 600, fontSize: "0.82rem",
+                padding: "10px 24px", borderRadius: 10, border: "none", cursor: !sendable ? "not-allowed" : "pointer",
+                background: !sendable ? "#e2e8f0" : "linear-gradient(135deg, #0d6efd, #6610f2)",
+                color: !sendable ? "#94a3b8" : "#fff", fontWeight: 600, fontSize: "0.82rem",
                 display: "flex", alignItems: "center", gap: "5px",
               }}>
               {sending ? <><span className="spinner-border spinner-border-sm" /> {editingId ? "Updating..." : "Sending..."}</>

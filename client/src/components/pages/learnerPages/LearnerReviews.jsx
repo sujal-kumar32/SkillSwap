@@ -180,6 +180,20 @@ const LearnerReviews = () => {
     setEditForm({ rating: 5, comment: "" });
   };
 
+  const handleDeleteReview = async (review) => {
+    const confirmed = await deleteConfirmAlert("this review");
+    if (!confirmed) return;
+    try {
+      await Apiservices.deleteReview(review._id);
+      setReviews((prev) => prev.filter((item) => item._id !== review._id));
+      setAllReviews((prev) => prev.filter((item) => item._id !== review._id));
+      showToast.success("Review deleted");
+    } catch (error) {
+      console.log(error);
+      showToast.error(error.response?.data?.message || "Failed to delete review");
+    }
+  };
+
   return (
     <>
       <PageHeader
@@ -223,19 +237,7 @@ const LearnerReviews = () => {
                   </LoadingButton>
                   <LoadingButton
                     className="btn btn-outline-danger btn-sm rounded-pill"
-                    onClick={async () => {
-                      const confirmed = await deleteConfirmAlert("this review");
-                      if (!confirmed) return;
-                      try {
-                        await Apiservices.deleteReview(review._id);
-                        setReviews((prev) => prev.filter((item) => item._id !== review._id));
-                        setAllReviews((prev) => prev.filter((item) => item._id !== review._id));
-                        showToast.success("Review deleted");
-                      } catch (error) {
-                        console.log(error);
-                        showToast.error(error.response?.data?.message || "Failed to delete review");
-                      }
-                    }}
+                    onClick={() => handleDeleteReview(review)}
                   >
                     Delete
                   </LoadingButton>

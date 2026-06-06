@@ -7,6 +7,59 @@ import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
 import { useAuth } from "../../../App";
 
+const BookingSuccess = ({ session, bookingSource }) => (
+  <div className="learner-card p-5 text-center">
+    <div className="learner-empty-icon mx-auto mb-3 text-success bg-success bg-opacity-10">
+      <i className="fa fa-check" />
+    </div>
+    <h3 className="fw-bold">Booking {session.price && bookingSource !== "credits" ? "& Payment" : "Request"} Successful</h3>
+    <p className="text-muted mb-4">
+      {bookingSource === "credits"
+        ? "Your credits have been locked and booking is confirmed."
+        : session.price
+          ? "Your payment has been processed and booking is confirmed."
+          : "You will see this session in My Bookings after confirmation."}
+    </p>
+    <Link to="/learner/bookings" className="btn btn-primary rounded-pill px-4">Go to My Bookings</Link>
+  </div>
+);
+
+const getBookingButtonText = (bookingSource, session) => {
+  if (bookingSource === "credits") return "Book with Credits";
+  if (session.price) return `Pay \u20B9${session.price} & Book`;
+  return "Confirm Free Booking";
+};
+
+const PaymentInfoAlert = ({ insufficientFunds, requiredAmount, bookingSource, walletData, session }) => {
+  if (insufficientFunds) {
+    return (
+      <div className="alert alert-warning rounded-4 d-flex align-items-center" style={{ gap: 8 }}>
+        <i className="fa fa-exclamation-triangle" />
+        <div>
+          Insufficient wallet balance. Required: <strong>\u20B9{requiredAmount}</strong>.{" "}
+          <Link to="/learner/wallet" className="alert-link">Add funds to your SkillWallet</Link> to continue.
+        </div>
+      </div>
+    );
+  }
+  if (bookingSource === "credits") {
+    return (
+      <div className="alert alert-success rounded-4 d-flex align-items-center" style={{ gap: 8 }}>
+        <i className="fa fa-coins" />
+        <div>
+          Paying with credits. Your balance: <strong>{walletData?.skillCredits || 0} credits</strong>
+          {session.creditCost > 0 && <> &middot; Cost: <strong>{session.creditCost} credits</strong></>}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="alert alert-info rounded-4">
+      {session.price ? "Payment will be deducted from your SkillWallet balance." : "This is a free session. No payment required."}
+    </div>
+  );
+};
+
 const BookSession = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -61,10 +114,6 @@ const BookSession = () => {
       const bookRes = await Apiservices.bookSession(payload);
       const requestId = bookRes.data.data?._id;
 
-      const cancelRequest = async () => {
-        try { await Apiservices.updateRequest(requestId, "cancelled"); } catch {}
-      };
-
       if (bookingSource === "credits") {
         showToast.success("Session booked with credits!");
         setSuccess(true);
@@ -79,13 +128,12 @@ const BookSession = () => {
             setRequiredAmount(payErr.response.data.required || session.price);
             setInsufficientFunds(true);
             showToast.warning("Insufficient wallet balance. Add funds to continue.");
-            await cancelRequest();
           } else {
             showToast.error(msg || "Payment failed");
-            await cancelRequest();
           }
-          setSubmitting(false);
+          Apiservices.updateRequest(requestId, "cancelled").catch(() => {});
         }
+        setSubmitting(false);
       } else {
         showToast.success("Session booked successfully!");
         setSuccess(true);
@@ -119,22 +167,7 @@ const BookSession = () => {
   }
 
   if (success) {
-    return (
-      <div className="learner-card p-5 text-center">
-        <div className="learner-empty-icon mx-auto mb-3 text-success bg-success bg-opacity-10">
-          <i className="fa fa-check" />
-        </div>
-        <h3 className="fw-bold">Booking {session.price && bookingSource !== "credits" ? "& Payment" : "Request"} Successful</h3>
-        <p className="text-muted mb-4">
-          {bookingSource === "credits"
-            ? "Your credits have been locked and booking is confirmed."
-            : session.price
-              ? "Your payment has been processed and booking is confirmed."
-              : "You will see this session in My Bookings after confirmation."}
-        </p>
-        <Link to="/learner/bookings" className="btn btn-primary rounded-pill px-4">Go to My Bookings</Link>
-      </div>
-    );
+    return <BookingSuccess session={session} bookingSource={bookingSource} />;
   }
 
   return (
@@ -188,29 +221,10 @@ const BookSession = () => {
                 style={{ border: "1px solid #eef2f7", padding: "12px 16px", resize: "vertical" }} />
             </div>
 
-            {insufficientFunds ? (
-              <div className="alert alert-warning rounded-4 d-flex align-items-center" style={{ gap: 8 }}>
-                <i className="fa fa-exclamation-triangle" />
-                <div>
-                  Insufficient wallet balance. Required: <strong>₹{requiredAmount}</strong>.{" "}
-                  <Link to="/learner/wallet" className="alert-link">Add funds to your SkillWallet</Link> to continue.
-                </div>
-              </div>
-            ) : bookingSource === "credits" ? (
-              <div className="alert alert-success rounded-4 d-flex align-items-center" style={{ gap: 8 }}>
-                <i className="fa fa-coins" />
-                <div>
-                  Paying with credits. Your balance: <strong>{walletData?.skillCredits || 0} credits</strong>
-                  {session.creditCost > 0 && <> &middot; Cost: <strong>{session.creditCost} credits</strong></>}
-                </div>
-              </div>
-            ) : (
-              <div className="alert alert-info rounded-4">
-                {session.price ? "Payment will be deducted from your SkillWallet balance." : "This is a free session. No payment required."}
-              </div>
-            )}
+            <PaymentInfoAlert insufficientFunds={insufficientFunds} requiredAmount={requiredAmount}
+              bookingSource={bookingSource} walletData={walletData} session={session} />
             <LoadingButton loading={submitting} className="btn btn-primary rounded-pill px-4" disabled={submitting || success}>
-              {bookingSource === "credits" ? `Book with Credits` : session.price ? `Pay ₹${session.price} & Book` : "Confirm Free Booking"}
+              {getBookingButtonText(bookingSource, session)}
             </LoadingButton>
           </form>
         </div>
@@ -225,7 +239,7 @@ const BookSession = () => {
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Time</span><strong>{session.time || "Flexible"}</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Duration</span><strong>{session.duration || 60} min</strong></div>
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Type</span><strong>{session.sessionType || "online"}</strong></div>
-              <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
+              <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `\u20B9${session.price}` : "Free"}</strong></div>
               {session.bookingTypes?.includes("credits") && (
                 <div className="list-group-item px-0 d-flex justify-content-between"><span>Credit Cost</span><strong>{session.creditCost || "—"} credits</strong></div>
               )}

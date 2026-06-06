@@ -50,6 +50,24 @@ const MyBookings = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleCancelBooking = async (booking) => {
+    const confirmed = await deleteConfirmAlert("this booking");
+    if (!confirmed) return;
+    try {
+      await Apiservices.updateRequest(booking._id, "cancelled");
+      setBookings((prev) =>
+        prev.map((item) =>
+          item._id === booking._id
+            ? { ...item, requestStatus: "cancelled" }
+            : item,
+        ),
+      );
+      showToast.success("Booking cancelled");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to cancel booking");
+    }
+  };
+
   const bookingsWithState = useMemo(() => {
     return bookings.map((b) => ({ ...b, _sessionState: getSessionState(b.sessionId) }));
   }, [bookings, tick]);
@@ -156,23 +174,7 @@ const MyBookings = () => {
                         <button
                           className="btn btn-sm btn-outline-danger rounded-pill px-3 py-2 fw-semibold"
                           disabled={!["pending", "accepted"].includes(booking.requestStatus)}
-                          onClick={async () => {
-                            const confirmed = await deleteConfirmAlert("this booking");
-                            if (!confirmed) return;
-                            try {
-                              await Apiservices.updateRequest(booking._id, "cancelled");
-                              setBookings((prev) =>
-                                prev.map((item) =>
-                                  item._id === booking._id
-                                    ? { ...item, requestStatus: "cancelled" }
-                                    : item,
-                                ),
-                              );
-                              showToast.success("Booking cancelled");
-                            } catch (error) {
-                              showToast.error(error.response?.data?.message || "Failed to cancel booking");
-                            }
-                          }}
+                          onClick={() => handleCancelBooking(booking)}
                         >
                           Cancel
                         </button>

@@ -351,12 +351,32 @@ const ReactionStrip = ({ reactCounts, isMe }) => {
   );
 };
 
+const computeReactCounts = (reactions) => {
+  if (!reactions?.length) return {};
+  return reactions.reduce((acc, r) => {
+    acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+    return acc;
+  }, {});
+};
+
+const MessageAttachments = ({ attachments, isMe, hasMessage }) => {
+  if (!attachments?.length) return null;
+  return attachments.map((att, ai) => (
+    att.type === "image" ? (
+      <img key={ai} src={att.url} alt={att.name} style={{ maxWidth: "100%", maxHeight: 260, borderRadius: 12, display: "block", marginBottom: hasMessage ? 6 : 0 }} />
+    ) : (
+      <div key={ai} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", marginBottom: hasMessage ? 6 : 0, background: isMe ? "rgba(255,255,255,0.15)" : "#f1f5f9", borderRadius: 8 }}>
+        <i className="fa fa-paperclip" />
+        <a href={att.url} target="_blank" rel="noreferrer" style={{ color: isMe ? "#fff" : "#0d6efd", fontSize: "0.8rem" }}>{att.name || "File"}</a>
+      </div>
+    )
+  ));
+};
+
 const MessageBubble = ({ msg, isMe, showDate, onDoubleClick, onDeleteMessage }) => {
   const isDeleted = msg.isDeleted;
-  const hasReactions = msg.reactions?.length > 0;
-  const reactCounts = hasReactions
-    ? msg.reactions.reduce((acc, r) => { acc[r.emoji] = (acc[r.emoji] || 0) + 1; return acc; }, {})
-    : {};
+  const reactCounts = computeReactCounts(msg.reactions);
+  const hasReactions = Object.keys(reactCounts).length > 0;
 
   return (
     <>
@@ -390,16 +410,7 @@ const MessageBubble = ({ msg, isMe, showDate, onDoubleClick, onDeleteMessage }) 
             <em style={{ fontSize: "0.8rem" }}>Message deleted</em>
           ) : (
             <>
-              {msg.attachments?.map((att, ai) => (
-                att.type === "image" ? (
-                  <img key={ai} src={att.url} alt={att.name} style={{ maxWidth: "100%", maxHeight: 260, borderRadius: 12, display: "block", marginBottom: msg.message ? 6 : 0 }} />
-                ) : (
-                  <div key={ai} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", marginBottom: msg.message ? 6 : 0, background: isMe ? "rgba(255,255,255,0.15)" : "#f1f5f9", borderRadius: 8 }}>
-                    <i className="fa fa-paperclip" />
-                    <a href={att.url} target="_blank" rel="noreferrer" style={{ color: isMe ? "#fff" : "#0d6efd", fontSize: "0.8rem" }}>{att.name || "File"}</a>
-                  </div>
-                )
-              ))}
+              <MessageAttachments attachments={msg.attachments} isMe={isMe} hasMessage={!!msg.message} />
               {msg.message && <div style={{ padding: msg.attachments?.length ? "0 4px" : "0" }}>{msg.message}</div>}
               <div style={{ fontSize: "0.6rem", marginTop: 4, opacity: 0.6, textAlign: "right", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4 }}>
                 <span>{timeAgo(msg.createdAt)}</span>
