@@ -115,6 +115,31 @@ const BroadcastRow = ({ b, deleting, onEdit, onDelete }) => {
   );
 };
 
+const AudienceOptionButton = ({ opt, targetType, onSelect }) => {
+  const active = targetType === opt.value;
+  return (
+    <button type="button" onClick={() => onSelect(opt.value)}
+      style={{
+        padding: "14px 12px", borderRadius: 12, cursor: "pointer", textAlign: "left",
+        border: `1.5px solid ${active ? "#0d6efd" : "#eef2f7"}`,
+        background: active ? "#f8faff" : "#fff",
+        transition: "all 0.15s",
+      }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: 8,
+        background: active ? "linear-gradient(135deg, #0d6efd, #6610f2)" : "#f1f5f9",
+        display: "grid", placeItems: "center",
+        color: active ? "#fff" : "#64748b",
+        fontSize: "0.7rem", marginBottom: 8,
+      }}>
+        <i className={`fa ${opt.icon}`} />
+      </div>
+      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1e293b", marginBottom: 2 }}>{opt.label}</div>
+      <div style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{opt.desc}</div>
+    </button>
+  );
+};
+
 const BroadcastTableBody = ({ loading, broadcasts, deleting, onEdit, onDelete }) => {
   if (loading) return (
     <tr><td colSpan={6} className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm" style={ic} />Loading...</td></tr>
@@ -169,6 +194,10 @@ const AdminBroadcast = () => {
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery, targetType]);
+
+  const handleAudienceSelect = (value) => {
+    setTargetType(value); setTargetRole(""); setTargetUserId(""); setTargetUserName("");
+  };
 
   const selectUser = (user) => {
     setTargetUserId(user._id);
@@ -306,26 +335,7 @@ const AdminBroadcast = () => {
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "5px" }}>
               {AUDIENCE_OPTIONS.map((opt) => (
-                <button key={opt.value} type="button"
-                  onClick={() => { setTargetType(opt.value); setTargetRole(""); setTargetUserId(""); setTargetUserName(""); }}
-                  style={{
-                    padding: "14px 12px", borderRadius: 12, cursor: "pointer", textAlign: "left",
-                    border: `1.5px solid ${targetType === opt.value ? "#0d6efd" : "#eef2f7"}`,
-                    background: targetType === opt.value ? "#f8faff" : "#fff",
-                    transition: "all 0.15s",
-                  }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 8,
-                    background: targetType === opt.value ? "linear-gradient(135deg, #0d6efd, #6610f2)" : "#f1f5f9",
-                    display: "grid", placeItems: "center",
-                    color: targetType === opt.value ? "#fff" : "#64748b",
-                    fontSize: "0.7rem", marginBottom: 8,
-                  }}>
-                    <i className={`fa ${opt.icon}`} />
-                  </div>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1e293b", marginBottom: 2 }}>{opt.label}</div>
-                  <div style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{opt.desc}</div>
-                </button>
+                <AudienceOptionButton key={opt.value} opt={opt} targetType={targetType} onSelect={handleAudienceSelect} />
               ))}
             </div>
           </div>
@@ -435,7 +445,7 @@ const AdminBroadcast = () => {
                   background: "#fff", color: "#64748b", fontWeight: 600, fontSize: "0.82rem",
                   cursor: "pointer", display: "flex", alignItems: "center", gap: "5px",
                 }}>
-                <i className={`fa ${editingId ? "fa-times" : "fa-times"}`} /> {editingId ? "Cancel" : "Clear"}
+                <i className="fa fa-times" /> {editingId ? "Cancel" : "Clear"}
               </button>
             )}
           </div>
