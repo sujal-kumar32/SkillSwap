@@ -23,6 +23,70 @@ const idsEqual = (left, right) => {
   return left && right && left.toString() === right.toString();
 };
 
+const handleCreditBooking = async (session, req, res) => {
+  if (!session.bookingTypes?.includes("credits")) {
+    return res.status(400).json({ success: false, message: "This session does not accept credit bookings" });
+  }
+
+  const creditCost = calculateCreditCost(session);
+  if (creditCost <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid credit cost for this session" });
+  }
+
+  const mongoSession = await mongoose.startSession();
+  try {
+    mongoSession.startTransaction();
+    await lockCredits(req.user.id, creditCost, mongoSession);
+    const mentor = await User.findById(session.mentorId).select("trustScore").lean();
+    const mentorSnapshot = {
+      trust: mentor?.trustScore ?? 100,
+      rating: 0,
+    };
+    const [request] = await Request.create([{
+      sessionId: session._id,
+      learnerId: req.user.id,
+      mentorId: session.mentorId,
+      note: req.body.note,
+      bookingSource: "credits",
+      creditsLocked: creditCost,
+      mentorTrustAtBooking: mentorSnapshot.trust,
+      mentorRatingAtBooking: mentorSnapshot.rating,
+      paymentStatus: "pending",
+    }], { session: mongoSession });
+    await mongoSession.commitTransaction();
+
+    User.findById(req.user.id).select("name").lean().then((learner) => {
+      sendNotification(session.mentorId, req.user.id, "booking_request", `${learner?.name || "A learner"} booked "${session.title}"`, `/mentor/bookings`);
+    });
+
+    Promise.all([
+      User.findById(req.user.id).select("name"),
+      User.findById(session.mentorId).select("name email"),
+    ]).then(([learner, mentorUser]) => {
+      if (!mentorUser?.email) return;
+      sendEmail({
+        to: mentorUser.email,
+        subject: "New Booking Request",
+        html: bookingRequestMentorNotification(mentorUser.name, learner?.name || "A learner", session.title),
+      });
+    }).catch((err) => console.error("Booking notification failed:", err.message));
+
+    return res.status(201).json({
+      success: true,
+      message: "Session booked successfully",
+      data: request,
+    });
+  } catch (err) {
+    await mongoSession.abortTransaction().catch(() => {});
+    return res.status(500).json({
+      success: false,
+      message: "Booking failed: " + err.message,
+    });
+  } finally {
+    mongoSession.endSession();
+  }
+};
+
 // CREATE REQUEST (BOOK SESSION)
 exports.createRequest = asyncHandler(async (req, res) => {
 
@@ -63,95 +127,22 @@ exports.createRequest = asyncHandler(async (req, res) => {
     });
 
     const maxL = session.maxLearners || 0;
-    if (maxL > 0 && acceptedCount >= maxL) {
-      return res.status(400).json({
-        success: false,
-        message: "This group session is fully booked",
-      });
-    }
-    if (maxL === 0 && acceptedCount > 0) {
+    if (maxL > 0) {
+      if (acceptedCount >= maxL) {
+        return res.status(400).json({
+          success: false,
+          message: "This group session is fully booked",
+        });
+      }
+    } else if (acceptedCount > 0) {
       return res.status(400).json({
         success: false,
         message: "This 1:1 session already has a confirmed booking",
       });
     }
 
-    let creditsLocked = 0;
-    let mentorSnapshot = { trust: 100, rating: 0 };
-
     if (bookingSource === "credits") {
-      if (!session.bookingTypes?.includes("credits")) {
-        return res.status(400).json({
-          success: false,
-          message: "This session does not accept credit bookings",
-        });
-      }
-
-      const creditCost = calculateCreditCost(session);
-      if (creditCost <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid credit cost for this session",
-        });
-      }
-
-      const mongoSession = await mongoose.startSession();
-      try {
-        mongoSession.startTransaction();
-        await lockCredits(req.user.id, creditCost, mongoSession);
-        const mentor = await User.findById(session.mentorId).select("trustScore").lean();
-        mentorSnapshot = {
-          trust: mentor?.trustScore ?? 100,
-          rating: 0,
-        };
-        const [request] = await Request.create([{
-          sessionId,
-          learnerId: req.user.id,
-          mentorId: session.mentorId,
-          note,
-          bookingSource: "credits",
-          creditsLocked: creditCost,
-          mentorTrustAtBooking: mentorSnapshot.trust,
-          mentorRatingAtBooking: mentorSnapshot.rating,
-          paymentStatus: "pending",
-        }], { session: mongoSession });
-        await mongoSession.commitTransaction();
-        creditsLocked = creditCost;
-
-        User.findById(req.user.id).select("name").lean().then((learner) => {
-          sendNotification(session.mentorId, req.user.id, "booking_request", `${learner?.name || "A learner"} booked "${session.title}"`, `/mentor/bookings`);
-        });
-
-        User.findById(req.user.id).select("name").lean().then((learner) => {
-          sendNotification(session.mentorId, req.user.id, "booking_request", `${learner?.name || "A learner"} booked "${session.title}"`, `/mentor/bookings`);
-        });
-
-        Promise.all([
-          User.findById(req.user.id).select("name"),
-          User.findById(session.mentorId).select("name email"),
-        ]).then(([learner, mentor]) => {
-          if (!mentor?.email) return;
-          sendEmail({
-            to: mentor.email,
-            subject: "New Booking Request",
-            html: bookingRequestMentorNotification(mentor.name, learner?.name || "A learner", session.title),
-          });
-        }).catch((err) => console.error("Booking notification failed:", err.message));
-
-        return res.status(201).json({
-          success: true,
-          message: "Session booked successfully",
-          data: request,
-        });
-      } catch (err) {
-        await mongoSession.abortTransaction().catch(() => {});
-        return res.status(500).json({
-          success: false,
-          message: "Booking failed: " + err.message,
-        });
-      } finally {
-        mongoSession.endSession();
-      }
+      return handleCreditBooking(session, req, res);
     }
 
     const request = await Request.create({
@@ -176,7 +167,6 @@ exports.createRequest = asyncHandler(async (req, res) => {
       data: request,
     });
 
-    // Notify mentor by email
     Promise.all([
       User.findById(req.user.id).select("name"),
       User.findById(session.mentorId).select("name email"),
@@ -188,7 +178,6 @@ exports.createRequest = asyncHandler(async (req, res) => {
         html: bookingRequestMentorNotification(mentor.name, learner?.name || "A learner", session.title),
       });
     }).catch((err) => console.error("Booking notification failed:", err.message));
-
 });
 
 // GET ALL REQUESTS
@@ -371,6 +360,315 @@ exports.getMentorLearners = asyncHandler(async (req, res) => {
 
 });
 
+// ── updateRequestStatus helpers ──────────────────────────────────────────
+
+const checkAcceptCapacity = async (request, status) => {
+  if (status !== "accepted") return;
+  const session = await Session.findById(request.sessionId).select("maxLearners").lean();
+  if (!session) return;
+  const acceptedCount = await Request.countDocuments({
+    sessionId: request.sessionId,
+    requestStatus: "accepted",
+  });
+  const maxL = session.maxLearners || 0;
+  if (maxL > 0 && acceptedCount >= maxL) {
+    return { error: [400, "This group session is fully booked"] };
+  }
+  if (maxL === 0 && acceptedCount > 0) {
+    return { error: [400, "This 1:1 session already has a confirmed booking"] };
+  }
+};
+
+const validateAuthorization = (request, status, req) => {
+  const isMentorOwner = idsEqual(request.mentorId, req.user.id);
+  const learnerCancelling = status === "cancelled" && idsEqual(request.learnerId, req.user.id);
+
+  if ((status === "accepted" || status === "rejected") && !isMentorOwner) {
+    return { error: [403, "Only the session mentor can approve or reject requests"] };
+  }
+  if (status === "completed" && !isMentorOwner) {
+    return { error: [403, "Only the session mentor can mark requests as completed"] };
+  }
+  if (status === "cancelled" && !isMentorOwner && !learnerCancelling) {
+    return { error: [403, "Only the session mentor or the learner who booked can cancel"] };
+  }
+};
+
+const checkOngoingSession = async (request, status) => {
+  if (status !== "rejected" && status !== "cancelled") return;
+  if (request.paymentStatus !== "paid" || request.bookingSource === "credits") return;
+  const sessionDoc = await Session.findById(request.sessionId).select("status date duration").lean();
+  if (sessionDoc?.status === "ongoing") {
+    return { error: [400, "Cannot cancel or reject — session is already ongoing. The session will auto-complete after its scheduled end time."] };
+  }
+};
+
+const handleRefund = async (request, status) => {
+  if (status !== "rejected" && status !== "cancelled") return null;
+  if (request.paymentStatus !== "paid") return null;
+
+  let refundInfo = null;
+  try {
+    const payment = await Payment.findOne({ requestId: request._id, paymentStatus: "success" });
+    if (payment && payment.razorpayPaymentId) {
+      payment.refundStatus = "initiated";
+      payment.paymentStatus = "refund_initiated";
+      await payment.save();
+
+      const refundRes = await razorpay.payments.refund(payment.razorpayPaymentId, {
+        amount: Math.round(payment.amount * 100),
+        notes: { requestId: String(request._id), reason: "Mentor rejected booking" },
+      });
+
+      payment.refundId = refundRes.id;
+      payment.refundStatus = "processed";
+      payment.paymentStatus = "refunded";
+      payment.refundedAt = new Date();
+      await payment.save();
+
+      request.paymentStatus = "refunded";
+      await request.save();
+      refundInfo = { refundId: refundRes.id, refundStatus: "processed" };
+    } else if (payment) {
+      payment.paymentStatus = "refunded";
+      payment.refundStatus = "processed";
+      payment.refundedAt = new Date();
+      await payment.save();
+      request.paymentStatus = "refunded";
+      await request.save();
+      refundInfo = { refundStatus: "processed", note: "No Razorpay ID — marked refunded" };
+    }
+
+    if (!payment) {
+      const sesh = await Session.findById(request.sessionId);
+      const price = sesh?.price || 0;
+      let wallet = await Wallet.findOne({ userId: request.learnerId });
+      if (!wallet) wallet = await Wallet.create({ userId: request.learnerId });
+      await Transaction.create({
+        walletId: wallet._id,
+        userId: request.learnerId,
+        type: "refund",
+        amount: price,
+        balanceBefore: wallet.balance,
+        balanceAfter: wallet.balance + price,
+        reference: String(request._id),
+        referenceModel: "Request",
+        description: "Refund for rejected booking",
+        status: "completed",
+      });
+      wallet.balance += price;
+      await wallet.save();
+      request.paymentStatus = "refunded";
+      await request.save();
+      refundInfo = { refundStatus: "processed", method: "wallet" };
+    }
+  } catch (refundErr) {
+    console.error("Auto-refund failed:", refundErr.message);
+  }
+  return refundInfo;
+};
+
+const handleCreditRefund = async (request, status) => {
+  if (status !== "rejected" && status !== "cancelled") return null;
+  if (request.bookingSource !== "credits" || request.creditsLocked <= 0) return null;
+
+  let creditRefundInfo = null;
+  const mongoSession = await mongoose.startSession();
+  try {
+    mongoSession.startTransaction();
+    await releaseCredits(request.learnerId, request.creditsLocked, mongoSession);
+    const wallet = await Wallet.findOne({ userId: request.learnerId }).session(mongoSession);
+    if (wallet) {
+      await Transaction.create([{
+        walletId: wallet._id,
+        userId: request.learnerId,
+        type: "credit_refunded",
+        amount: request.creditsLocked,
+        balanceBefore: wallet.skillCredits - request.creditsLocked,
+        balanceAfter: wallet.skillCredits,
+        reference: String(request._id),
+        referenceModel: "Request",
+        referenceType: "request",
+        description: "Credits refunded for cancelled booking",
+        status: "completed",
+      }], { session: mongoSession });
+    }
+    const releasedAmount = request.creditsLocked;
+    request.creditsLocked = 0;
+    await request.save({ session: mongoSession });
+    await mongoSession.commitTransaction();
+    creditRefundInfo = { creditsReleased: releasedAmount };
+  } catch (creditErr) {
+    await mongoSession.abortTransaction().catch(() => {});
+    console.error("Credit release failed:", creditErr.message);
+  } finally {
+    mongoSession.endSession();
+  }
+  return creditRefundInfo;
+};
+
+const handleCompletion = async (request, status) => {
+  if (status !== "completed" || !request.startedAt) return {};
+
+  let xpResult = null;
+  let walletResult = null;
+  let creditResult = null;
+
+  try {
+    const [learnerXp, mentorXp] = await Promise.all([
+      awardXP(request.learnerId, 50, "Session completed", request._id, "Request"),
+      awardXP(request.mentorId, 30, "Mentored a session", request._id, "Request"),
+    ]);
+    xpResult = {
+      learner: { xpGained: learnerXp.xpGained, totalXp: learnerXp.xp, newBadges: learnerXp.newBadges },
+      mentor: { xpGained: mentorXp.xpGained, totalXp: mentorXp.xp, newBadges: mentorXp.newBadges },
+    };
+  } catch (xpErr) {
+    console.error("XP award failed:", xpErr.message);
+  }
+
+  if (request.paymentStatus === "paid" && request.bookingSource !== "credits") {
+    try {
+      const sessionDoc = await Session.findById(request.sessionId);
+      const price = sessionDoc?.price || 0;
+      if (price > 0) {
+        let wallet = await Wallet.findOne({ userId: request.mentorId });
+        if (!wallet) wallet = await Wallet.create({ userId: request.mentorId });
+        await Transaction.create({
+          walletId: wallet._id,
+          userId: request.mentorId,
+          type: "earning",
+          amount: price,
+          balanceBefore: wallet.balance,
+          balanceAfter: wallet.balance + price,
+          reference: String(request._id),
+          referenceModel: "Request",
+          description: "Earnings from session completion",
+          status: "completed",
+        });
+        wallet.balance += price;
+        wallet.totalEarned += price;
+        await wallet.save();
+        walletResult = { amount: price };
+      }
+    } catch (walletErr) {
+      console.error("Wallet credit failed for request", request._id, ":", walletErr.message);
+      walletResult = { error: walletErr.message };
+    }
+  }
+
+  if (request.bookingSource === "credits" && request.creditsLocked > 0) {
+    const mongoSession = await mongoose.startSession();
+    try {
+      mongoSession.startTransaction();
+      await transferCredits(request.learnerId, request.mentorId, request.creditsLocked, request._id, mongoSession);
+      creditResult = { creditsTransferred: request.creditsLocked };
+      request.creditsLocked = 0;
+      await request.save({ session: mongoSession });
+      await mongoSession.commitTransaction();
+    } catch (creditErr) {
+      await mongoSession.abortTransaction().catch(() => {});
+      console.error("Credit transfer failed:", creditErr.message);
+      creditResult = { error: creditErr.message };
+    } finally {
+      mongoSession.endSession();
+    }
+  }
+
+  return { xpResult, walletResult, creditResult };
+};
+
+const updateCounters = async (request, status) => {
+  if (status === "completed") {
+    await Promise.all([
+      User.findByIdAndUpdate(request.learnerId, { $inc: { totalCompletedSessions: 1, totalBookings: 1 } }),
+      User.findByIdAndUpdate(request.mentorId, { $inc: { totalCompletedSessions: 1, totalBookings: 1 } }),
+    ]);
+  } else if (status === "cancelled" || status === "rejected") {
+    await Promise.all([
+      User.findByIdAndUpdate(request.learnerId, { $inc: { totalCancelledSessions: 1, totalBookings: 1 } }),
+      User.findByIdAndUpdate(request.mentorId, { $inc: { totalCancelledSessions: 1, totalBookings: 1 } }),
+    ]);
+  }
+};
+
+const updateTrustScores = (request, status) => {
+  if (!["completed", "cancelled", "rejected"].includes(status)) return;
+  Promise.all([
+    recalculateTrustScore(request.learnerId),
+    recalculateTrustScore(request.mentorId),
+  ]).catch((err) => console.error("Trust score update failed:", err.message));
+};
+
+const sendStatusNotifications = async (request, status) => {
+  if (!["accepted", "rejected", "cancelled", "completed"].includes(status)) return;
+  Promise.all([
+    Session.findById(request.sessionId).select("title"),
+    User.findById(request.learnerId).select("name email"),
+  ]).then(([s, learner]) => {
+    if (learner?.email) {
+      sendEmail({
+        to: learner.email,
+        subject: status === "accepted" ? "Booking Confirmed!" : `Booking ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        html: bookingStatusUpdateLearner(learner.name, s?.title || "Session", status),
+      });
+    }
+    const title = s?.title || "Session";
+    if (status === "accepted") {
+      sendNotification(request.learnerId, request.mentorId, "booking_accepted", `Your booking for "${title}" was accepted`, "/learner/bookings");
+    } else if (status === "completed") {
+      sendNotification(request.learnerId, request.mentorId, "booking_completed", `Your session "${title}" is completed`, "/learner/bookings");
+    }
+  }).catch((err) => console.error("Status notification failed:", err.message));
+};
+
+const syncCalendar = async (request, status) => {
+  if (!["accepted", "cancelled"].includes(status) || !request.mentorId) return;
+  const token = await CalendarToken.findOne({ userId: request.mentorId }).lean();
+  if (!token) return;
+  const sessionWithMeta = await Session.findById(request.sessionId)
+    .populate("mentorId", "name email")
+    .select("title date time duration description meetLink")
+    .lean()
+    .catch(() => null);
+  if (!sessionWithMeta) return;
+
+  try {
+    if (status === "accepted") {
+      const startTime = sessionWithMeta.date ? new Date(sessionWithMeta.date) : new Date();
+      if (sessionWithMeta.time) {
+        const [h, m] = sessionWithMeta.time.split(":").map(Number);
+        startTime.setHours(h || 0, m || 0, 0, 0);
+      }
+      const endTime = new Date(startTime);
+      endTime.setMinutes(endTime.getMinutes() + (sessionWithMeta.duration || 60));
+
+      const event = await createCalendarEvent({
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        summary: `SkillSwap: ${sessionWithMeta.title}`,
+        description: `${sessionWithMeta.description || "SkillSwap learning session"}\n\nMeeting: ${sessionWithMeta.meetLink || "TBD"}`,
+        startDateTime: startTime.toISOString(),
+        endDateTime: endTime.toISOString(),
+        timeZone: "UTC",
+        attendeeEmails: [sessionWithMeta.mentorId?.email].filter(Boolean),
+      });
+      if (event?.id) {
+        request.calendarEventId = event.id;
+        await request.save();
+      }
+    } else if (status === "cancelled" && request.calendarEventId) {
+      await deleteCalendarEvent({
+        accessToken: token.accessToken,
+        refreshToken: token.refreshToken,
+        eventId: request.calendarEventId,
+      });
+    }
+  } catch (calErr) {
+    console.error("Calendar sync failed for mentor", calErr.message);
+  }
+};
+
 // UPDATE REQUEST STATUS (MENTOR APPROVE/REJECT, LEARNER CANCEL)
 exports.updateRequestStatus = asyncHandler(async (req, res) => {
 
@@ -378,19 +676,13 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
     const validStatuses = ["pending", "accepted", "rejected", "completed", "cancelled", "disputed"];
 
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid request status",
-      });
+      return res.status(400).json({ success: false, message: "Invalid request status" });
     }
 
     const request = await Request.findById(req.params.id);
 
     if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: "Request not found",
-      });
+      return res.status(404).json({ success: false, message: "Request not found" });
     }
 
     const allowedTransitions = {
@@ -408,341 +700,37 @@ exports.updateRequestStatus = asyncHandler(async (req, res) => {
       });
     }
 
-    const isMentorOwner = idsEqual(request.mentorId, req.user.id);
-    const learnerCancelling =
-      status === "cancelled" && idsEqual(request.learnerId, req.user.id);
+    const capErr = await checkAcceptCapacity(request, status);
+    if (capErr) return res.status(capErr.error[0]).json({ success: false, message: capErr.error[1] });
 
-    if (status === "accepted") {
-      const session = await Session.findById(request.sessionId).select("maxLearners").lean();
-      if (session) {
-        const acceptedCount = await Request.countDocuments({
-          sessionId: request.sessionId,
-          requestStatus: "accepted",
-        });
-        const maxL = session.maxLearners || 0;
-        if (maxL > 0 && acceptedCount >= maxL) {
-          return res.status(400).json({
-            success: false,
-            message: "This group session is fully booked",
-          });
-        }
-        if (maxL === 0 && acceptedCount > 0) {
-          return res.status(400).json({
-            success: false,
-            message: "This 1:1 session already has a confirmed booking",
-          });
-        }
-      }
-    }
+    const authErr = validateAuthorization(request, status, req);
+    if (authErr) return res.status(authErr.error[0]).json({ success: false, message: authErr.error[1] });
 
-    if (status === "accepted" || status === "rejected") {
-      if (!isMentorOwner) {
-        return res.status(403).json({
-          success: false,
-          message: "Only the session mentor can approve or reject requests",
-        });
-      }
-    } else if (status === "completed") {
-      if (!isMentorOwner) {
-        return res.status(403).json({
-          success: false,
-          message: "Only the session mentor can mark requests as completed",
-        });
-      }
-    } else if (status === "cancelled") {
-      if (!isMentorOwner && !learnerCancelling) {
-        return res.status(403).json({
-          success: false,
-          message: "Only the session mentor or the learner who booked can cancel",
-        });
-      }
-    }
-
-    if ((status === "rejected" || status === "cancelled") && request.paymentStatus === "paid" && request.bookingSource !== "credits") {
-      const sessionDoc = await Session.findById(request.sessionId).select("status date duration").lean();
-      if (sessionDoc?.status === "ongoing") {
-        return res.status(400).json({
-          success: false,
-          message: "Cannot cancel or reject — session is already ongoing. The session will auto-complete after its scheduled end time.",
-        });
-      }
-    }
+    const ongoingErr = await checkOngoingSession(request, status);
+    if (ongoingErr) return res.status(ongoingErr.error[0]).json({ success: false, message: ongoingErr.error[1] });
 
     request.requestStatus = status;
     await request.save();
 
-    let refundInfo = null;
-    if ((status === "rejected" || status === "cancelled") && request.paymentStatus === "paid") {
-      try {
-        const payment = await Payment.findOne({ requestId: request._id, paymentStatus: "success" });
-        if (payment && payment.razorpayPaymentId) {
-          payment.refundStatus = "initiated";
-          payment.paymentStatus = "refund_initiated";
-          await payment.save();
+    const refundInfo = await handleRefund(request, status);
+    const creditRefundInfo = await handleCreditRefund(request, status);
+    const completionResult = await handleCompletion(request, status);
 
-          const refundRes = await razorpay.payments.refund(payment.razorpayPaymentId, {
-            amount: Math.round(payment.amount * 100),
-            notes: { requestId: String(request._id), reason: "Mentor rejected booking" },
-          });
-
-          payment.refundId = refundRes.id;
-          payment.refundStatus = "processed";
-          payment.paymentStatus = "refunded";
-          payment.refundedAt = new Date();
-          await payment.save();
-
-          request.paymentStatus = "refunded";
-          await request.save();
-          refundInfo = { refundId: refundRes.id, refundStatus: "processed" };
-        } else if (payment) {
-          payment.paymentStatus = "refunded";
-          payment.refundStatus = "processed";
-          payment.refundedAt = new Date();
-          await payment.save();
-          request.paymentStatus = "refunded";
-          await request.save();
-          refundInfo = { refundStatus: "processed", note: "No Razorpay ID — marked refunded" };
-        }
-
-        if (!payment) {
-          const Wallet = require("../Wallet/walletModel");
-          const Transaction = require("../Wallet/transactionModel");
-          const sesh = await Session.findById(request.sessionId);
-          const price = sesh?.price || 0;
-          let wallet = await Wallet.findOne({ userId: request.learnerId });
-          if (!wallet) wallet = await Wallet.create({ userId: request.learnerId });
-          await Transaction.create({
-            walletId: wallet._id,
-            userId: request.learnerId,
-            type: "refund",
-            amount: price,
-            balanceBefore: wallet.balance,
-            balanceAfter: wallet.balance + price,
-            reference: String(request._id),
-            referenceModel: "Request",
-            description: "Refund for rejected booking",
-            status: "completed",
-          });
-          wallet.balance += price;
-          await wallet.save();
-          request.paymentStatus = "refunded";
-          await request.save();
-          refundInfo = { refundStatus: "processed", method: "wallet" };
-        }
-      } catch (refundErr) {
-        console.error("Auto-refund failed:", refundErr.message);
-      }
-    }
-
-    let creditRefundInfo = null;
-    if ((status === "rejected" || status === "cancelled") && request.bookingSource === "credits" && request.creditsLocked > 0) {
-      const mongoSession = await mongoose.startSession();
-      try {
-        mongoSession.startTransaction();
-        await releaseCredits(request.learnerId, request.creditsLocked, mongoSession);
-        const wallet = await Wallet.findOne({ userId: request.learnerId }).session(mongoSession);
-        if (wallet) {
-          await Transaction.create([{
-            walletId: wallet._id,
-            userId: request.learnerId,
-            type: "credit_refunded",
-            amount: request.creditsLocked,
-            balanceBefore: wallet.skillCredits - request.creditsLocked,
-            balanceAfter: wallet.skillCredits,
-            reference: String(request._id),
-            referenceModel: "Request",
-            referenceType: "request",
-            description: "Credits refunded for cancelled booking",
-            status: "completed",
-          }], { session: mongoSession });
-        }
-        const releasedAmount = request.creditsLocked;
-        request.creditsLocked = 0;
-        await request.save({ session: mongoSession });
-        await mongoSession.commitTransaction();
-        creditRefundInfo = { creditsReleased: releasedAmount };
-      } catch (creditErr) {
-        await mongoSession.abortTransaction().catch(() => {});
-        console.error("Credit release failed:", creditErr.message);
-      } finally {
-        mongoSession.endSession();
-      }
-    }
-
-    let xpResult = null;
-    let walletResult = null;
-    let creditResult = null;
-    if (status === "completed" && request.startedAt) {
-      try {
-        const [learnerXp, mentorXp] = await Promise.all([
-          awardXP(request.learnerId, 50, "Session completed", request._id, "Request"),
-          awardXP(request.mentorId, 30, "Mentored a session", request._id, "Request"),
-        ]);
-        xpResult = {
-          learner: { xpGained: learnerXp.xpGained, totalXp: learnerXp.xp, newBadges: learnerXp.newBadges },
-          mentor: { xpGained: mentorXp.xpGained, totalXp: mentorXp.xp, newBadges: mentorXp.newBadges },
-        };
-      } catch (xpErr) {
-        console.error("XP award failed:", xpErr.message);
-      }
-
-      if (request.paymentStatus === "paid" && request.bookingSource !== "credits") {
-        try {
-          const Session = require("../Session/sessionModel");
-          const Wallet = require("../Wallet/walletModel");
-          const Transaction = require("../Wallet/transactionModel");
-          const sessionDoc = await Session.findById(request.sessionId);
-          const price = sessionDoc?.price || 0;
-          if (price > 0) {
-            let wallet = await Wallet.findOne({ userId: request.mentorId });
-            if (!wallet) wallet = await Wallet.create({ userId: request.mentorId });
-            await Transaction.create({
-              walletId: wallet._id,
-              userId: request.mentorId,
-              type: "earning",
-              amount: price,
-              balanceBefore: wallet.balance,
-              balanceAfter: wallet.balance + price,
-              reference: String(request._id),
-              referenceModel: "Request",
-              description: `Earnings from session completion`,
-              status: "completed",
-            });
-            wallet.balance += price;
-            wallet.totalEarned += price;
-            await wallet.save();
-            walletResult = { amount: price };
-          }
-        } catch (walletErr) {
-          console.error("Wallet credit failed for request", request._id, ":", walletErr.message);
-          walletResult = { error: walletErr.message };
-        }
-      }
-
-      if (request.bookingSource === "credits" && request.creditsLocked > 0) {
-        const mongoSession = await mongoose.startSession();
-        try {
-          mongoSession.startTransaction();
-          await transferCredits(request.learnerId, request.mentorId, request.creditsLocked, request._id, mongoSession);
-          creditResult = { creditsTransferred: request.creditsLocked };
-          request.creditsLocked = 0;
-          await request.save({ session: mongoSession });
-          await mongoSession.commitTransaction();
-        } catch (creditErr) {
-          await mongoSession.abortTransaction().catch(() => {});
-          console.error("Credit transfer failed:", creditErr.message);
-          creditResult = { error: creditErr.message };
-        } finally {
-          mongoSession.endSession();
-        }
-      }
-    }
-
-    // Session counter updates
-    if (status === "completed") {
-      await Promise.all([
-        User.findByIdAndUpdate(request.learnerId, { $inc: { totalCompletedSessions: 1, totalBookings: 1 } }),
-        User.findByIdAndUpdate(request.mentorId, { $inc: { totalCompletedSessions: 1, totalBookings: 1 } }),
-      ]);
-    } else if (status === "cancelled" || status === "rejected") {
-      await Promise.all([
-        User.findByIdAndUpdate(request.learnerId, { $inc: { totalCancelledSessions: 1, totalBookings: 1 } }),
-        User.findByIdAndUpdate(request.mentorId, { $inc: { totalCancelledSessions: 1, totalBookings: 1 } }),
-      ]);
-    }
-
-    // Trust score updates
-    if (["completed", "cancelled", "rejected"].includes(status)) {
-      Promise.all([
-        recalculateTrustScore(request.learnerId),
-        recalculateTrustScore(request.mentorId),
-      ]).catch((err) => console.error("Trust score update failed:", err.message));
-    }
+    await updateCounters(request, status);
+    updateTrustScores(request, status);
+    sendStatusNotifications(request, status);
+    syncCalendar(request, status);
 
     res.json({
       success: true,
       message: `Request ${status}`,
       data: request,
       refund: refundInfo,
-      ...(xpResult && { xp: xpResult }),
-      ...(walletResult && { wallet: walletResult }),
-      ...(creditResult && { credit: creditResult }),
+      ...(completionResult?.xpResult && { xp: completionResult.xpResult }),
+      ...(completionResult?.walletResult && { wallet: completionResult.walletResult }),
+      ...(completionResult?.creditResult && { credit: completionResult.creditResult }),
       ...(creditRefundInfo && { creditRefund: creditRefundInfo }),
     });
-
-    // Notify learner on accepted/rejected/cancelled
-    if (["accepted", "rejected", "cancelled", "completed"].includes(status)) {
-      Promise.all([
-        Session.findById(request.sessionId).select("title"),
-        User.findById(request.learnerId).select("name email"),
-      ]).then(([s, learner]) => {
-        if (learner?.email) {
-          sendEmail({
-            to: learner.email,
-            subject: status === "accepted" ? "Booking Confirmed!" : `Booking ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-            html: bookingStatusUpdateLearner(learner.name, s?.title || "Session", status),
-          });
-        }
-        const title = s?.title || "Session";
-        if (status === "accepted") {
-          sendNotification(request.learnerId, request.mentorId, "booking_accepted", `Your booking for "${title}" was accepted`, `/learner/bookings`);
-        } else if (status === "completed") {
-          sendNotification(request.learnerId, request.mentorId, "booking_completed", `Your session "${title}" is completed`, `/learner/bookings`);
-        }
-      }).catch((err) => console.error("Status notification failed:", err.message));
-    }
-
-    // Sync Google Calendar events
-    if (["accepted", "cancelled"].includes(status) && request.mentorId) {
-      const token = await CalendarToken.findOne({ userId: request.mentorId }).lean();
-      if (token) {
-        const sessionWithMeta = await Session.findById(request.sessionId)
-          .populate("mentorId", "name email")
-          .select("title date time duration description meetLink")
-          .lean()
-          .catch(() => null);
-
-        if (sessionWithMeta) {
-          try {
-            if (status === "accepted") {
-              const startTime = sessionWithMeta.date
-                ? new Date(sessionWithMeta.date)
-                : new Date();
-              if (sessionWithMeta.time) {
-                const [h, m] = sessionWithMeta.time.split(":").map(Number);
-                startTime.setHours(h || 0, m || 0, 0, 0);
-              }
-              const endTime = new Date(startTime);
-              endTime.setMinutes(endTime.getMinutes() + (sessionWithMeta.duration || 60));
-
-              const event = await createCalendarEvent({
-                accessToken: token.accessToken,
-                refreshToken: token.refreshToken,
-                summary: `SkillSwap: ${sessionWithMeta.title}`,
-                description: `${sessionWithMeta.description || "SkillSwap learning session"}\n\nMeeting: ${sessionWithMeta.meetLink || "TBD"}`,
-                startDateTime: startTime.toISOString(),
-                endDateTime: endTime.toISOString(),
-                timeZone: "UTC",
-                attendeeEmails: [sessionWithMeta.mentorId?.email].filter(Boolean),
-              });
-              if (event?.id) {
-                request.calendarEventId = event.id;
-                await request.save();
-              }
-            } else if (status === "cancelled" && request.calendarEventId) {
-              await deleteCalendarEvent({
-                accessToken: token.accessToken,
-                refreshToken: token.refreshToken,
-                eventId: request.calendarEventId,
-              });
-            }
-          } catch (calErr) {
-            console.error("Calendar sync failed for mentor", calErr.message);
-          }
-        }
-      }
-    }
-
 });
 
 // DELETE REQUEST

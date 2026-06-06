@@ -11,6 +11,30 @@ const isAdmin = (req) => req.user?.roles?.includes("admin");
 const normalizeName = (name) =>
   name.toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
 
+const buildSkillSortObj = (sort) => {
+  if (sort === "latest" || sort === "newest") return { createdAt: -1 };
+  if (sort === "oldest") return { createdAt: 1 };
+  if (sort === "name") return { name: 1 };
+  return { createdAt: -1 };
+};
+
+const parseSkillTags = (tags) => {
+  if (tags === undefined) return undefined;
+  if (typeof tags === "string") return tags.split(",").map((t) => t.trim()).filter(Boolean);
+  if (Array.isArray(tags)) return tags;
+  return [];
+};
+
+const handleSkillThumbnail = async (req, skill) => {
+  if (!req.file) return;
+  if (skill.thumbnailPublicId) {
+    await destroyImage(skill.thumbnailPublicId).catch(() => {});
+  }
+  const result = await uploadBuffer(req.file.buffer, { public_id: `skill_${Date.now()}` });
+  skill.thumbnail = result.secure_url;
+  skill.thumbnailPublicId = result.public_id;
+};
+
 exports.createSkill = asyncHandler(async (req, res) => {
 
     const { name, categoryId, description, level, tags } = req.body;
@@ -142,11 +166,7 @@ exports.getSkills = asyncHandler(async (req, res) => {
       }
     }
 
-    let sortObj = {};
-    if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
-    else if (sort === "oldest") sortObj = { createdAt: 1 };
-    else if (sort === "name") sortObj = { name: 1 };
-    else sortObj = { createdAt: -1 };
+    let sortObj = buildSkillSortObj(sort);
 
     const [skills, total] = await Promise.all([
       Skill.find(filter).sort(sortObj).skip(skip).limit(limit)
@@ -219,8 +239,7 @@ exports.updateSkill = asyncHandler(async (req, res) => {
     if (description !== undefined) skill.description = description.trim();
     if (level && ["beginner", "intermediate", "advanced", "all"].includes(level)) skill.level = level;
     if (tags !== undefined) {
-      const parsedTags = typeof tags === "string" ? tags.split(",").map((t) => t.trim()).filter(Boolean) : Array.isArray(tags) ? tags : [];
-      skill.tags = parsedTags;
+      skill.tags = parseSkillTags(tags);
     }
     if (status && isAdmin(req)) {
       const validStatuses = ["pending", "approved", "rejected"];
@@ -233,16 +252,7 @@ exports.updateSkill = asyncHandler(async (req, res) => {
       skill.status = status;
     }
 
-    if (req.file) {
-      if (skill.thumbnailPublicId) {
-        await destroyImage(skill.thumbnailPublicId).catch(() => {});
-      }
-      const result = await uploadBuffer(req.file.buffer, {
-        public_id: `skill_${Date.now()}`,
-      });
-      skill.thumbnail = result.secure_url;
-      skill.thumbnailPublicId = result.public_id;
-    }
+    await handleSkillThumbnail(req, skill);
 
     await skill.save();
 

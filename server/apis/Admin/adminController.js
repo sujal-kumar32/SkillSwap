@@ -11,6 +11,48 @@ const getPagination = require("../../utilities/paginate");
 const { releaseCredits, transferCredits } = require("../../services/creditService");
 const { recalculateTrustScore } = require("../../services/trustService");
 
+const getTargetUsers = async (type, targetUserId, targetRole) => {
+  if (type === "single" && targetUserId) {
+    const user = await User.findOne({ _id: targetUserId, status: "active" }).select("_id").lean();
+    if (!user) return null;
+    return [user];
+  }
+  if (type === "role" && targetRole) {
+    return await User.find({ roles: targetRole, status: "active" }).select("_id").lean();
+  }
+  return await User.find({ status: "active" }).select("_id").lean();
+};
+
+const getUpdateUsers = async (type, targetUserId, targetRole, fallbackUserId, fallbackRole) => {
+  if (type === "single") {
+    const uid = targetUserId || fallbackUserId;
+    if (!uid) return [];
+    const user = await User.findOne({ _id: uid, status: "active" }).select("_id").lean();
+    return user ? [user] : [];
+  }
+  if (type === "role") {
+    const role = targetRole || fallbackRole;
+    return role ? await User.find({ roles: role, status: "active" }).select("_id").lean() : [];
+  }
+  return await User.find({ status: "active" }).select("_id").lean();
+};
+
+const emitSocketNotifications = async (io, adminUser, message, link, users) => {
+  const actorData = adminUser ? { name: adminUser.name, profileImage: adminUser.profileImage } : null;
+  for (const user of users) {
+    io.to(`user:${user._id}`).emit("notification", {
+      type: "system",
+      message: message.trim(),
+      link: link || "",
+      read: false,
+      createdAt: new Date(),
+      actor: actorData,
+    });
+    const count = await Notification.countDocuments({ recipient: user._id, read: false });
+    io.to(`user:${user._id}`).emit("unread_count", count);
+  }
+};
+
 exports.broadcastNotification = asyncHandler(async (req, res) => {
   const { message, targetType, targetRole, targetUserId, link } = req.body;
   if (!message?.trim()) {
@@ -18,20 +60,10 @@ exports.broadcastNotification = asyncHandler(async (req, res) => {
   }
 
   const type = targetType || "all";
-  let users = [];
-
-  if (type === "single" && targetUserId) {
-    const user = await User.findOne({ _id: targetUserId, status: "active" }).select("_id").lean();
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found or inactive" });
-    }
-    users = [user];
-  } else if (type === "role" && targetRole) {
-    users = await User.find({ roles: targetRole, status: "active" }).select("_id").lean();
-  } else {
-    users = await User.find({ status: "active" }).select("_id").lean();
+  const users = await getTargetUsers(type, targetUserId, targetRole);
+  if (!users) {
+    return res.status(404).json({ success: false, message: "User not found or inactive" });
   }
-
   if (!users.length) {
     return res.status(404).json({ success: false, message: "No users found" });
   }
@@ -61,20 +93,7 @@ exports.broadcastNotification = asyncHandler(async (req, res) => {
   await Notification.insertMany(notifications);
 
   if (req.app.get("io")) {
-    const io = req.app.get("io");
-    const actorData = adminUser ? { name: adminUser.name, profileImage: adminUser.profileImage } : null;
-    for (const user of users) {
-      io.to(`user:${user._id}`).emit("notification", {
-        type: "system",
-        message: message.trim(),
-        link: link || "",
-        read: false,
-        createdAt: new Date(),
-        actor: actorData,
-      });
-      const count = await Notification.countDocuments({ recipient: user._id, read: false });
-      io.to(`user:${user._id}`).emit("unread_count", count);
-    }
+    emitSocketNotifications(req.app.get("io"), adminUser, message, link, users);
   }
 
   res.json({
@@ -140,18 +159,7 @@ exports.updateBroadcast = asyncHandler(async (req, res) => {
   await Notification.deleteMany({ broadcastRef: req.params.id });
 
   const type = targetType || broadcast.targetType;
-  let users = [];
-
-  if (type === "single" && (targetUserId || broadcast.targetUserId)) {
-    const uid = targetUserId || broadcast.targetUserId;
-    const user = await User.findOne({ _id: uid, status: "active" }).select("_id").lean();
-    if (user) users = [user];
-  } else if (type === "role" && (targetRole || broadcast.targetRole)) {
-    const role = targetRole || broadcast.targetRole;
-    users = await User.find({ roles: role, status: "active" }).select("_id").lean();
-  } else {
-    users = await User.find({ status: "active" }).select("_id").lean();
-  }
+  const users = await getUpdateUsers(type, targetUserId, targetRole, broadcast.targetUserId, broadcast.targetRole);
 
   const adminUser = await User.findById(req.user.id).select("name profileImage").lean();
 
@@ -177,20 +185,7 @@ exports.updateBroadcast = asyncHandler(async (req, res) => {
     await Notification.insertMany(notifications);
 
     if (req.app.get("io")) {
-      const io = req.app.get("io");
-      const actorData = adminUser ? { name: adminUser.name, profileImage: adminUser.profileImage } : null;
-      for (const user of users) {
-        io.to(`user:${user._id}`).emit("notification", {
-          type: "system",
-          message: message.trim(),
-          link: link || "",
-          read: false,
-          createdAt: new Date(),
-          actor: actorData,
-        });
-        const count = await Notification.countDocuments({ recipient: user._id, read: false });
-        io.to(`user:${user._id}`).emit("unread_count", count);
-      }
+      emitSocketNotifications(req.app.get("io"), adminUser, message, link, users);
     }
   }
 

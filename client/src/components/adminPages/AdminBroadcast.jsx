@@ -4,6 +4,11 @@ import Apiservices from "../../../Apiservices";
 
 const ic = { marginRight: "5px" };
 
+const ROLE_CONFIG = {
+  learner: { icon: "fa-graduation-cap", label: "Learners" },
+  mentor: { icon: "fa-chalkboard-teacher", label: "Mentors" },
+};
+
 const AUDIENCE_OPTIONS = [
   { value: "all", label: "All Users", icon: "fa-globe", desc: "Every active account" },
   { value: "role", label: "By Role", icon: "fa-users", desc: "Learners or mentors" },
@@ -362,8 +367,8 @@ const AdminBroadcast = () => {
                       fontWeight: 600, fontSize: "0.82rem", color: targetRole === r ? "#0d6efd" : "#64748b",
                       display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
                     }}>
-                    <i className={`fa ${r === "learner" ? "fa-graduation-cap" : "fa-chalkboard-teacher"}`} />
-                    {r === "learner" ? "Learners" : "Mentors"}
+                     <i className={`fa ${ROLE_CONFIG[r].icon}`} />
+                    {ROLE_CONFIG[r].label}
                   </button>
                 ))}
               </div>

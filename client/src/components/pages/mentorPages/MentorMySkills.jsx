@@ -8,6 +8,63 @@ import { EmptyState, LoadingState, PageHeader } from "../../learner/LearnerUI";
 import UserLink from "../../../components/shared/UserLink";
 import { useAuth } from "../../../App";
 
+const SkillCard = ({ skill, showOwner, deletingId, onDelete }) => {
+  const badgeColors = {
+    pending: { gradient: "linear-gradient(135deg, #eab308, #ca8a04)", color: "#1e293b" },
+    approved: { gradient: "linear-gradient(135deg, #16a34a, #15803d)", color: "white" },
+    rejected: { gradient: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white" },
+  };
+  const { gradient, color } = badgeColors[skill.status] || { gradient: "linear-gradient(135deg, #64748b, #475569)", color: "white" };
+
+  return (
+    <div className="col-md-6">
+      <div className="learner-card p-4 h-100">
+        <div className="d-flex justify-content-between align-items-start mb-2">
+          <h5 className="fw-bold mb-0">{skill.name}</h5>
+          {!showOwner && <span style={{ background: gradient, color, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{skill.status}</span>}
+        </div>
+        <p className="text-muted small mb-2">
+          {skill.categoryId?.name} &middot; {skill.level || "all"}
+          {showOwner && skill.createdBy?.name && <span> &middot; by <UserLink user={skill.createdBy} /></span>}
+        </p>
+        {skill.tags?.length > 0 && (
+          <div className="d-flex flex-wrap gap-1 mb-2">
+            {skill.tags.map((t, i) => <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{t}</span>)}
+          </div>
+        )}
+        <p className="text-muted small mb-3">{skill.description?.slice(0, 120)}</p>
+        {!showOwner ? (
+          <div className="d-flex" style={{ gap: "10px" }}>
+            <LoadingButton loading={deletingId === skill._id} className="btn btn-outline-danger btn-sm rounded-pill" onClick={() => onDelete(skill._id)}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-trash" />Delete</span>
+            </LoadingButton>
+          </div>
+        ) : (
+          <Link to={`/mentor/create-session?skillId=${skill._id}`} className="btn btn-outline-primary btn-sm rounded-pill">
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-plus" />Create Session</span>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const SkillGrid = ({ loading, tab, skills, allSkills, deletingId, onDelete }) => {
+  if (loading) return <LoadingState />;
+  if (tab === "my") {
+    return skills.length ? (
+      <div className="row g-4">{skills.map((skill) => <SkillCard key={skill._id} skill={skill} showOwner={false} deletingId={deletingId} onDelete={onDelete} />)}</div>
+    ) : (
+      <EmptyState title="No skills yet" text="Create your first skill to start offering sessions." actionLabel="Create Skill" actionTo="/mentor/create-skill" />
+    );
+  }
+  return allSkills.length ? (
+    <div className="row g-4">{allSkills.map((skill) => <SkillCard key={skill._id} skill={skill} showOwner deletingId={deletingId} onDelete={onDelete} />)}</div>
+  ) : (
+    <EmptyState title="No skills found" text="No skills have been created on the platform yet." />
+  );
+};
+
 const MentorMySkills = () => {
   const { user } = useAuth();
   const userId = user?._id;
@@ -60,50 +117,6 @@ const MentorMySkills = () => {
       setDeletingId(null);
     }
   };
-
-  const statusBadge = (status) => {
-    const map = {
-      pending: { gradient: "linear-gradient(135deg, #eab308, #ca8a04)", color: "#1e293b" },
-      approved: { gradient: "linear-gradient(135deg, #16a34a, #15803d)", color: "white" },
-      rejected: { gradient: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white" },
-    };
-    const { gradient, color } = map[status] || { gradient: "linear-gradient(135deg, #64748b, #475569)", color: "white" };
-    return <span style={{ background: gradient, color, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{status}</span>;
-  };
-
-  const skillCard = (skill, showOwner) => (
-    <div className="col-md-6" key={skill._id}>
-      <div className="learner-card p-4 h-100">
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          <h5 className="fw-bold mb-0">{skill.name}</h5>
-          {!showOwner && statusBadge(skill.status)}
-        </div>
-        <p className="text-muted small mb-2">
-          {skill.categoryId?.name} &middot; {skill.level || "all"}
-          {showOwner && skill.createdBy?.name && <span> &middot; by <UserLink user={skill.createdBy} /></span>}
-        </p>
-        {skill.tags?.length > 0 && (
-          <div className="d-flex flex-wrap gap-1 mb-2">
-            {skill.tags.map((t, i) => <span key={i} style={{ background: "linear-gradient(135deg, #64748b, #475569)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{t}</span>)}
-          </div>
-        )}
-        <p className="text-muted small mb-3">{skill.description?.slice(0, 120)}</p>
-        {!showOwner ? (
-          <div className="d-flex" style={{ gap: "10px" }}>
-            <LoadingButton loading={deletingId === skill._id} className="btn btn-outline-danger btn-sm rounded-pill"
-              onClick={() => handleDelete(skill._id)}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-trash" />Delete</span>
-            </LoadingButton>
-          </div>
-        ) : (
-          <Link to={`/mentor/create-session?skillId=${skill._id}`}
-            className="btn btn-outline-primary btn-sm rounded-pill">
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><i className="fa fa-plus" />Create Session</span>
-          </Link>
-        )}
-      </div>
-    </div>
-  );
 
   return (
     <>
@@ -168,26 +181,7 @@ const MentorMySkills = () => {
         </button>
       </div>
 
-      {loading ? <LoadingState /> : (
-        tab === "my" ? (
-          skills.length ? (
-            <div className="row g-4">
-              {skills.map((skill) => skillCard(skill, false))}
-            </div>
-          ) : (
-            <EmptyState title="No skills yet" text="Create your first skill to start offering sessions."
-              actionLabel="Create Skill" actionTo="/mentor/create-skill" />
-          )
-        ) : (
-          allSkills.length ? (
-            <div className="row g-4">
-              {allSkills.map((skill) => skillCard(skill, true))}
-            </div>
-          ) : (
-            <EmptyState title="No skills found" text="No skills have been created on the platform yet." />
-          )
-        )
-      )}
+      <SkillGrid loading={loading} tab={tab} skills={skills} allSkills={allSkills} deletingId={deletingId} onDelete={handleDelete} />
     </>
   );
 };

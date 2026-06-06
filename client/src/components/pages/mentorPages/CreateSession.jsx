@@ -5,6 +5,79 @@ import LoadingButton from "../../../../src/utils/LoadingButton";
 import Apiservices from "../../../../Apiservices";
 import { PageHeader } from "../../learner/LearnerUI";
 
+const AiBtn = ({ loading, label, icon, onClick, style }) => (
+  <button type="button" className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
+    onClick={onClick} disabled={loading}
+    style={{ ...style, opacity: loading ? 0.7 : 1, gap: 10 }}>
+    {loading ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className={`fa ${icon}`} />}
+    {loading ? "Generating..." : label}
+  </button>
+);
+
+const SidebarAiBtn = ({ loading, label, icon, onClick, colors }) => (
+  <AiBtn loading={loading} label={label} icon={icon} onClick={onClick}
+    style={{ background: colors, color: "white", padding: "14px 24px" }} />
+);
+
+const FormAiBtn = ({ loading, label, onClick }) => (
+  <AiBtn loading={loading} label={label} icon="fa-magic" onClick={onClick}
+    style={{ background: "linear-gradient(135deg, #0d6efd, #6610f2)", color: "white", padding: "10px 24px", fontSize: "0.85rem", boxShadow: loading ? "none" : "0 4px 14px rgba(102,16,242,0.3)" }} />
+);
+
+const ThumbnailPreview = ({ src, onClear }) => (
+  <div className="position-relative d-inline-block w-100">
+    <img src={src} alt="Preview" style={{ maxHeight: 180, borderRadius: 16, objectFit: "cover" }} className="w-100" />
+    <button type="button" className="btn btn-sm btn-dark rounded-circle position-absolute"
+      style={{ top: 8, right: 8, width: 32, height: 32 }} onClick={onClear}>
+      <i className="fa fa-times" />
+    </button>
+  </div>
+);
+
+const ThumbnailUploader = ({ thumbnailPreview, formThumbnail, fileInputRef, onFileChange, onDrop, onClear }) => (
+  <div className="upload-box" onClick={() => fileInputRef.current?.click()}
+    onDragOver={(e) => e.preventDefault()} onDrop={onDrop}
+    role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}>
+    <input type="file" ref={fileInputRef} accept="image/*" style={{ display: "none" }} onChange={onFileChange} />
+    {thumbnailPreview ? <ThumbnailPreview src={thumbnailPreview} onClear={onClear} />
+      : formThumbnail ? <ThumbnailPreview src={formThumbnail} onClear={onClear} />
+        : (
+          <>
+            <i className="fa fa-cloud-upload-alt fa-2x mb-3" />
+            <h6 className="fw-bold">Click or drag to upload</h6>
+            <small className="text-muted">Supports JPG, PNG, WebP — max 5MB</small>
+          </>
+        )}
+  </div>
+);
+
+const PriceToggle = ({ isFree, onClick }) => (
+  <button type="button"
+    className={`px-4 py-2 fw-semibold rounded-pill border-0 ${isFree ? "btn btn-success" : "btn btn-outline-secondary"}`}
+    style={{ fontSize: "0.9rem", transition: "all 0.2s" }} onClick={onClick}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+      <i className="fa fa-gift" />Free
+    </span>
+  </button>
+);
+
+const CreditToggle = ({ enabled, onToggle }) => (
+  <div className="col-12">
+    <div className="d-flex align-items-center" style={{ gap: 10 }}>
+      <label className="form-label fw-bold mb-0">Accept Credit Payments</label>
+      <button type="button"
+        className={`px-3 py-1 fw-semibold rounded-pill border-0 ${enabled ? "btn btn-success" : "btn btn-outline-secondary"}`}
+        style={{ fontSize: "0.8rem", transition: "all 0.2s" }} onClick={onToggle}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <i className={`fa ${enabled ? "fa-check-circle" : "fa-coins"}`} />
+          {enabled ? "Credits Enabled" : "Enable Credits"}
+        </span>
+      </button>
+    </div>
+    <small className="text-muted" style={{ fontSize: "0.72rem" }}>Students can pay with skill credits instead of money</small>
+  </div>
+);
+
 const CreateSession = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -282,28 +355,7 @@ const CreateSession = () => {
                       <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between mb-3">
                           <label className="form-label fw-bold mb-0">Session Title</label>
-                          <button
-                            type="button"
-                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center"
-                            onClick={generateAITitle}
-                            disabled={aiLoading.title}
-                            style={{
-                              background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                              color: "white",
-                              padding: "10px 24px",
-                              fontSize: "0.85rem",
-                              opacity: aiLoading.title ? 0.7 : 1,
-                              transition: "all 0.3s",
-                              boxShadow: aiLoading.title ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                              gap: 10,
-                            }}
-                          >
-                            {aiLoading.title ? (
-                              <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
-                            ) : (
-                              <><i className="fa fa-magic" /> <span>Generate with AI</span></>
-                            )}
-                          </button>
+                          <FormAiBtn loading={aiLoading.title} label="Generate with AI" onClick={generateAITitle} />
                         </div>
                         <div className="modern-input-group">
                           <span><i className="fa fa-heading"></i></span>
@@ -357,28 +409,7 @@ const CreateSession = () => {
                       <div className="col-12">
                         <div className="d-flex align-items-center justify-content-between mb-3">
                           <label className="form-label fw-bold mb-0">Session Description</label>
-                          <button
-                            type="button"
-                            className="btn rounded-pill fw-semibold border-0 d-flex align-items-center"
-                            onClick={generateAIDescription}
-                            disabled={aiLoading.description}
-                            style={{
-                              background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                              color: "white",
-                              padding: "10px 24px",
-                              fontSize: "0.85rem",
-                              opacity: aiLoading.description ? 0.7 : 1,
-                              transition: "all 0.3s",
-                              boxShadow: aiLoading.description ? "none" : "0 4px 14px rgba(102,16,242,0.3)",
-                              gap: 10,
-                            }}
-                          >
-                            {aiLoading.description ? (
-                              <><span className="spinner-border spinner-border-sm" role="status" /> <span>Generating...</span></>
-                            ) : (
-                              <><i className="fa fa-magic" /> <span>Generate with AI</span></>
-                            )}
-                          </button>
+                          <FormAiBtn loading={aiLoading.description} label="Generate with AI" onClick={generateAIDescription} />
                         </div>
                         <textarea
                           rows="5"
@@ -446,12 +477,7 @@ const CreateSession = () => {
                           Session Price
                         </label>
                         <div className="d-flex gap-2 mb-3">
-                          <button type="button"
-                            className={`px-4 py-2 fw-semibold rounded-pill border-0 ${!form.price || Number(form.price) === 0 ? "btn btn-success" : "btn btn-outline-secondary"}`}
-                            style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
-                            onClick={() => setForm((prev) => ({ ...prev, price: "0" }))}>
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}><i className="fa fa-gift"></i>Free</span>
-                          </button>
+                          <PriceToggle isFree={!form.price || Number(form.price) === 0} onClick={() => setForm((prev) => ({ ...prev, price: "0" }))} />
                           <button type="button"
                             className={`px-4 py-2 fw-semibold rounded-pill border-0 ${Number(form.price) > 0 ? "btn btn-primary" : "btn btn-outline-secondary"}`}
                             style={{ fontSize: "0.9rem", transition: "all 0.2s" }}
@@ -490,24 +516,11 @@ const CreateSession = () => {
                         </div>
                       )}
 
-                      <div className="col-12">
-                        <div className="d-flex align-items-center" style={{ gap: 10 }}>
-                          <label className="form-label fw-bold mb-0">Accept Credit Payments</label>
-                          <button type="button"
-                            className={`px-3 py-1 fw-semibold rounded-pill border-0 ${form.bookingTypes.includes("credits") ? "btn btn-success" : "btn btn-outline-secondary"}`}
-                            style={{ fontSize: "0.8rem", transition: "all 0.2s" }}
-                            onClick={() => setForm((prev) => {
-                              const has = prev.bookingTypes.includes("credits");
-                              return { ...prev, bookingTypes: has ? ["paid"] : ["paid", "credits"] };
-                            })}>
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                              <i className={`fa ${form.bookingTypes.includes("credits") ? "fa-check-circle" : "fa-coins"}`} />
-                              {form.bookingTypes.includes("credits") ? "Credits Enabled" : "Enable Credits"}
-                            </span>
-                          </button>
-                        </div>
-                        <small className="text-muted" style={{ fontSize: "0.72rem" }}>Students can pay with skill credits instead of money</small>
-                      </div>
+                      <CreditToggle enabled={form.bookingTypes.includes("credits")}
+                        onToggle={() => setForm((prev) => {
+                          const has = prev.bookingTypes.includes("credits");
+                          return { ...prev, bookingTypes: has ? ["paid"] : ["paid", "credits"] };
+                        })} />
 
                       <div className="col-md-6">
                         <label className="form-label fw-bold">
@@ -546,68 +559,9 @@ const CreateSession = () => {
                         <label className="form-label fw-bold">
                           Thumbnail
                         </label>
-                        <div
-                          className="upload-box"
-                          onClick={() => fileInputRef.current?.click()}
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={handleDrop}
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
-                        >
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            onChange={handleFileChange}
-                          />
-                          {thumbnailPreview ? (
-                            <div className="position-relative d-inline-block">
-                              <img
-                                src={thumbnailPreview}
-                                alt="Preview"
-                                style={{ maxHeight: 180, borderRadius: 16, objectFit: "cover" }}
-                                className="w-100"
-                              />
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-dark rounded-circle position-absolute"
-                                style={{ top: 8, right: 8, width: 32, height: 32 }}
-                                onClick={(e) => { e.stopPropagation(); clearThumbnail(); }}
-                              >
-                                <i className="fa fa-times"></i>
-                              </button>
-                            </div>
-                          ) : form.thumbnail ? (
-                            <div className="position-relative d-inline-block w-100">
-                              <img
-                                src={form.thumbnail}
-                                alt="Preview"
-                                style={{ maxHeight: 180, borderRadius: 16, objectFit: "cover" }}
-                                className="w-100"
-                              />
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-dark rounded-circle position-absolute"
-                                style={{ top: 8, right: 8, width: 32, height: 32 }}
-                                onClick={(e) => { e.stopPropagation(); clearThumbnail(); }}
-                              >
-                                <i className="fa fa-times"></i>
-                              </button>
-                            </div>
-                          ) : (
-                            <>
-                              <i className="fa fa-cloud-upload-alt fa-2x mb-3"></i>
-                              <h6 className="fw-bold">
-                                Click or drag to upload
-                              </h6>
-                              <small className="text-muted">
-                                Supports JPG, PNG, WebP — max 5MB
-                              </small>
-                            </>
-                          )}
-                        </div>
+                        <ThumbnailUploader thumbnailPreview={thumbnailPreview} formThumbnail={form.thumbnail}
+                          fileInputRef={fileInputRef} onFileChange={handleFileChange}
+                          onDrop={handleDrop} onClear={(e) => { e.stopPropagation(); clearThumbnail(); }} />
                         <div className="mt-2">
                           <small className="text-muted">Or paste a URL:</small>
                           <input
@@ -660,51 +614,11 @@ const CreateSession = () => {
                 </p>
 
                 <div className="d-flex flex-column gap-3">
-                  <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
-                    onClick={generateAITitle}
-                    disabled={aiLoading.title}
-                    style={{ background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "white", padding: "14px 24px", opacity: aiLoading.title ? 0.7 : 1, gap: 10 }}
-                  >
-                    {aiLoading.title ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-heading" />}
-                    {aiLoading.title ? "Generating..." : "Generate Title"}
-                  </button>
-                  <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
-                    onClick={generateAIDescription}
-                    disabled={aiLoading.description}
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #db2777)", color: "white", padding: "14px 24px", opacity: aiLoading.description ? 0.7 : 1, gap: 10 }}
-                  >
-                    {aiLoading.description ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-file-lines" />}
-                    {aiLoading.description ? "Generating..." : "Generate Description"}
-                  </button>
-                  <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
-                    onClick={generateAIOutcomes}
-                    disabled={aiLoading.outcomes}
-                    style={{ background: "linear-gradient(135deg, #059669, #10b981)", color: "white", padding: "14px 24px", opacity: aiLoading.outcomes ? 0.7 : 1, gap: 10 }}
-                  >
-                    {aiLoading.outcomes ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-bullseye" />}
-                    {aiLoading.outcomes ? "Generating..." : "Generate Outcomes"}
-                  </button>
-                  <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
-                    onClick={generateAITags}
-                    disabled={aiLoading.tags}
-                    style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)", color: "white", padding: "14px 24px", opacity: aiLoading.tags ? 0.7 : 1, gap: 10 }}
-                  >
-                    {aiLoading.tags ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-tags" />}
-                    {aiLoading.tags ? "Generating..." : "Suggest Tags"}
-                  </button>
-                  <button
-                    className="btn rounded-pill fw-semibold border-0 d-flex align-items-center justify-content-center ai-btn"
-                    onClick={getMentorFeedback}
-                    disabled={aiLoading.mentor}
-                    style={{ background: "linear-gradient(135deg, #dc2626, #f43f5e)", color: "white", padding: "14px 24px", opacity: aiLoading.mentor ? 0.7 : 1, gap: 10 }}
-                  >
-                    {aiLoading.mentor ? <span className="spinner-border spinner-border-sm" role="status" /> : <i className="fa fa-magic" />}
-                    {aiLoading.mentor ? "Analyzing..." : "Improve Content"}
-                  </button>
+                  <SidebarAiBtn loading={aiLoading.title} label="Generate Title" icon="fa-heading" onClick={generateAITitle} colors="linear-gradient(135deg, #2563eb, #7c3aed)" />
+                  <SidebarAiBtn loading={aiLoading.description} label="Generate Description" icon="fa-file-lines" onClick={generateAIDescription} colors="linear-gradient(135deg, #7c3aed, #db2777)" />
+                  <SidebarAiBtn loading={aiLoading.outcomes} label="Generate Outcomes" icon="fa-bullseye" onClick={generateAIOutcomes} colors="linear-gradient(135deg, #059669, #10b981)" />
+                  <SidebarAiBtn loading={aiLoading.tags} label="Suggest Tags" icon="fa-tags" onClick={generateAITags} colors="linear-gradient(135deg, #d97706, #f59e0b)" />
+                  <SidebarAiBtn loading={aiLoading.mentor} label="Improve Content" icon="fa-magic" onClick={getMentorFeedback} colors="linear-gradient(135deg, #dc2626, #f43f5e)" />
                 </div>
               </div>
 

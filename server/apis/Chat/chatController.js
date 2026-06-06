@@ -45,6 +45,68 @@ const canAccessRequest = (request, req) => {
   );
 };
 
+const getOrCreateRequestChat = async (requestId, req) => {
+  const request = await Request.findById(requestId);
+  if (!request) {
+    return { error: [404, "Request not found"] };
+  }
+  if (!isAdmin(req) && !canAccessRequest(request, req)) {
+    return { error: [403, "Access denied"] };
+  }
+  if (!isAdmin(req)) {
+    const otherInRequest = idsEqual(request.learnerId, req.user.id) ? request.mentorId : request.learnerId;
+    if (otherInRequest && (await checkBlocked(req.user.id, otherInRequest))) {
+      return { error: [403, "Cannot message this user"] };
+    }
+  }
+
+  let chat = await Chat.findOne({ requestId });
+  if (!chat) {
+    const participants = [request.learnerId, request.mentorId].filter(Boolean);
+    chat = await Chat.findOne({
+      participants: { $all: participants, $size: 2 },
+    });
+    if (chat) {
+      chat.requestId = requestId;
+    } else {
+      chat = await Chat.create({ requestId, participants, messages: [] });
+    }
+  }
+  return { chat };
+};
+
+const getOrCreateDirectChat = async (recipientId, req) => {
+  if (!recipientId) {
+    return { error: [400, "recipientId is required"] };
+  }
+  if (!isAdmin(req)) {
+    if (idsEqual(recipientId, req.user.id)) {
+      return { error: [400, "Cannot message yourself"] };
+    }
+    if (await checkBlocked(req.user.id, recipientId)) {
+      return { error: [403, "Cannot message this user"] };
+    }
+  }
+
+  let chat = await Chat.findOne({
+    participants: { $all: [req.user.id, recipientId], $size: 2 },
+  });
+
+  if (!chat) {
+    chat = await Chat.create({
+      participants: [req.user.id, recipientId],
+      messages: [],
+    });
+  }
+  return { chat };
+};
+
+const computeLastContent = (message, attachments) => {
+  if (message?.trim()) return message.trim().slice(0, 100);
+  if (attachments?.length) return `📎 ${attachments[0].type === "image" ? "Image" : "File"}`;
+  return "";
+};
+
 exports.sendMessage = asyncHandler(async (req, res) => {
   const { requestId, message, recipientId, attachments } = req.body;
 
@@ -56,59 +118,13 @@ exports.sendMessage = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: "requestId or recipientId is required" });
   }
 
-  let chat;
-
-  if (requestId) {
-    const request = await Request.findById(requestId);
-    if (!request) {
-      return res.status(404).json({ success: false, message: "Request not found" });
-    }
-    if (!isAdmin(req) && !canAccessRequest(request, req)) {
-      return res.status(403).json({ success: false, message: "Access denied" });
-    }
-    if (!isAdmin(req)) {
-      const otherInRequest = idsEqual(request.learnerId, req.user.id) ? request.mentorId : request.learnerId;
-      if (otherInRequest && (await checkBlocked(req.user.id, otherInRequest))) {
-        return res.status(403).json({ success: false, message: "Cannot message this user" });
-      }
-    }
-
-    chat = await Chat.findOne({ requestId });
-    if (!chat) {
-      const participants = [request.learnerId, request.mentorId].filter(Boolean);
-      chat = await Chat.findOne({
-        participants: { $all: participants, $size: 2 },
-      });
-      if (chat) {
-        chat.requestId = requestId;
-      } else {
-        chat = await Chat.create({ requestId, participants, messages: [] });
-      }
-    }
-  } else {
-    if (!recipientId) {
-      return res.status(400).json({ success: false, message: "recipientId is required" });
-    }
-    if (!isAdmin(req)) {
-      if (idsEqual(recipientId, req.user.id)) {
-        return res.status(400).json({ success: false, message: "Cannot message yourself" });
-      }
-      if (await checkBlocked(req.user.id, recipientId)) {
-        return res.status(403).json({ success: false, message: "Cannot message this user" });
-      }
-    }
-
-    chat = await Chat.findOne({
-      participants: { $all: [req.user.id, recipientId], $size: 2 },
-    });
-
-    if (!chat) {
-      chat = await Chat.create({
-        participants: [req.user.id, recipientId],
-        messages: [],
-      });
-    }
+  const result = requestId
+    ? await getOrCreateRequestChat(requestId, req)
+    : await getOrCreateDirectChat(recipientId, req);
+  if (result.error) {
+    return res.status(result.error[0]).json({ success: false, message: result.error[1] });
   }
+  const chat = result.chat;
 
   const newMessage = {
     senderId: req.user.id,
@@ -120,13 +136,8 @@ exports.sendMessage = asyncHandler(async (req, res) => {
   };
 
   chat.messages.push(newMessage);
-  const lastContent = message?.trim()
-    ? message.trim().slice(0, 100)
-    : attachments?.length
-      ? `📎 ${attachments[0].type === "image" ? "Image" : "File"}`
-      : "";
   chat.lastMessage = {
-    content: lastContent,
+    content: computeLastContent(message, attachments),
     senderId: req.user.id,
     createdAt: new Date(),
   };

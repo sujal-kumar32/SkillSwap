@@ -32,6 +32,67 @@ const withoutPassword = (user) => {
   return data;
 };
 
+const handleEmailUpdate = async (email, user) => {
+  if (email === undefined) return;
+  const newEmail = email.trim().toLowerCase();
+  if (newEmail === user.email) return;
+  const existing = await User.findOne({ email: newEmail, _id: { $ne: user._id } });
+  if (existing) {
+    return { error: [400, "Email already in use"] };
+  }
+  user.email = newEmail;
+  user.isVerified = false;
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const hash = crypto.createHash("sha256").update(verificationToken).digest("hex");
+  user.verificationToken = hash;
+  user.verificationTokenExpires = Date.now() + 86400000;
+  const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
+  sendEmail({
+    to: user.email,
+    subject: "Verify your new email - SkillSwap",
+    html: emailVerification(user.name, verifyLink),
+  }).catch((err) => console.error("Verification email failed:", err.message));
+};
+
+const handleProfileImage = async (req, user) => {
+  if (req.file) {
+    if (user.profilePublicId) {
+      await destroyImage(user.profilePublicId).catch(() => {});
+    }
+    const result = await uploadBuffer(req.file.buffer, {
+      public_id: `profile_${req.user.id}`,
+    });
+    user.profileImage = result.secure_url;
+    user.profilePublicId = result.public_id;
+  } else if (req.body.image !== undefined || req.body.profileImage !== undefined) {
+    user.profileImage = req.body.image || req.body.profileImage || "";
+  }
+};
+
+const parseSkills = (skills) => {
+  if (skills === undefined) return undefined;
+  if (typeof skills === "string") {
+    try {
+      return JSON.parse(skills);
+    } catch {
+      return [];
+    }
+  }
+  return Array.isArray(skills) ? skills : [];
+};
+
+const handlePasswordUpdate = async (newPassword, oldPassword, user) => {
+  if (!newPassword) return;
+  if (!oldPassword) {
+    return { error: [400, "Current password is required"] };
+  }
+  const matched = await bcrypt.compare(oldPassword, user.password);
+  if (!matched) {
+    return { error: [400, "Current password is incorrect"] };
+  }
+  user.password = await bcrypt.hash(newPassword, 10);
+};
+
 exports.getProfile = asyncHandler(async (req, res) => {
   if (!req.user?.id) {
     return res.json({
@@ -60,98 +121,26 @@ exports.updateProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id);
 
   if (!user) {
-    return res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
+    return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  const {
-    name,
-    email,
-    bio,
-    image,
-    profileImage,
-    coverImage,
-    interests,
-    goals,
-    learningGoals,
-    skills,
-    phone,
-    timezone,
-    linkedin,
-    github,
-    portfolio,
-    youtube,
-    twitter,
-    oldPassword,
-    newPassword,
-  } = req.body;
+  const { name, bio, interests, goals, learningGoals, skills, coverImage, phone, timezone, linkedin, github, portfolio, youtube, twitter, oldPassword, newPassword } = req.body;
 
   if (name !== undefined) user.name = name.trim();
 
-  if (email !== undefined) {
-    const newEmail = email.trim().toLowerCase();
-    if (newEmail !== user.email) {
-      const existing = await User.findOne({
-        email: newEmail,
-        _id: { $ne: user._id },
-      });
-      if (existing) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Email already in use" });
-      }
-      user.email = newEmail;
-      user.isVerified = false;
-      const verificationToken = crypto.randomBytes(32).toString("hex");
-      const hash = crypto
-        .createHash("sha256")
-        .update(verificationToken)
-        .digest("hex");
-      user.verificationToken = hash;
-      user.verificationTokenExpires = Date.now() + 86400000;
-      const verifyLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
-      sendEmail({
-        to: user.email,
-        subject: "Verify your new email - SkillSwap",
-        html: emailVerification(user.name, verifyLink),
-      }).catch((err) =>
-        console.error("Verification email failed:", err.message),
-      );
-    }
-  }
+  const emailError = await handleEmailUpdate(req.body.email, user);
+  if (emailError) return res.status(emailError.error[0]).json({ success: false, message: emailError.error[1] });
 
   if (bio !== undefined) user.bio = bio.trim();
 
-  if (req.file) {
-    if (user.profilePublicId) {
-      await destroyImage(user.profilePublicId).catch(() => {});
-    }
-    const result = await uploadBuffer(req.file.buffer, {
-      public_id: `profile_${req.user.id}`,
-    });
-    user.profileImage = result.secure_url;
-    user.profilePublicId = result.public_id;
-  } else if (image !== undefined || profileImage !== undefined) {
-    user.profileImage = image || profileImage || "";
-  }
+  await handleProfileImage(req, user);
 
   if (interests !== undefined) user.interests = toArray(interests);
   if (goals !== undefined || learningGoals !== undefined) {
     user.learningGoals = goals || learningGoals || "";
   }
-  if (skills !== undefined) {
-    let parsed = skills;
-    if (typeof skills === "string") {
-      try {
-        parsed = JSON.parse(skills);
-      } catch {
-        parsed = [];
-      }
-    }
-    user.skills = Array.isArray(parsed) ? parsed : [];
-  }
+  const parsedSkills = parseSkills(skills);
+  if (parsedSkills !== undefined) user.skills = parsedSkills;
   if (coverImage !== undefined) user.coverImage = coverImage;
   if (phone !== undefined) user.phone = phone.trim();
   if (timezone !== undefined) user.timezone = timezone.trim();
@@ -165,24 +154,8 @@ exports.updateProfile = asyncHandler(async (req, res) => {
     ...(twitter !== undefined ? { twitter } : {}),
   };
 
-  if (newPassword) {
-    if (!oldPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Current password is required",
-      });
-    }
-
-    const matched = await bcrypt.compare(oldPassword, user.password);
-    if (!matched) {
-      return res.status(400).json({
-        success: false,
-        message: "Current password is incorrect",
-      });
-    }
-
-    user.password = await bcrypt.hash(newPassword, 10);
-  }
+  const passwordError = await handlePasswordUpdate(newPassword, oldPassword, user);
+  if (passwordError) return res.status(passwordError.error[0]).json({ success: false, message: passwordError.error[1] });
 
   await user.save();
 

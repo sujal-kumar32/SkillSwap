@@ -377,6 +377,14 @@ const MessageBubble = ({ msg, isMe, showDate, onDoubleClick, onDeleteMessage }) 
   const isDeleted = msg.isDeleted;
   const reactCounts = computeReactCounts(msg.reactions);
   const hasReactions = Object.keys(reactCounts).length > 0;
+  const bubblePadding = isDeleted ? "8px 16px" : msg.attachments?.length ? "6px 6px 6px 6px" : "10px 16px";
+  const bubbleBg = isMe ? "linear-gradient(135deg, #0d6efd, #6610f2)" : "#fff";
+  const bubbleColor = isMe ? "#fff" : "#1e293b";
+  const bubbleBorder = isMe ? "none" : "1px solid #eef2f7";
+  const bubbleCursor = isDeleted ? "default" : "pointer";
+  const bubbleOpacity = isDeleted ? 0.6 : 1;
+
+  const handleDblClick = () => { if (!isDeleted) onDoubleClick(msg._id); };
 
   return (
     <>
@@ -398,13 +406,13 @@ const MessageBubble = ({ msg, isMe, showDate, onDoubleClick, onDeleteMessage }) 
             className="delete-msg-btn"
           ><i className="fa fa-trash" /></button>
         )}
-        <div onDoubleClick={() => { if (!isDeleted) onDoubleClick(msg._id); }} title={!isDeleted ? new Date(msg.createdAt).toLocaleString() : ""} style={{
-          maxWidth: "70%", padding: isDeleted ? "8px 16px" : (msg.attachments?.length ? "6px 6px 6px 6px" : "10px 16px"), borderRadius: 18,
-          background: isMe ? "linear-gradient(135deg, #0d6efd, #6610f2)" : "#fff",
-          color: isMe ? "#fff" : "#1e293b",
-          border: isMe ? "none" : "1px solid #eef2f7",
+        <div onDoubleClick={handleDblClick} title={!isDeleted ? new Date(msg.createdAt).toLocaleString() : ""} style={{
+          maxWidth: "70%", padding: bubblePadding, borderRadius: 18,
+          background: bubbleBg,
+          color: bubbleColor,
+          border: bubbleBorder,
           fontSize: "0.85rem", lineHeight: 1.4, wordBreak: "break-word", whiteSpace: "pre-wrap",
-          cursor: isDeleted ? "default" : "pointer", userSelect: "none", opacity: isDeleted ? 0.6 : 1,
+          cursor: bubbleCursor, userSelect: "none", opacity: bubbleOpacity,
         }}>
           {isDeleted ? (
             <em style={{ fontSize: "0.8rem" }}>Message deleted</em>
