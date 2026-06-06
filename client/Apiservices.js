@@ -363,6 +363,14 @@ class Apiservices {
     return axios.get(baseUrl + "earnings");
   }
 
+  getAdminCreditBalances(params = {}) {
+    return axios.get(baseUrl + "admin/credits/balances", { params });
+  }
+
+  getAdminCreditHistory(params = {}) {
+    return axios.get(baseUrl + "admin/credits/history", { params });
+  }
+
   getCreditHistory(params = {}) {
     return axios.get(baseUrl + "wallet/credit-history", { params });
   }

@@ -17,6 +17,7 @@ const links = [
   { to: "/admin/bookings", label: "All Bookings", icon: "fa-calendar" },
   { to: "/admin/disputes", label: "Disputes", icon: "fa-gavel", badgeKey: "openDisputes" },
   { to: "/admin/payments", label: "Payment Ledger", icon: "fa-credit-card" },
+  { to: "/admin/credits", label: "Credit Management", icon: "fa-coins" },
   { to: "/admin/reviews", label: "Reviews & Ratings", icon: "fa-star" },
   { to: "/admin/broadcast", label: "Broadcast", icon: "fa-bullhorn" },
   { to: "/admin/settings", label: "Settings", icon: "fa-gear" },

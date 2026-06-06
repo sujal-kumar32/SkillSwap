@@ -23,6 +23,7 @@ import ViewRequests from "./components/adminPages/ViewRequests";
 import AdminReviews from "./components/adminPages/AdminReviews";
 import AdminProgress from "./components/adminPages/AdminProgress";
 import AdminBookings from "./components/adminPages/AdminBookings";
+import AdminCreditHistory from "./components/adminPages/AdminCreditHistory";
 import AdminSettings from "./components/adminPages/AdminSettings";
 import AdminCategories from "./components/adminPages/AdminCategories";
 import MentorRequests from "./components/adminPages/MentorRequests";
@@ -290,6 +291,7 @@ function App() {
             <Route path="/admin/progress" element={<AdminProgress />} />
             <Route path="/admin/mentor-requests" element={<MentorRequests />} />
             <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/credits" element={<AdminCreditHistory />} />
             <Route path="/admin/disputes" element={<AdminDisputes />} />
             <Route path="/admin/broadcast" element={<AdminBroadcast />} />
             <Route path="/admin/settings" element={<AdminSettings />} />

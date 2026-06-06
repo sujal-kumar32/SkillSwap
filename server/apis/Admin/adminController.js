@@ -349,3 +349,84 @@ exports.bookingAnalytics = asyncHandler(async (req, res) => {
     },
   });
 });
+
+// GET ALL CREDIT BALANCES
+exports.getCreditBalances = asyncHandler(async (req, res) => {
+  const { search, sort } = req.query;
+  const { page, limit, skip } = getPagination(req.query);
+
+  let nameFilter = {};
+  if (search) {
+    const safe = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    nameFilter = { "user.name": { $regex: safe, $options: "i" } };
+  }
+
+  let sortStage = {};
+  if (sort === "available") sortStage = { available: -1 };
+  else if (sort === "locked") sortStage = { lockedCredits: -1 };
+  else if (sort === "total") sortStage = { skillCredits: -1 };
+  else sortStage = { "user.name": 1 };
+
+  const pipeline = [
+    {
+      $lookup: { from: "users", localField: "userId", foreignField: "_id", as: "user" },
+    },
+    { $unwind: "$user" },
+    { $match: nameFilter },
+    {
+      $project: {
+        _id: 1,
+        userId: "$user._id",
+        name: "$user.name",
+        email: "$user.email",
+        profileImage: "$user.profileImage",
+        skillCredits: 1,
+        lockedCredits: 1,
+        available: { $subtract: ["$skillCredits", "$lockedCredits"] },
+      },
+    },
+    { $sort: sortStage },
+    { $skip: skip },
+    { $limit: limit },
+  ];
+
+  const [wallets, total] = await Promise.all([
+    Wallet.aggregate(pipeline),
+    Wallet.aggregate([...pipeline, { $count: "total" }]),
+  ]);
+
+  res.json({
+    success: true,
+    total: total[0]?.total || 0,
+    page,
+    pages: Math.ceil((total[0]?.total || 0) / limit),
+    data: wallets,
+  });
+});
+
+// GET ALL CREDIT TRANSACTIONS
+exports.getCreditHistory = asyncHandler(async (req, res) => {
+  const { search, type } = req.query;
+  const { page, limit, skip } = getPagination(req.query);
+
+  let filter = { type: { $in: ["credit_earned", "credit_spent", "credit_refunded"] } };
+  if (type) filter.type = type;
+  if (search) {
+    filter.$or = [
+      { description: { $regex: search, $options: "i" } },
+      { reference: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const [txns, total] = await Promise.all([
+    Transaction.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("userId", "name email profileImage")
+      .lean(),
+    Transaction.countDocuments(filter),
+  ]);
+
+  res.json({ success: true, total, page, pages: Math.ceil(total / limit), data: txns });
+});
