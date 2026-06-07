@@ -326,17 +326,16 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
     const resetLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${token}`;
 
     let emailSent = false;
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Password Reset - SkillSwap",
-        html: passwordResetEmail(user.name, resetLink),
-      });
+    sendEmail({
+      to: user.email,
+      subject: "Password Reset - SkillSwap",
+      html: passwordResetEmail(user.name, resetLink),
+    }).then(() => {
       emailSent = true;
-    } catch (err) {
+    }).catch((err) => {
       console.error("Reset email failed:", err.message);
       console.log("Password reset link (fallback):", resetLink);
-    }
+    });
 
     res.json({
       success: true,
