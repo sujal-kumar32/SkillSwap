@@ -4,6 +4,7 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const helmet = require("helmet");
+const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
@@ -30,6 +31,7 @@ const certificateRoutes = require("./routes/certificateRoutes");
 const calendarRoutes = require("./routes/calendarRoutes");
 const availabilityRoutes = require("./routes/availabilityRoutes");
 const sessionMaterialRoutes = require("./routes/sessionMaterialRoutes");
+const sidebarRoutes = require("./routes/sidebarRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const earningsRoutes = require("./routes/earningsRoutes");
 const badgeRoutes = require("./routes/badgeRoutes");
@@ -39,22 +41,27 @@ const followRoutes = require("./routes/followRoutes");
 const feedRoutes = require("./routes/feedRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
-const sidebarRoutes = require("./routes/sidebarRoutes");
 
 app.use(helmet());
-app.set("trust proxy", 1);
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+app.use(compression());
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/uploads", express.static("uploads"));
+app.use("/api-docs", require("./swagger").swaggerServe, require("./swagger").swaggerSetup);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
+  message: { success: false, message: "Too many requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
   message: { success: false, message: "Too many requests, please try again later" },
   standardHeaders: true,
   legacyHeaders: false,
@@ -65,18 +72,7 @@ const PORT = process.env.PORT || 3000;
 const adminSeeder = require("./config/seeder");
 const { seedBadges } = require("./apis/Badges/badgeSeeder");
 const cron = require("node-cron");
-const { checkSessionReminders, autoCompleteSessions } = require("./jobs/sessionReminder");
-
-adminSeeder();
-seedBadges();
-
-cron.schedule("* * * * *", () => {
-  checkSessionReminders();
-});
-
-cron.schedule("*/5 * * * *", () => {
-  autoCompleteSessions();
-});
+const { checkSessionReminders, autoCompleteSessions, setSocketIO: setSessRemIO } = require("./jobs/sessionReminder");
 
 app.get("/", (req, res) => {
   res.send("welcome back");
@@ -87,6 +83,7 @@ app.get("/myself", (req, res) => {
 });
 
 app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api", apiLimiter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/sessions", sessionRoutes);
@@ -104,6 +101,7 @@ app.use("/api/certificates", certificateRoutes);
 app.use("/api/calendar", calendarRoutes);
 app.use("/api/availability", availabilityRoutes);
 app.use("/api/sessions/:sessionId/materials", sessionMaterialRoutes);
+app.use("/api/sidebar", sidebarRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/earnings", earningsRoutes);
 app.use("/api/badges", badgeRoutes);
@@ -113,13 +111,12 @@ app.use("/api/follow", followRoutes);
 app.use("/api/feed", feedRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
-app.use("/api/sidebar", sidebarRoutes);
 app.use("/api/disputes", require("./routes/disputeRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {
   const message = err?.error?.description || err?.message || "Internal server error";
-  console.error("Unhandled Error:", err.stack || err);
+  console.error("Unhandled Error:", message);
   if (err?.code === 11000) {
     return res.status(409).json({ success: false, message: "A record with this value already exists" });
   }
@@ -144,36 +141,50 @@ const { initSocket } = require("./socket");
 const { setSocketIO: setNotifIO } = require("./services/notificationService");
 const { setSocketIO: setChatIO } = require("./apis/Chat/chatController");
 
-const io = initSocket(server);
-app.set("io", io);
-setNotifIO(io);
-setChatIO(io);
+(async () => {
+  await adminSeeder();
+  await seedBadges();
 
-server.listen(PORT, (err) => {
-  if (err) {
-    console.log("Server Error", err);
-  } else {
-    console.log("Server is Listening on", PORT);
-  }
-});
-
-const gracefulShutdown = async (signal) => {
-  console.log(`\n${signal} received. Shutting down gracefully...`);
-  server.close(() => {
-    console.log("HTTP server closed.");
+  cron.schedule("* * * * *", () => {
+    checkSessionReminders();
   });
-  try {
-    await mongoose.disconnect();
-    console.log("MongoDB disconnected.");
-  } catch (e) {
-    console.error("Error disconnecting MongoDB:", e.message);
-  }
-  io?.close(() => {
-    console.log("Socket.io closed.");
-    process.exit(0);
-  });
-  setTimeout(() => process.exit(0), 5000);
-};
 
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  cron.schedule("*/5 * * * *", () => {
+    autoCompleteSessions();
+  });
+
+  const io = initSocket(server);
+  app.set("io", io);
+  setNotifIO(io);
+  setChatIO(io);
+  setSessRemIO(io);
+
+  server.listen(PORT, (err) => {
+    if (err) {
+      console.log("Server Error", err);
+    } else {
+      console.log("Server is Listening on", PORT);
+    }
+  });
+
+  const gracefulShutdown = async (signal) => {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    server.close(() => {
+      console.log("HTTP server closed.");
+    });
+    try {
+      await mongoose.disconnect();
+      console.log("MongoDB disconnected.");
+    } catch (e) {
+      console.error("Error disconnecting MongoDB:", e.message);
+    }
+    io?.close(() => {
+      console.log("Socket.io closed.");
+      process.exit(0);
+    });
+    setTimeout(() => process.exit(0), 5000);
+  };
+
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+})();

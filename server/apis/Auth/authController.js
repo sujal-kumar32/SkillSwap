@@ -27,25 +27,23 @@ const generateRefreshToken = async (userId) => {
 };
 
 const setTokenCookies = (res, accessToken, refreshToken) => {
-  const isProd = process.env.NODE_ENV === "production";
   res.cookie("token", accessToken, {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 15 * 60 * 1000,
   });
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: REFRESH_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
   });
 };
 
 const clearTokenCookies = (res) => {
-  const opts = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" };
-  res.clearCookie("token", opts);
-  res.clearCookie("refreshToken", opts);
+  res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
+  res.clearCookie("refreshToken", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" });
 };
 
 if (!SECRET) {

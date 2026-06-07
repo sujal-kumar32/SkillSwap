@@ -2,7 +2,7 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
-const baseUrl = "https://skillswap-0weh.onrender.com/api/";
+const baseUrl = "/api/";
 
 class Apiservices {
 
