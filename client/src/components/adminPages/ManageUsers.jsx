@@ -70,8 +70,27 @@ const ManageUsers = () => {
       } else {
         showToast.error(response.data.message);
       }
-    } catch (err) {
+    } catch {
       showToast.error("Failed to update user status");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (userId, userName) => {
+    const ok = await deleteConfirmAlert(`user "${userName}"`);
+    if (!ok) return;
+    try {
+      setActionLoading(userId);
+      const res = await Apiservices.updateUserStatus(userId, "deleted");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u._id === userId ? { ...u, ...res.data.data } : u,
+        ),
+      );
+      showToast.success("User deleted");
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to delete user");
     } finally {
       setActionLoading(null);
     }
@@ -162,6 +181,7 @@ const ManageUsers = () => {
                       <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>User</th>
                       <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Role</th>
                       <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Status</th>
+                      <th className="fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Trust</th>
                       <th className="text-end fw-semibold text-uppercase" style={{ color: "#64748b", fontSize: "0.8rem", borderBottom: "2px solid #eef2f7" }}>Actions</th>
                     </tr>
                   </thead>
@@ -182,6 +202,7 @@ const ManageUsers = () => {
                         <td>
                           <span style={{ background: user.status === "active" ? "linear-gradient(135deg, #16a34a, #15803d)" : user.status === "deleted" ? "linear-gradient(135deg, #374151, #1f2937)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>{user.status}</span>
                         </td>
+                        <td>{(() => { const ts = user.trustScore ?? 100; const c = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626"; return <span style={{ color: c, fontWeight: 600, fontSize: "0.85rem" }}>{ts}/100</span>; })()}</td>
                         <td className="text-end" style={{ whiteSpace: "nowrap" }}>
                           {user.status === "deleted" ? (
                             <span className="text-muted small fw-semibold">{user.deletedBy === "self" ? "Deleted by user" : user.deletedBy === "admin" ? "Deleted by admin" : "Account deleted"}</span>
@@ -200,24 +221,7 @@ const ManageUsers = () => {
                               )}
                               <button className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
                                 style={{ fontSize: "0.8rem", marginLeft: 6 }}
-                                onClick={async () => {
-                                  const ok = await deleteConfirmAlert(`user "${user.name}"`);
-                                  if (!ok) return;
-                                  try {
-                                    setActionLoading(user._id);
-                                    const res = await Apiservices.updateUserStatus(user._id, "deleted");
-                                    setUsers((prev) =>
-                                      prev.map((u) =>
-                                        u._id === user._id ? { ...u, ...res.data.data } : u,
-                                      ),
-                                    );
-                                    showToast.success("User deleted");
-                                  } catch (err) {
-                                    showToast.error(err.response?.data?.message || "Failed to delete user");
-                                  } finally {
-                                    setActionLoading(null);
-                                  }
-                                }}>
+                                onClick={() => handleDelete(user._id, user.name)}>
                                 <i className="fa fa-trash me-1" /> Delete
                               </button>
                             </>

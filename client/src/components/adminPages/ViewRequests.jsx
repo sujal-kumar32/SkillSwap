@@ -110,9 +110,16 @@ const ViewRequests = () => {
                           <span style={{ background: r.requestStatus === "accepted" ? "linear-gradient(135deg, #16a34a, #15803d)" : r.requestStatus === "pending" ? "linear-gradient(135deg, #eab308, #ca8a04)" : r.requestStatus === "completed" ? "linear-gradient(135deg, #0d6efd, #0a58ca)" : "linear-gradient(135deg, #dc2626, #b91c1c)", color: r.requestStatus === "pending" ? "#1e293b" : "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                             {r.requestStatus}</span>
                         </td>
-                        <td className="text-end">
-                          <span style={{ background: r.paymentStatus === "paid" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #ca8a04, #a16207)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.3px" }}>
-                            {r.paymentStatus || "pending"}</span>
+                        <td className="text-end" style={{ whiteSpace: "nowrap" }}>
+                          {r.bookingSource === "credits" ? (
+                            <span style={{ background: "#f0fdf4", color: "#16a34a", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, border: "1px solid #bbf7d0" }}>
+                              <i className="fa fa-coins me-1" />Credits
+                            </span>
+                          ) : (
+                            <span style={{ background: r.paymentStatus === "paid" ? "linear-gradient(135deg, #16a34a, #15803d)" : "linear-gradient(135deg, #ca8a04, #a16207)", color: "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600 }}>
+                              {r.paymentStatus || "pending"}
+                            </span>
+                          )}
                         </td>
                       </tr>
                     ))

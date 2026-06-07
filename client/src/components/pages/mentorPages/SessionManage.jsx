@@ -64,7 +64,13 @@ const SessionManage = () => {
               <div className="d-flex justify-content-between"><small className="text-muted">Status</small><span className="fw-semibold small">{session.status}</span></div>
               <div className="d-flex justify-content-between"><small className="text-muted">Skill</small><span className="fw-semibold small">{session.skillId?.name || "-"}</span></div>
               <div className="d-flex justify-content-between"><small className="text-muted">Type</small><span className="fw-semibold small">{session.sessionType}</span></div>
-              <div className="d-flex justify-content-between"><small className="text-muted">Price</small><span className="fw-semibold small">{session.price ? `₹${session.price}` : "Free"}</span></div>
+              <div className="d-flex justify-content-between"><small className="text-muted">Price</small><span className="fw-semibold small">{session.price ? `₹${session.price}` : "Free"}
+                {session.bookingTypes?.includes("credits") && session.creditCost > 0 && (
+                  <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 8 }}>
+                    <i className="fa fa-coins" />{session.creditCost}
+                  </span>
+                )}
+              </span></div>
               <div className="d-flex justify-content-between"><small className="text-muted">Duration</small><span className="fw-semibold small">{session.duration || 60} min</span></div>
               {session.date && (
                 <div className="d-flex justify-content-between"><small className="text-muted">Date</small><span className="fw-semibold small">{new Date(session.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" })}</span></div>

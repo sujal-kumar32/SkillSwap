@@ -14,7 +14,7 @@ const transactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["deposit", "payment", "earning", "withdrawal", "refund"],
+      enum: ["deposit", "payment", "earning", "withdrawal", "refund", "credit_earned", "credit_spent", "credit_refunded"],
       required: true,
     },
     amount: {
@@ -34,6 +34,10 @@ const transactionSchema = new mongoose.Schema(
       default: "",
     },
     referenceModel: {
+      type: String,
+      default: "",
+    },
+    referenceType: {
       type: String,
       default: "",
     },

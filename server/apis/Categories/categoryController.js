@@ -1,4 +1,5 @@
-﻿const Category = require("./categoryModel");
+﻿const AdminAuditLog = require("../../models/AdminAuditLog");
+const Category = require("./categoryModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
@@ -34,6 +35,15 @@ exports.createCategory = asyncHandler(async (req, res) => {
       description: description?.trim() || "",
       image: image.url,
       imagePublicId: image.publicId,
+    });
+
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "create_category",
+      targetModel: "Category",
+      targetId: category._id,
+      details: `Category created (${category.name})`,
+      ip: req.ip || req.connection?.remoteAddress,
     });
 
     res.status(201).json({
@@ -147,6 +157,15 @@ exports.updateCategory = asyncHandler(async (req, res) => {
 
     await category.save();
 
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "update_category",
+      targetModel: "Category",
+      targetId: category._id,
+      details: `Category updated (${category.name})`,
+      ip: req.ip || req.connection?.remoteAddress,
+    });
+
     res.json({
       success: true,
       message: "Category updated successfully",
@@ -170,7 +189,17 @@ exports.deleteCategory = asyncHandler(async (req, res) => {
       await destroyImage(category.imagePublicId).catch(() => {});
     }
 
+    const catName = category.name;
     await Category.findByIdAndDelete(req.params.id);
+
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "delete_category",
+      targetModel: "Category",
+      targetId: req.params.id,
+      details: `Category deleted (${catName})`,
+      ip: req.ip || req.connection?.remoteAddress,
+    });
 
     res.json({
       success: true,
@@ -193,6 +222,15 @@ exports.toggleStatus = asyncHandler(async (req, res) => {
     category.status = category.status === "active" ? "inactive" : "active";
 
     await category.save();
+
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "update_category",
+      targetModel: "Category",
+      targetId: category._id,
+      details: `Category ${category.status === "active" ? "activated" : "deactivated"} (${category.name})`,
+      ip: req.ip || req.connection?.remoteAddress,
+    });
 
     res.json({
       success: true,

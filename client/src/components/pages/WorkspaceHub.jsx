@@ -6,6 +6,35 @@ import LoadingButton from "../../../src/utils/LoadingButton";
 import Apiservices from "../../../Apiservices";
 import { useAuth } from "../../App";
 
+const getMentorButtonText = (isMentor, appStatus) => {
+  if (isMentor) return "Enter Mentor Workspace";
+  if (appStatus === "pending") return "Application Pending";
+  if (appStatus === "blocked") return "Access Blocked";
+  if (appStatus === "rejected") return "Reapply as Mentor";
+  return "Become a Mentor";
+};
+
+const StatCard = ({ label, value, loading, iconClass, colorClass, progressPercent }) => (
+  <div className="col-md-3">
+    <div className="stat-card h-100 p-4">
+      <div className="d-flex justify-content-between align-items-start">
+        <div>
+          <p className="stat-label mb-1">{label}</p>
+          <h3 className="fw-bold mb-0 stat-value">
+            {loading ? <span className={`spinner-border spinner-border-sm text-${colorClass}`} /> : value}
+          </h3>
+        </div>
+        <div className={`stat-icon stat-icon-${colorClass}`}>
+          <i className={`fa ${iconClass}`} />
+        </div>
+      </div>
+      <div className="stat-progress">
+        <div className={`stat-progress-bar stat-progress-bar-${colorClass}`} style={{ width: `${progressPercent}%` }} />
+      </div>
+    </div>
+  </div>
+);
+
 function WorkspaceHub() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
@@ -155,6 +184,17 @@ function WorkspaceHub() {
     setShowForm(true);
   };
 
+  const handleMentorSuccess = async (msg) => {
+    if (user) {
+      const profileRes = await Apiservices.getProfile().catch(() => null);
+      if (profileRes?.data?.success) setUser(profileRes.data.data);
+    }
+    setIsMentor(true);
+    setShowForm(false);
+    showToast.success(msg);
+    navigate("/mentor");
+  };
+
   const submitApplication = async (e) => {
     e.preventDefault();
     if (!mentorForm.skills.trim() || !mentorForm.experience.trim()) {
@@ -165,27 +205,11 @@ function WorkspaceHub() {
       setApplying(true);
       const res = await Apiservices.applyForMentor(mentorForm);
       if (res.data.success) {
-        if (user) {
-          const profileRes = await Apiservices.getProfile().catch(() => null);
-          if (profileRes?.data?.success) setUser(profileRes.data.data);
-        }
-        setIsMentor(true);
-        setShowForm(false);
-        showToast.success("You are now a mentor!");
-        navigate("/mentor");
+        await handleMentorSuccess("You are now a mentor!");
+      } else if (res.data.message === "Already a mentor" && res.data.token) {
+        await handleMentorSuccess("Welcome back! Redirecting to mentor dashboard.");
       } else {
-        if (res.data.message === "Already a mentor" && res.data.token) {
-          if (user) {
-            const profileRes = await Apiservices.getProfile().catch(() => null);
-            if (profileRes?.data?.success) setUser(profileRes.data.data);
-          }
-          setIsMentor(true);
-          setShowForm(false);
-          showToast.success("Welcome back! Redirecting to mentor dashboard.");
-          navigate("/mentor");
-        } else {
-          showToast.warning(res.data.message);
-        }
+        showToast.warning(res.data.message);
       }
     } catch (err) {
       showToast.error(err?.response?.data?.message || "Error submitting application");
@@ -240,78 +264,14 @@ function WorkspaceHub() {
         {/* QUICK STATS */}
         <h5 className="fw-bold mb-4 section-title">Quick Stats</h5>
         <div className="row g-4 mb-5">
-          <div className="col-md-3">
-            <div className="stat-card h-100 p-4">
-              <div className="d-flex justify-content-between align-items-start">
-                <div>
-                  <p className="stat-label mb-1">Sessions Joined</p>
-                  <h3 className="fw-bold mb-0 stat-value">
-                    {loadingStats ? <span className="spinner-border spinner-border-sm text-primary"></span> : stats.sessionsJoined}
-                  </h3>
-                </div>
-                <div className="stat-icon stat-icon-primary">
-                  <i className="fa fa-video"></i>
-                </div>
-              </div>
-              <div className="stat-progress">
-                <div className="stat-progress-bar stat-progress-bar-primary" style={{ width: `${Math.min(stats.sessionsJoined * 10, 100)}%` }}></div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="stat-card h-100 p-4">
-              <div className="d-flex justify-content-between align-items-start">
-                <div>
-                  <p className="stat-label mb-1">Skills Learning</p>
-                  <h3 className="fw-bold mb-0 stat-value">
-                    {loadingStats ? <span className="spinner-border spinner-border-sm text-success"></span> : stats.skillsLearning}
-                  </h3>
-                </div>
-                <div className="stat-icon stat-icon-success">
-                  <i className="fa fa-lightbulb"></i>
-                </div>
-              </div>
-              <div className="stat-progress">
-                <div className="stat-progress-bar stat-progress-bar-success" style={{ width: `${Math.min(stats.skillsLearning * 20, 100)}%` }}></div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="stat-card h-100 p-4">
-              <div className="d-flex justify-content-between align-items-start">
-                <div>
-                  <p className="stat-label mb-1">Mentor Sessions</p>
-                  <h3 className="fw-bold mb-0 stat-value">
-                    {loadingStats ? <span className="spinner-border spinner-border-sm text-warning"></span> : stats.mentorSessions}
-                  </h3>
-                </div>
-                <div className="stat-icon stat-icon-warning">
-                  <i className="fa fa-chalkboard-teacher"></i>
-                </div>
-              </div>
-              <div className="stat-progress">
-                <div className="stat-progress-bar stat-progress-bar-warning" style={{ width: `${Math.min(stats.mentorSessions * 10, 100)}%` }}></div>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="stat-card h-100 p-4">
-              <div className="d-flex justify-content-between align-items-start">
-                <div>
-                  <p className="stat-label mb-1">Total Reviews</p>
-                  <h3 className="fw-bold mb-0 stat-value">
-                    {loadingStats ? <span className="spinner-border spinner-border-sm text-info"></span> : stats.totalReviews}
-                  </h3>
-                </div>
-                <div className="stat-icon stat-icon-info">
-                  <i className="fa fa-star"></i>
-                </div>
-              </div>
-              <div className="stat-progress">
-                <div className="stat-progress-bar stat-progress-bar-info" style={{ width: `${Math.min(stats.totalReviews * 20, 100)}%` }}></div>
-              </div>
-            </div>
-          </div>
+          <StatCard label="Sessions Joined" value={stats.sessionsJoined} loading={loadingStats}
+            iconClass="fa-video" colorClass="primary" progressPercent={Math.min(stats.sessionsJoined * 10, 100)} />
+          <StatCard label="Skills Learning" value={stats.skillsLearning} loading={loadingStats}
+            iconClass="fa-lightbulb" colorClass="success" progressPercent={Math.min(stats.skillsLearning * 20, 100)} />
+          <StatCard label="Mentor Sessions" value={stats.mentorSessions} loading={loadingStats}
+            iconClass="fa-chalkboard-teacher" colorClass="warning" progressPercent={Math.min(stats.mentorSessions * 10, 100)} />
+          <StatCard label="Total Reviews" value={stats.totalReviews} loading={loadingStats}
+            iconClass="fa-star" colorClass="info" progressPercent={Math.min(stats.totalReviews * 20, 100)} />
         </div>
 
         <div className="row g-5">
@@ -357,7 +317,7 @@ function WorkspaceHub() {
                       loading={applying}
                       className="btn btn-light rounded-pill px-4 py-2 fw-bold w-100 workspace-btn"
                     >
-                      {isMentor ? "Enter Mentor Workspace" : appStatus === "pending" ? "Application Pending" : appStatus === "blocked" ? "Access Blocked" : appStatus === "rejected" ? "Reapply as Mentor" : "Become a Mentor"}
+                      {getMentorButtonText(isMentor, appStatus)}
                     </LoadingButton>
                   </div>
                 </div>

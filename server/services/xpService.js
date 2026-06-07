@@ -10,10 +10,6 @@ function calculateLevel(xp) {
   return Math.max(1, Math.floor((1 + Math.sqrt(1 + 8 * xp / 50)) / 2));
 }
 
-function xpForNextLevel(level) {
-  return 50 * level * (level + 1) - 50 * level * (level - 1);
-}
-
 async function getUserStats(userId) {
   const oid = new mongoose.Types.ObjectId(userId);
 
@@ -21,7 +17,7 @@ async function getUserStats(userId) {
     Request.countDocuments({ learnerId: oid, requestStatus: "completed" }),
     Request.countDocuments({ mentorId: oid, requestStatus: "completed" }),
     Review.countDocuments({ learnerId: oid }),
-    Request.countDocuments({ mentorId: oid }),
+    Request.countDocuments({ mentorId: oid, requestStatus: { $nin: ["cancelled", "rejected"] } }),
     Review.aggregate([
       { $match: { mentorId: oid } },
       { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } },

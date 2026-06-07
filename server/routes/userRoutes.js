@@ -7,6 +7,7 @@ const {
   approveUser,
   blockUser,
   unblockUser,
+  getPublicProfile,
   getPresence,
   searchUsers,
   blockInteraction,
@@ -27,6 +28,7 @@ router.put("/:userId/block", protect, requireAdmin, blockUser);
 
 router.put("/:userId/unblock", protect, requireAdmin, unblockUser);
 
+router.get("/public/:userId", protect.optional, getPublicProfile);
 router.get("/search", protect, searchUsers);
 router.post("/:userId/block", protect, blockInteraction);
 router.post("/:userId/unblock", protect, unblockInteraction);

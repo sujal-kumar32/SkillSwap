@@ -13,6 +13,16 @@ const walletSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    skillCredits: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    lockedCredits: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     totalDeposited: {
       type: Number,
       default: 0,

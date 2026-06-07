@@ -1,8 +1,11 @@
-﻿const crypto = require("crypto");
+﻿const mongoose = require("mongoose");
+const crypto = require("crypto");
+const { recalculateTrustScore } = require("../../services/trustService");
 const Session = require("./sessionModel");
 const Skill = require("../Skills/skillModel");
 const Request = require("../Request/requestModel");
 const Review = require("../Reviews/reviewModel");
+const User = require("../Users/userModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
@@ -12,10 +15,23 @@ const Transaction = require("../Wallet/transactionModel");
 const SessionMaterial = require("../SessionMaterial/sessionMaterialModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 const { createFeedEvent } = require("../../services/feedService");
+const { releaseCredits, transferCredits } = require("../../services/creditService");
+const { sendNotification } = require("../../services/notificationService");
+const CREDIT_RATES = require("../../config/creditRates");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
 const idsEqual = (left, right) => {
   return left && right && left.toString() === right.toString();
+};
+
+const buildSortObj = (sort, search) => {
+  if (sort === "latest" || sort === "newest") return { createdAt: -1 };
+  if (sort === "oldest") return { createdAt: 1 };
+  if (sort === "price") return { price: 1 };
+  if (sort === "price-desc") return { price: -1 };
+  if (sort === "name") return { title: 1 };
+  if (search) return { score: { $meta: "textScore" } };
+  return { createdAt: -1 };
 };
 
 // CREATE SESSION
@@ -33,6 +49,7 @@ exports.createSession = asyncHandler(async (req, res) => {
       sessionType,
       meetLink,
       thumbnail: thumbnailUrl,
+      bookingTypes,
     } = req.body;
 
     if (!title || !skillId) {
@@ -62,6 +79,30 @@ exports.createSession = asyncHandler(async (req, res) => {
 
     const numericPrice = Number(price) || 0;
 
+    let sessionBookingTypes = ["paid"];
+    let creditCost = 0;
+    let creditSnapshot = null;
+
+    if (bookingTypes) {
+      let types = Array.isArray(bookingTypes) ? bookingTypes : [bookingTypes];
+      if (types.length === 1 && typeof types[0] === "string" && types[0].includes(",")) {
+        types = types[0].split(",").map((t) => t.trim());
+      }
+      sessionBookingTypes = types.filter((t) => ["paid", "credits"].includes(t));
+      if (!sessionBookingTypes.length) sessionBookingTypes = ["paid"];
+    }
+
+    if (sessionBookingTypes.includes("credits")) {
+      const user = await User.findById(req.user.id).select("skills").lean();
+      const skillName = skill.name?.toLowerCase();
+      const userSkill = user?.skills?.find((s) => s.name?.toLowerCase() === skillName);
+      const level = userSkill?.level || "beginner";
+      const hourlyRate = CREDIT_RATES[level] || CREDIT_RATES.beginner;
+      const dur = Number(duration) || 60;
+      creditCost = Math.round(hourlyRate * (dur / 60));
+      creditSnapshot = { level, hourlyRate, duration: dur };
+    }
+
     const session = await Session.create({
       title,
       skillId,
@@ -78,6 +119,9 @@ exports.createSession = asyncHandler(async (req, res) => {
       meetLink,
       thumbnail,
       thumbnailPublicId,
+      bookingTypes: sessionBookingTypes,
+      creditCost,
+      creditSnapshot,
     });
 
     if (session.sessionType === "online" && !session.meetLink) {
@@ -113,7 +157,7 @@ exports.getMySessions = asyncHandler(async (req, res) => {
           path: "skillId",
           populate: { path: "categoryId", select: "name" },
         })
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .lean(),
       Session.countDocuments({ mentorId: req.user.id }),
     ]);
@@ -183,14 +227,7 @@ exports.getSessions = asyncHandler(async (req, res) => {
       filter.$text = { $search: search };
     }
 
-    let sortObj = {};
-    if (sort === "latest" || sort === "newest") sortObj = { createdAt: -1 };
-    else if (sort === "oldest") sortObj = { createdAt: 1 };
-    else if (sort === "price") sortObj = { price: 1 };
-    else if (sort === "price-desc") sortObj = { price: -1 };
-    else if (sort === "name") sortObj = { title: 1 };
-    else if (search) sortObj = { score: { $meta: "textScore" } };
-    else sortObj = { createdAt: -1 };
+    const sortObj = buildSortObj(sort, search);
 
     const [sessions, total] = await Promise.all([
       Session.find(filter).sort(sortObj).skip(skip).limit(limit)
@@ -198,7 +235,7 @@ exports.getSessions = asyncHandler(async (req, res) => {
           path: "skillId",
           populate: { path: "categoryId", select: "name" },
         })
-        .populate("mentorId", "name email profileImage")
+        .populate("mentorId", "name email profileImage trustScore")
         .lean(),
       Session.countDocuments(filter),
     ]);
@@ -255,7 +292,7 @@ exports.getSession = asyncHandler(async (req, res) => {
 
     const session = await Session.findById(req.params.id)
       .populate("skillId")
-      .populate("mentorId", "name email profileImage")
+      .populate("mentorId", "name email profileImage trustScore")
       .lean();
 
     if (!session) {
@@ -311,57 +348,174 @@ exports.getSession = asyncHandler(async (req, res) => {
 
 
 
+
+// ── updateSession helpers ────────────────────────────────────────────────
+
+const parseBookingTypes = (value) => {
+  if (value === undefined) return undefined;
+  let types = Array.isArray(value) ? value : [value];
+  if (types.length === 1 && typeof types[0] === "string" && types[0].includes(",")) {
+    types = types[0].split(",").map((t) => t.trim());
+  }
+  types = types.filter((t) => ["paid", "credits"].includes(t));
+  if (!types.length) types = ["paid"];
+  return types;
+};
+
+const applyCreditCost = async (session) => {
+  if (!session.bookingTypes?.includes("credits")) {
+    session.creditCost = 0;
+    session.creditSnapshot = null;
+    return;
+  }
+  const skill = await Skill.findById(session.skillId).lean();
+  const user = await User.findById(session.mentorId).select("skills").lean();
+  const skillName = skill?.name?.toLowerCase();
+  const userSkill = user?.skills?.find((s) => s.name?.toLowerCase() === skillName);
+  const level = userSkill?.level || "beginner";
+  const hourlyRate = CREDIT_RATES[level] || CREDIT_RATES.beginner;
+  const dur = Number(session.duration) || 60;
+  session.creditCost = Math.round(hourlyRate * (dur / 60));
+  session.creditSnapshot = { level, hourlyRate, duration: dur };
+};
+
+const handleThumbnailUpdate = async (req, session) => {
+  if (!req.file) return;
+  if (session.thumbnailPublicId) {
+    await destroyImage(session.thumbnailPublicId).catch(() => {});
+  }
+  const result = await uploadBuffer(req.file.buffer, {
+    public_id: `session_${Date.now()}`,
+  });
+  session.thumbnail = result.secure_url;
+  session.thumbnailPublicId = result.public_id;
+};
+
+const refundPaymentForRequest = async (request, price) => {
+  if (request.paymentStatus !== "paid" || price <= 0) return {};
+
+  let wallet = await Wallet.findOne({ userId: request.learnerId });
+  if (!wallet) wallet = await Wallet.create({ userId: request.learnerId });
+  await Transaction.create({
+    walletId: wallet._id,
+    userId: request.learnerId,
+    type: "refund",
+    amount: price,
+    balanceBefore: wallet.balance,
+    balanceAfter: wallet.balance + price,
+    reference: String(request._id),
+    referenceModel: "Request",
+    description: "Refund — session cancelled by mentor",
+    status: "completed",
+  });
+  wallet.balance += price;
+  await wallet.save();
+  return { paymentStatus: "refunded" };
+};
+
+const refundCreditsForRequest = async (request, extraFields = {}) => {
+  if (request.bookingSource !== "credits" || request.creditsLocked <= 0) return null;
+
+  const mongoSession = await mongoose.startSession();
+  try {
+    mongoSession.startTransaction();
+    await releaseCredits(request.learnerId, request.creditsLocked, mongoSession);
+    await Transaction.create([{
+      userId: request.learnerId,
+      type: "credit_refunded",
+      amount: request.creditsLocked,
+      reference: String(request._id),
+      referenceModel: "Request",
+      description: "Credits refunded — session cancelled by mentor",
+      status: "completed",
+    }], { session: mongoSession });
+    await Request.findByIdAndUpdate(request._id, { requestStatus: "cancelled", creditsLocked: 0, ...extraFields }, { session: mongoSession });
+    await mongoSession.commitTransaction();
+  } catch (creditErr) {
+    await mongoSession.abortTransaction().catch(() => {});
+    console.error("Credit release failed:", creditErr.message);
+  } finally {
+    mongoSession.endSession();
+  }
+  return { creditsLocked: 0 };
+};
+
+const handleCancelledRequests = async (session) => {
+  const activeRequests = await Request.find({
+    sessionId: session._id,
+    requestStatus: { $in: ["pending", "accepted"] },
+  }).lean();
+
+  for (const req of activeRequests) {
+    const paymentUpdate = await refundPaymentForRequest(req, session.price);
+    const updateFields = { requestStatus: "cancelled", ...paymentUpdate };
+
+    const creditUpdate = await refundCreditsForRequest(req, updateFields);
+    if (!creditUpdate) {
+      await Request.findByIdAndUpdate(req._id, updateFields);
+    }
+  }
+
+  const affectedUsers = [...new Set(activeRequests.flatMap(r => [r.learnerId?.toString(), r.mentorId?.toString()].filter(Boolean)))];
+  affectedUsers.forEach((userId) => recalculateTrustScore(userId).catch((err) => console.error("Trust score recalc failed:", err.message)));
+};
+
+const handleCompletedRequests = async (session) => {
+  const requests = await Request.find({
+    sessionId: session._id,
+    requestStatus: { $in: ["pending", "accepted"] },
+  }).lean();
+
+  const hasStarted = requests.some((r) => r.startedAt);
+  if (!hasStarted) {
+    return { revertStatus: true };
+  }
+
+  for (const req of requests) {
+    const newStatus = req.startedAt ? "completed" : "cancelled";
+    await Request.findByIdAndUpdate(req._id, { requestStatus: newStatus });
+  }
+
+  const affectedUsers = [...new Set(requests.flatMap(r => [r.learnerId?.toString(), r.mentorId?.toString()].filter(Boolean)))];
+  affectedUsers.forEach((userId) => recalculateTrustScore(userId).catch((err) => console.error("Trust score recalc failed:", err.message)));
+};
+
+const checkStatusTransition = (session, req) => {
+  if (req.body.status === undefined || req.body.status === session.status) return;
+
+  const allowedTransitions = {
+    active: ["completed", "cancelled"],
+    completed: [],
+    cancelled: [],
+  };
+
+  if (isAdmin(req)) return;
+  if (!allowedTransitions[session.status]?.includes(req.body.status)) {
+    return `Cannot change status from "${session.status}" to "${req.body.status}"`;
+  }
+};
+
 // UPDATE SESSION
 exports.updateSession = asyncHandler(async (req, res) => {
 
     const session = await Session.findById(req.params.id);
 
     if (!session) {
-      return res.status(404).json({
-        success: false,
-        message: "Session not found",
-      });
+      return res.status(404).json({ success: false, message: "Session not found" });
     }
 
     if (!isAdmin(req) && !idsEqual(session.mentorId, req.user.id)) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only update your own sessions",
-      });
+      return res.status(403).json({ success: false, message: "You can only update your own sessions" });
     }
 
-    const allowedTransitions = {
-      active: ["completed", "cancelled"],
-      completed: [],
-      cancelled: [],
-    };
-
-    if (req.body.status !== undefined && req.body.status !== session.status) {
-      const newStatus = req.body.status;
-      if (!isAdmin(req) && !allowedTransitions[session.status]?.includes(newStatus)) {
-        return res.status(400).json({
-          success: false,
-          message: `Cannot change status from "${session.status}" to "${newStatus}"`,
-        });
-      }
+    const transitionErr = checkStatusTransition(session, req);
+    if (transitionErr) {
+      return res.status(400).json({ success: false, message: transitionErr });
     }
 
     const oldStatus = session.status;
 
-    const allowedFields = [
-      "title",
-      "description",
-      "price",
-      "date",
-      "time",
-      "duration",
-      "maxLearners",
-      "sessionType",
-      "meetLink",
-      "thumbnail",
-      "status",
-    ];
-
+    const allowedFields = ["title", "description", "price", "date", "time", "duration", "maxLearners", "sessionType", "meetLink", "thumbnail", "status", "bookingTypes"];
     allowedFields.forEach((field) => {
       if (req.body[field] !== undefined) {
         session[field] = field === "price" ? Number(req.body[field]) || 0 : req.body[field];
@@ -369,16 +523,11 @@ exports.updateSession = asyncHandler(async (req, res) => {
     });
     session.isPaid = session.price > 0;
 
-    if (req.file) {
-      if (session.thumbnailPublicId) {
-        await destroyImage(session.thumbnailPublicId).catch(() => {});
-      }
-      const result = await uploadBuffer(req.file.buffer, {
-        public_id: `session_${Date.now()}`,
-      });
-      session.thumbnail = result.secure_url;
-      session.thumbnailPublicId = result.public_id;
-    }
+    const bookingTypes = parseBookingTypes(req.body.bookingTypes);
+    if (bookingTypes !== undefined) session.bookingTypes = bookingTypes;
+
+    await applyCreditCost(session);
+    await handleThumbnailUpdate(req, session);
 
     if (req.body.status === "cancelled" && oldStatus === "ongoing") {
       return res.status(400).json({
@@ -391,63 +540,16 @@ exports.updateSession = asyncHandler(async (req, res) => {
 
     if (session.status !== oldStatus) {
       if (session.status === "cancelled") {
-        const activeRequests = await Request.find({
-          sessionId: session._id,
-          requestStatus: { $in: ["pending", "accepted"] },
-        }).lean();
-
-        for (const req of activeRequests) {
-          await Request.findByIdAndUpdate(req._id, { requestStatus: "cancelled" });
-
-          if (req.paymentStatus === "paid" && session.price > 0) {
-            let wallet = await Wallet.findOne({ userId: req.learnerId });
-            if (!wallet) wallet = await Wallet.create({ userId: req.learnerId });
-            await Transaction.create({
-              walletId: wallet._id,
-              userId: req.learnerId,
-              type: "refund",
-              amount: session.price,
-              balanceBefore: wallet.balance,
-              balanceAfter: wallet.balance + session.price,
-              reference: String(req._id),
-              referenceModel: "Request",
-              description: "Refund — session cancelled by mentor",
-              status: "completed",
-            });
-            wallet.balance += session.price;
-            await wallet.save();
-            await Request.findByIdAndUpdate(req._id, { paymentStatus: "refunded" });
-          }
-        }
+        await handleCancelledRequests(session);
       } else if (session.status === "completed") {
-        const paidRequests = await Request.find({
-          sessionId: session._id,
-          requestStatus: { $in: ["pending", "accepted"] },
-        }).lean();
-
-        for (const req of paidRequests) {
-          req.requestStatus = "completed";
-          await Request.findByIdAndUpdate(req._id, { requestStatus: "completed" });
-
-          if (req.paymentStatus === "paid" && session.price > 0) {
-            let wallet = await Wallet.findOne({ userId: req.mentorId });
-            if (!wallet) wallet = await Wallet.create({ userId: req.mentorId });
-            await Transaction.create({
-              walletId: wallet._id,
-              userId: req.mentorId,
-              type: "earning",
-              amount: session.price,
-              balanceBefore: wallet.balance,
-              balanceAfter: wallet.balance + session.price,
-              reference: String(req._id),
-              referenceModel: "Request",
-              description: `Earnings from session completion`,
-              status: "completed",
-            });
-            wallet.balance += session.price;
-            wallet.totalEarned += session.price;
-            await wallet.save();
-          }
+        const result = await handleCompletedRequests(session);
+        if (result?.revertStatus) {
+          session.status = oldStatus;
+          await session.save();
+          return res.status(400).json({
+            success: false,
+            message: "Cannot complete — no learners have started this session. Start the session first or let it auto-complete.",
+          });
         }
       }
     }
@@ -457,8 +559,6 @@ exports.updateSession = asyncHandler(async (req, res) => {
       message: "Session updated",
       data: session,
     });
-
-
 });
 
 
@@ -585,6 +685,18 @@ exports.startSessionSession = asyncHandler(async (req, res) => {
       req.startedAt = now;
       await req.save();
     }
+  }
+
+  const io = req.app.get("io");
+  for (const req of accepted) {
+    io.to(`user:${req.learnerId}`).emit("session_going_live", {
+      requestId: req._id,
+      sessionId: session._id,
+      sessionTitle: session.title,
+      meetLink: session.meetLink,
+      startedAt: now,
+    });
+    sendNotification(req.learnerId, session.mentorId, "system", `"${session.title}" has started!`, session.meetLink);
   }
 
   res.json({

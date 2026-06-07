@@ -259,6 +259,11 @@ const MySessions = () => {
                       <i className="fa fa-wallet text-warning"></i>
 
                       <span>{session.price ? `₹${session.price}` : "Free"}</span>
+                      {session.bookingTypes?.includes("credits") && session.creditCost > 0 && (
+                        <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", marginLeft: 8 }}>
+                          <i className="fa fa-coins" />{session.creditCost} credits
+                        </span>
+                      )}
                     </div>
 
                     <div className="d-flex flex-wrap" style={{ gap: "8px" }}>

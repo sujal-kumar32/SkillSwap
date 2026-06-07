@@ -50,6 +50,48 @@ const MyBookings = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleJoinSession = async (booking) => {
+    try {
+      await Apiservices.joinBooking(booking._id);
+      setBookings((prev) =>
+        prev.map((item) =>
+          item._id === booking._id
+            ? { ...item, learnerJoined: true, joinedAt: new Date().toISOString() }
+            : item,
+        ),
+      );
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to mark attendance");
+    }
+  };
+
+  const handleJoinWithAttendance = async (booking) => {
+    const link = booking.sessionId?.meetLink;
+    if (!booking.learnerJoined) {
+      await handleJoinSession(booking);
+    }
+    if (link) window.open(link, "_blank");
+    else showToast.info("Meeting link not available");
+  };
+
+  const handleCancelBooking = async (booking) => {
+    const confirmed = await deleteConfirmAlert("this booking");
+    if (!confirmed) return;
+    try {
+      await Apiservices.updateRequest(booking._id, "cancelled");
+      setBookings((prev) =>
+        prev.map((item) =>
+          item._id === booking._id
+            ? { ...item, requestStatus: "cancelled" }
+            : item,
+        ),
+      );
+      showToast.success("Booking cancelled");
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to cancel booking");
+    }
+  };
+
   const bookingsWithState = useMemo(() => {
     return bookings.map((b) => ({ ...b, _sessionState: getSessionState(b.sessionId) }));
   }, [bookings, tick]);
@@ -126,7 +168,11 @@ const MyBookings = () => {
                       </div>
                     </td>
                     <td>{booking.date || booking.sessionId?.date || "—"} <span className="text-muted">{booking.timeSlot || booking.sessionId?.time || ""}</span></td>
-                    <td>{booking.paymentStatus}</td>
+                    <td>{booking.bookingSource === "credits" ? (
+                        <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
+                          <i className="fa fa-coins" />{booking.sessionId?.creditCost || "Credits"}
+                        </span>
+                      ) : booking.paymentStatus}</td>
                     <td><StatusBadge status={booking.requestStatus} /></td>
                     <td className="text-end">
                       <div className="d-flex justify-content-end flex-wrap" style={{ gap: 6 }}>
@@ -139,36 +185,29 @@ const MyBookings = () => {
                           <i className="fa fa-comment" />
                         </button>
                         <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold">Details</Link>
-                        {(booking._sessionState === "live" || booking._sessionState === "upcoming") && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
+                        {booking._sessionState === "live" && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
+                          booking.learnerJoined ? (
+                            <button className="btn btn-sm btn-success rounded-pill px-3 py-2 fw-semibold" disabled>
+                              <i className="fa fa-check" /> Joined
+                            </button>
+                          ) : (
+                            <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"
+                              onClick={() => handleJoinWithAttendance(booking)}>Join</button>
+                          )
+                        ) : booking._sessionState === "upcoming" && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
                           <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"
                             onClick={() => {
                               const link = booking.sessionId?.meetLink;
                               if (link) window.open(link, "_blank");
                               else showToast.info("Meeting link not available");
-                            }}>{booking._sessionState === "live" ? "Join" : "Join Early"}</button>
+                            }}>Join Early</button>
                         ) : (
                           <button className="btn btn-sm btn-secondary rounded-pill px-3 py-2 fw-semibold" disabled>Join</button>
                         )}
                         <button
                           className="btn btn-sm btn-outline-danger rounded-pill px-3 py-2 fw-semibold"
                           disabled={!["pending", "accepted"].includes(booking.requestStatus)}
-                          onClick={async () => {
-                            const confirmed = await deleteConfirmAlert("this booking");
-                            if (!confirmed) return;
-                            try {
-                              await Apiservices.updateRequest(booking._id, "cancelled");
-                              setBookings((prev) =>
-                                prev.map((item) =>
-                                  item._id === booking._id
-                                    ? { ...item, requestStatus: "cancelled" }
-                                    : item,
-                                ),
-                              );
-                              showToast.success("Booking cancelled");
-                            } catch (error) {
-                              showToast.error(error.response?.data?.message || "Failed to cancel booking");
-                            }
-                          }}
+                          onClick={() => handleCancelBooking(booking)}
                         >
                           Cancel
                         </button>

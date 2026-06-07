@@ -32,7 +32,7 @@ const badgeDefinitions = [
   { name: "XP Champion", key: "xp_champion", description: "Earn 5000 XP", icon: "fa-star", category: "general", requirement: { type: "xp_earned", count: 5000 }, color: "#ca8a04" },
   { name: "XP God", key: "xp_god", description: "Earn 10000 XP", icon: "fa-crown", category: "general", requirement: { type: "xp_earned", count: 10000 }, color: "#dc2626" },
   { name: "Rising Star", key: "rising_star", description: "Get 10 followers", icon: "fa-star", category: "general", requirement: { type: "followers_count", count: 10 }, color: "#0ea5e9" },
-  { name: "Popular", key: "followers_50", description: "Get 50 followers", icon: "fa-user-group", category: "general", requirement: { type: "followers_count", count: 50 }, color: "#8b5cf6" },
+  { name: "Well-Known", key: "followers_50", description: "Get 50 followers", icon: "fa-user-group", category: "general", requirement: { type: "followers_count", count: 50 }, color: "#8b5cf6" },
   { name: "Influencer", key: "influencer", description: "Get 100 followers", icon: "fa-users", category: "general", requirement: { type: "followers_count", count: 100 }, color: "#f59e0b" },
   { name: "Community Legend", key: "community_legend", description: "Get 500 followers", icon: "fa-crown", category: "general", requirement: { type: "followers_count", count: 500 }, color: "#dc2626" },
 ];

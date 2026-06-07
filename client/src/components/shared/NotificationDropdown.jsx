@@ -53,7 +53,7 @@ const NotificationDropdown = ({ onClose }) => {
           </div>
         ) : (
           latestNotifications.map((n) => (
-            <Link key={n._id} to={n.link || "#"} onClick={onClose} style={{ textDecoration: "none", color: "inherit" }}>
+            <Link key={n._id} to="/notifications" onClick={onClose} style={{ textDecoration: "none", color: "inherit" }}>
               <div style={{
                 display: "flex", alignItems: "flex-start", gap: 12,
                 padding: "12px 20px", transition: "background 0.15s",
@@ -63,10 +63,18 @@ const NotificationDropdown = ({ onClose }) => {
                 onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
                 <div style={{
                   width: 34, height: 34, borderRadius: 10, flexShrink: 0, overflow: "hidden",
-                  background: `${typeColors[n.type] || "#64748b"}15`,
+                  background: n.type === "system" ? "#0d6efd" : `${typeColors[n.type] || "#64748b"}15`,
                   display: "grid", placeItems: "center", color: typeColors[n.type] || "#64748b", fontSize: "0.8rem",
                 }}>
-                  {n.actor?.profileImage ? (
+                  {n.type === "system" ? (
+                    <div style={{
+                      width: "100%", height: "100%",
+                      background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+                      display: "grid", placeItems: "center",
+                    }}>
+                      <i className="fa fa-book-reader" style={{ color: "#fff", fontSize: "0.85rem" }} />
+                    </div>
+                  ) : n.actor?.profileImage ? (
                     <img src={n.actor.profileImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : n.actor?.name ? (
                     <span style={{ fontWeight: 700, fontSize: "0.7rem" }}>{n.actor.name.charAt(0).toUpperCase()}</span>

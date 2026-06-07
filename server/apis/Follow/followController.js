@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const asyncHandler = require("../../utilities/asyncHandler");
 const { createFeedEvent } = require("../../services/feedService");
 const { sendNotification } = require("../../services/notificationService");
-const { awardXP, checkAndAwardBadges } = require("../../services/xpService");
+const { awardXP } = require("../../services/xpService");
 
 exports.toggleFollow = asyncHandler(async (req, res) => {
   const { userId } = req.body;
@@ -36,9 +36,17 @@ exports.toggleFollow = asyncHandler(async (req, res) => {
   });
   const follower = await User.findById(currentUserId).select("name").lean();
   sendNotification(userId, currentUserId, "follow", `${follower?.name || "Someone"} started following you`, `/profile/${currentUserId}`);
-  await awardXP(userId, 5, "New follower", currentUserId, "User");
-  await checkAndAwardBadges(userId);
-  res.json({ success: true, following: true, message: "Followed" });
+  const xpResult = await awardXP(userId, 5, "New follower", currentUserId, "User");
+  res.json({
+    success: true,
+    following: true,
+    message: "Followed",
+    ...(xpResult && { xp: {
+      xpGained: xpResult.xpGained,
+      totalXp: xpResult.xp,
+      newBadges: xpResult.newBadges,
+    }}),
+  });
 });
 
 exports.getFollowers = asyncHandler(async (req, res) => {

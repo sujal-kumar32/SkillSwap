@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import TopBar from "../layout/user/TopBar";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
@@ -22,6 +22,8 @@ const badge = (status) => {
 
 const Profile = () => {
   const { user } = useAuth();
+  const { id } = useParams();
+  const isOwnProfile = !id || id === user?._id;
   const isMentor = user?.roles?.includes("mentor");
   const [profile, setProfile] = useState({ name: "", email: "", bio: "", interests: "", goals: "", skills: [], image: "", phone: "", timezone: "", linkedin: "", github: "", portfolio: "", youtube: "", twitter: "" });
   const [loading, setLoading] = useState(true);
@@ -45,16 +47,22 @@ const Profile = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [pRes, sRes, badgeRes, allRes, xpRes] = await Promise.all([
-          Apiservices.getProfile(),
-          Apiservices.getProfileStats().catch(() => ({ data: { data: {} } })),
-          Apiservices.getMyBadges().catch(() => ({ data: { data: [] } })),
-          Apiservices.getAllBadges().catch(() => ({ data: { data: [] } })),
-          Apiservices.getXpHistory({ limit: 50 }).catch(() => ({ data: { data: [] } })),
-        ]);
-        setEarnedBadges(badgeRes.data?.data || []);
-        setAllBadges(allRes.data?.data || []);
-        setXpHistory(xpRes.data?.data || []);
+        let pRes;
+        if (isOwnProfile) {
+          const [p, s, badge, all, xp] = await Promise.all([
+            Apiservices.getProfile(),
+            Apiservices.getProfileStats().catch(() => ({ data: { data: {} } })),
+            Apiservices.getMyBadges().catch(() => ({ data: { data: [] } })),
+            Apiservices.getAllBadges().catch(() => ({ data: { data: [] } })),
+            Apiservices.getXpHistory({ limit: 50 }).catch(() => ({ data: { data: [] } })),
+          ]);
+          pRes = p;
+          setEarnedBadges(badge.data?.data || []);
+          setAllBadges(all.data?.data || []);
+          setXpHistory(xp.data?.data || []);
+        } else {
+          pRes = await Apiservices.getPublicProfile(id);
+        }
         const u = pRes.data.data || {};
         setProfile({
           name: u.name || "", email: u.email || "", bio: u.bio || "",
@@ -66,15 +74,19 @@ const Profile = () => {
           portfolio: u.socialLinks?.portfolio || "", youtube: u.socialLinks?.youtube || "",
           twitter: u.socialLinks?.twitter || "",
           followerCount: u.followerCount || 0, followingCount: u.followingCount || 0,
+          trustScore: u.trustScore,
         });
-        if (sRes.data?.data) {
-          setStats(sRes.data.data);
-          if (isMentor && sRes.data.data.reviews > 0) {
-            const reviewRes = await Apiservices.fetchReviews({ limit: 100 }).catch(() => ({ data: { data: [] } }));
-            const mentorReviews = reviewRes.data.data || [];
-            if (mentorReviews.length) {
-              const avg = (mentorReviews.reduce((s, r) => s + r.rating, 0) / mentorReviews.length).toFixed(1);
-              setAvgRating(avg);
+        if (isOwnProfile) {
+          const sRes = await Apiservices.getProfileStats().catch(() => ({ data: { data: {} } }));
+          if (sRes.data?.data) {
+            setStats(sRes.data.data);
+            if (isMentor && sRes.data.data.reviews > 0) {
+              const reviewRes = await Apiservices.fetchReviews({ limit: 100 }).catch(() => ({ data: { data: [] } }));
+              const mentorReviews = reviewRes.data.data || [];
+              if (mentorReviews.length) {
+                const avg = (mentorReviews.reduce((s, r) => s + r.rating, 0) / mentorReviews.length).toFixed(1);
+                setAvgRating(avg);
+              }
             }
           }
         }
@@ -154,11 +166,11 @@ const Profile = () => {
         {/* Profile Header */}
         <div className="container" style={{ marginTop: -80 }}>
           <div className="learner-card p-4 mb-4" style={{ position: "relative" }}>
-            <Link to="/settings" className="btn btn-outline-primary rounded-pill px-4 fw-semibold" style={{
+            {isOwnProfile && <Link to="/settings" className="btn btn-outline-primary rounded-pill px-4 fw-semibold" style={{
               position: "absolute", top: 16, right: 16, zIndex: 2,
             }}>
               <i className="fa fa-pen" style={{ marginRight: 10 }} />Edit Profile
-            </Link>
+            </Link>}
             <div className="d-flex flex-wrap align-items-end" style={{ gap: 26 }}>
               <img src={profile.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.name)}&background=0d6efd&color=fff&size=128`}
                 alt="" className="rounded-circle border border-4 border-white shadow-sm avatar-responsive-lg profile-avatar-neg" style={{ objectFit: "cover" }} />
@@ -213,17 +225,22 @@ const Profile = () => {
 
           {/* Stats Row */}
           <div className="row g-3 mb-4">
-            {[
-              { label: "Sessions", value: stats.sessions, icon: "fa-video", color: "primary" },
-              { label: "Reviews", value: stats.reviews, icon: "fa-star", color: "warning" },
-              ...(isMentor && avgRating ? [{ label: "Avg Rating", value: avgRating, icon: "fa-star-half-stroke", color: "warning" }] : []),
-              { label: "Skills", value: stats.skills, icon: "fa-code", color: "success" },
-              { label: profile.skills.length ? "Profile Skills" : "Interests", value: profile.skills.length || profile.interests.split(",").filter(Boolean).length, icon: "fa-lightbulb", color: "info" },
-            ].map((s) => (
+            {(() => {
+              const ts = profile?.trustScore ?? 100;
+              const tsColor = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626";
+              return [
+                { label: "Sessions", value: stats.sessions, icon: "fa-video", color: "primary" },
+                { label: "Reviews", value: stats.reviews, icon: "fa-star", color: "warning" },
+                { label: "Trust Score", value: `${ts}/100`, icon: "fa-shield-alt", iconColor: tsColor },
+                ...(isMentor && avgRating ? [{ label: "Avg Rating", value: avgRating, icon: "fa-star-half-stroke", color: "warning" }] : []),
+                { label: "Skills", value: stats.skills, icon: "fa-code", color: "success" },
+                { label: profile.skills.length ? "Profile Skills" : "Interests", value: profile.skills.length || profile.interests.split(",").filter(Boolean).length, icon: "fa-lightbulb", color: "info" },
+              ];
+            })().map((s) => (
               <div className="col-sm-6 col-lg-3" key={s.label}>
                 <div className="learner-card p-3 d-flex align-items-center h-100">
                   <div style={{ width: 50, textAlign: "center", flexShrink: 0 }}>
-                    <i className={`fa ${s.icon} text-${s.color}`} style={{ fontSize: "1.5rem" }} />
+                    <i className={`fa ${s.icon}${s.iconColor ? '' : ` text-${s.color}`}`} style={{ fontSize: "1.5rem", color: s.iconColor }} />
                   </div>
                   <div style={{ borderLeft: "1px solid #e2e8f0", paddingLeft: 16 }}>
                     <h4 className="fw-bold mb-0">{s.value}</h4>

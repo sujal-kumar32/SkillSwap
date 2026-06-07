@@ -6,6 +6,63 @@ import Apiservices from "../../../../Apiservices";
 import { EmptyState, LoadingState, PageHeader, SessionCard, StatusBadge } from "../../learner/LearnerUI";
 import SessionMaterials from "../../shared/SessionMaterials";
 
+const trustColors = (score) => {
+  if (score >= 90) return { bg: "#d1fae5", color: "#065f46", iconColor: "#16a34a" };
+  if (score >= 70) return { bg: "#fef3c7", color: "#92400e", iconColor: "#d97706" };
+  if (score >= 50) return { bg: "#ffedd5", color: "#9a3412", iconColor: "#ea580c" };
+  return { bg: "#fee2e2", color: "#991b1b", iconColor: "#dc2626" };
+};
+
+const BookingActions = ({ existingBooking, session, saved, navigate, handleToggleSave }) => {
+  if (!existingBooking) {
+    return (
+      <div className="d-flex flex-column" style={{ gap: 10 }}>
+        <button className="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
+        <button className="btn btn-outline-secondary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => handleToggleSave(session)}>
+          <i className={`fa ${saved ? "fa-heart" : "fa-heart-o"}`} style={{ color: saved ? "#dc2626" : undefined }} />{saved ? "Saved" : "Save / Wishlist"}
+        </button>
+        <button className="btn btn-outline-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" />Share</button>
+      </div>
+    );
+  }
+
+  if (existingBooking.requestStatus === "completed") {
+    return (
+      <div className="d-flex flex-column" style={{ gap: 10 }}>
+        <span className="d-inline-flex align-items-center justify-content-center" style={{ gap: 6, background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "10px 14px", borderRadius: 999, fontSize: "0.85rem", fontWeight: 600 }}>
+          <i className="fa fa-check-circle" />Completed
+        </span>
+        <button className="btn btn-outline-warning rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigate(`/learner/reviews?session=${session._id}`)}>
+          <i className="fa fa-star" />Leave a Review
+        </button>
+        <button className="btn btn-outline-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" />Share</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="d-flex flex-column" style={{ gap: 10 }}>
+      <button className="btn btn-success rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} disabled><i className="fa fa-check" />Already Booked</button>
+      <button className="btn btn-outline-secondary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => handleToggleSave(session)}>
+        <i className={`fa ${saved ? "fa-heart" : "fa-heart-o"}`} style={{ color: saved ? "#dc2626" : undefined }} />{saved ? "Saved" : "Save / Wishlist"}
+      </button>
+      <button className="btn btn-outline-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" />Share</button>
+    </div>
+  );
+};
+
+const TrustBadge = ({ trustScore }) => {
+  if (trustScore == null) return null;
+  const { bg, color, iconColor } = trustColors(trustScore);
+  return (
+    <div style={{ marginTop: 5 }}>
+      <span className="badge" style={{ background: bg, color, fontSize: "0.7rem" }}>
+        <i className="fa fa-shield-alt" style={{ marginRight: 5, color: iconColor }} />Trust {trustScore}/100
+      </span>
+    </div>
+  );
+};
+
 const SessionDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -160,10 +217,13 @@ const SessionDetails = () => {
           <div className="learner-card p-4 mb-4">
             <h5 className="fw-bold">Mentor</h5>
             <div className="d-flex align-items-center my-3" style={{ gap: "10px" }}>
-              <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" className="rounded-circle" width="56" height="56" style={{ objectFit: "cover" }} />
+              <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "#0d6efd" }}>
+                <img src={session.mentorId?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(session.mentorId?.name || "Mentor")}&background=0d6efd&color=fff`} alt="Mentor" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              </div>
               <div>
                 <h6 className="fw-bold mb-0"><UserLink user={session.mentorId} name={session.mentorId?.name || "SkillSwap Mentor"} /></h6>
                 <small className="text-muted">{session.mentorId?.email || "mentor@skillswap.com"}</small>
+                <TrustBadge trustScore={session.mentorId?.trustScore} />
               </div>
             </div>
             {availabilityText && (
@@ -184,29 +244,11 @@ const SessionDetails = () => {
                 </div>
               )}
               <div className="list-group-item px-0 d-flex justify-content-between"><span>Price</span><strong>{session.price ? `₹${session.price}` : "Free"}</strong></div>
-            </div>
-            <div className="d-flex flex-column" style={{ gap: 10 }}>
-              {!existingBooking ? (
-                <button className="btn btn-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigate(`/learner/book/${session._id}`)}>Book Session</button>
-              ) : existingBooking.requestStatus === "completed" ? (
-                <>
-                  <span className="d-inline-flex align-items-center justify-content-center" style={{ gap: 6, background: "linear-gradient(135deg, #0d6efd, #0a58ca)", color: "white", padding: "10px 14px", borderRadius: 999, fontSize: "0.85rem", fontWeight: 600 }}>
-                    <i className="fa fa-check-circle" />Completed
-                  </span>
-                  <button className="btn btn-outline-warning rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigate(`/learner/reviews?session=${session._id}`)}>
-                    <i className="fa fa-star" />Leave a Review
-                  </button>
-                </>
-              ) : (
-                <button className="btn btn-success rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} disabled><i className="fa fa-check" />Already Booked</button>
+              {session.bookingTypes?.includes("credits") && session.creditCost > 0 && (
+                <div className="list-group-item px-0 d-flex justify-content-between"><span>Credit Cost</span><strong className="text-success">{session.creditCost} credits</strong></div>
               )}
-              {(!existingBooking || existingBooking.requestStatus !== "completed") && (
-                <button className="btn btn-outline-secondary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => handleToggleSave(session)}>
-                  <i className={`fa ${saved ? "fa-heart" : "fa-heart-o"}`} style={{ color: saved ? "#dc2626" : undefined }} />{saved ? "Saved" : "Save / Wishlist"}
-                </button>
-              )}
-              <button className="btn btn-outline-primary rounded-pill d-inline-flex align-items-center justify-content-center" style={{ gap: 6 }} onClick={() => navigator.clipboard?.writeText(window.location.href)}><i className="fa fa-share-alt" />Share</button>
             </div>
+            <BookingActions existingBooking={existingBooking} session={session} saved={saved} navigate={navigate} handleToggleSave={handleToggleSave} />
           </div>
         </div>
       </div>

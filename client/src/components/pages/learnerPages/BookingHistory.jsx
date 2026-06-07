@@ -59,7 +59,11 @@ const BookingHistory = () => {
                       <small className="text-muted"><UserLink user={booking.sessionId?.mentorId} name={booking.sessionId?.mentorId?.name} /></small>
                     </td>
                     <td>{booking.date || booking.sessionId?.date || "—"}</td>
-                    <td>{booking.paymentStatus}</td>
+                    <td>{booking.bookingSource === "credits" ? (
+                        <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
+                          <i className="fa fa-coins" />{booking.sessionId?.creditCost || "Credits"}
+                        </span>
+                      ) : booking.paymentStatus}</td>
                     <td>
                       <div className="d-flex align-items-center" style={{ gap: 14 }}>
                         <StatusBadge status={booking.requestStatus} />

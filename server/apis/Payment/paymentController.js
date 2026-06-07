@@ -29,6 +29,10 @@ exports.createOrder = asyncHandler(async (req, res) => {
       return res.status(403).json({ success: false, message: "You can only pay for your own bookings" });
     }
 
+    if (request.bookingSource === "credits") {
+      return res.status(400).json({ success: false, message: "Credit bookings cannot use Razorpay" });
+    }
+
     if (request.paymentStatus === "paid") {
       return res.status(400).json({ success: false, message: "This booking is already paid" });
     }

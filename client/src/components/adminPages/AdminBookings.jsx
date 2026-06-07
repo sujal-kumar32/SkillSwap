@@ -130,6 +130,11 @@ const AdminBookings = () => {
                           <UserLink userId={r.userId?._id || r.learnerId?._id} name={r.userId?.name || r.learnerId?.name} /> → <UserLink user={r.sessionId?.mentorId} name={r.sessionId?.mentorId?.name || "Mentor"} />
                         </small>
                         <small className="text-muted">{r.timeSlot || r.sessionId?.time || ""}</small>
+                        {r.bookingSource === "credits" && (
+                          <small className="d-block mt-1" style={{ color: "#16a34a", fontSize: "0.7rem", fontWeight: 600 }}>
+                            <i className="fa fa-coins me-1" />Credits
+                          </small>
+                        )}
                       </div>
                       <span style={{ background: statusColors[r.requestStatus]?.gradient || "linear-gradient(135deg, #64748b, #475569)", color: statusColors[r.requestStatus]?.color || "white", padding: "4px 14px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, letterSpacing: "0.3px" }}>
                         {statusLabels[r.requestStatus] || r.requestStatus}

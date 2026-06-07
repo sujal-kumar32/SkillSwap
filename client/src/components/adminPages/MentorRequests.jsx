@@ -121,6 +121,7 @@ const MentorRequests = () => {
                   <th>Email</th>
                   <th>Joined</th>
                   <th>Status</th>
+                  <th>Trust</th>
                   <th className="text-end">Actions</th>
                 </tr>
               </thead>
@@ -146,6 +147,7 @@ const MentorRequests = () => {
                         {mentor.status}
                       </span>
                     </td>
+                    <td>{(() => { const ts = mentor.trustScore ?? 100; const c = ts >= 90 ? "#16a34a" : ts >= 70 ? "#d97706" : ts >= 50 ? "#ea580c" : "#dc2626"; return <span style={{ color: c, fontWeight: 600, fontSize: "0.85rem" }}>{ts}/100</span>; })()}</td>
                     <td className="text-end" onClick={(e) => e.stopPropagation()}>
                       {actionLoading === mentor._id ? (
                         <span className="spinner-border spinner-border-sm" />

@@ -180,6 +180,10 @@ class Apiservices {
     return axios.get(baseUrl + "profile/stats");
   }
 
+  getSidebarCounts() {
+    return axios.get(baseUrl + "sidebar/counts");
+  }
+
   getXpHistory(params = {}) {
     return axios.get(baseUrl + "profile/xp-history", { params });
   }
@@ -355,6 +359,30 @@ class Apiservices {
     return axios.get(baseUrl + "earnings");
   }
 
+  getAdminCreditBalances(params = {}) {
+    return axios.get(baseUrl + "admin/credits/balances", { params });
+  }
+
+  getAdminCreditHistory(params = {}) {
+    return axios.get(baseUrl + "admin/credits/history", { params });
+  }
+
+  getCreditHistory(params = {}) {
+    return axios.get(baseUrl + "wallet/credit-history", { params });
+  }
+
+  disputeRequest(id, reason) {
+    return axios.put(baseUrl + `requests/${id}/dispute`, { reason });
+  }
+
+  resolveDispute(id, action) {
+    return axios.put(baseUrl + `admin/disputes/${id}/resolve`, { action });
+  }
+
+  getBookingAnalytics() {
+    return axios.get(baseUrl + "admin/analytics/bookings");
+  }
+
   getEarningTransactions(params = {}) {
     return axios.get(baseUrl + "earnings/transactions", { params });
   }
@@ -485,6 +513,18 @@ class Apiservices {
     return axios.post(baseUrl + "admin/broadcast", data);
   }
 
+  getBroadcasts(params = {}) {
+    return axios.get(baseUrl + "admin/broadcasts", { params });
+  }
+
+  deleteBroadcast(id) {
+    return axios.delete(baseUrl + `admin/broadcast/${id}`);
+  }
+
+  updateBroadcast(id, data) {
+    return axios.put(baseUrl + `admin/broadcast/${id}`, data);
+  }
+
   getAdminPayments(params = {}) {
     return axios.get(baseUrl + "admin/payments", { params });
   }
@@ -509,6 +549,14 @@ class Apiservices {
     return axios.put(baseUrl + `disputes/${id}/resolve`, data);
   }
 
+  joinBooking(id) {
+    return axios.put(baseUrl + `requests/${id}/join`);
+  }
+
+  getAuditLogs(params = {}) {
+    return axios.get(baseUrl + "admin/audit-logs", { params });
+  }
+
 }
 
 let isRefreshing = false;
@@ -527,10 +575,10 @@ axios.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     if (error.response?.status !== 401 || originalRequest._retry) {
-      return Promise.reject(error);
+      throw error;
     }
     if (originalRequest.url?.includes("auth/refresh")) {
-      return Promise.reject(error);
+      throw error;
     }
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
@@ -548,7 +596,7 @@ axios.interceptors.response.use(
       if (window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
-      return Promise.reject(error);
+      throw error;
     } finally {
       isRefreshing = false;
     }

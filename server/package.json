@@ -4,6 +4,7 @@
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -19,11 +20,13 @@
     "nodemailer": "^8.0.8",
     "pdfkit": "^0.18.0",
     "razorpay": "^2.9.6",
+    "socket.io": "^4.8.3",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
-    "socket.io": "^4.8.3"
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "name": "server",
   "version": "1.0.0",

@@ -1,4 +1,5 @@
-﻿const User = require("./userModel");
+﻿const AdminAuditLog = require("../../models/AdminAuditLog");
+const User = require("./userModel");
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
@@ -84,6 +85,16 @@ exports.updateUserStatus = asyncHandler(async (req, res) => {
     if (status === "deleted") user.deletedBy = "admin";
     await user.save();
 
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "update_user_status",
+      targetModel: "User",
+      targetId: user._id,
+      details: `User status changed to ${status}`,
+      metadata: { previousStatus: user.status, newStatus: status },
+      ip: req.ip || req.connection?.remoteAddress,
+    });
+
     res.json({
       success: true,
       message: `User status updated to ${status}`,
@@ -115,6 +126,15 @@ exports.approveUser = asyncHandler(async (req, res) => {
     const approvedUser = user.toObject();
     delete approvedUser.password;
 
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "approve_mentor",
+      targetModel: "User",
+      targetId: user._id,
+      details: `Mentor approved (${user.name})`,
+      ip: req.ip || req.connection?.remoteAddress,
+    });
+
     res.json({
       success: true,
       message: "Mentor approved successfully",
@@ -141,6 +161,15 @@ exports.blockUser = asyncHandler(async (req, res) => {
       });
     }
 
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "block_user",
+      targetModel: "User",
+      targetId: user._id,
+      details: `User blocked (${user.name})`,
+      ip: req.ip || req.connection?.remoteAddress,
+    });
+
     res.json({
       success: true,
       message: "User blocked successfully",
@@ -166,6 +195,15 @@ exports.unblockUser = asyncHandler(async (req, res) => {
         message: "User not found",
       });
     }
+
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "unblock_user",
+      targetModel: "User",
+      targetId: user._id,
+      details: `User unblocked (${user.name})`,
+      ip: req.ip || req.connection?.remoteAddress,
+    });
 
     res.json({
       success: true,
@@ -212,12 +250,26 @@ exports.searchUsers = asyncHandler(async (req, res) => {
   }
   const users = await User.find({
     _id: { $ne: req.user.id },
-    name: { $regex: escapeRegex(q.trim()), $options: "i" },
+    $or: [
+      { name: { $regex: escapeRegex(q.trim()), $options: "i" } },
+      { email: { $regex: escapeRegex(q.trim()), $options: "i" } },
+    ],
   })
-    .select("name profileImage")
+    .select("name email profileImage")
     .limit(20)
     .lean();
   res.json({ success: true, data: users });
+});
+
+// GET PUBLIC PROFILE
+exports.getPublicProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.userId)
+    .select("name email profileImage bio roles skills trustScore totalCompletedSessions totalCancelledSessions totalBookings followerCount followingCount isOnline lastActive")
+    .lean();
+  if (!user) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+  res.json({ success: true, data: user });
 });
 
 // APPLY FOR MENTOR

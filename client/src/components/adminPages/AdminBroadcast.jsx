@@ -1,151 +1,498 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { showToast } from "../../utils/toastUtils";
 import Apiservices from "../../../Apiservices";
 
+const ic = { marginRight: "5px" };
+
+const ROLE_CONFIG = {
+  learner: { icon: "fa-graduation-cap", label: "Learners" },
+  mentor: { icon: "fa-chalkboard-teacher", label: "Mentors" },
+};
+
+const AUDIENCE_OPTIONS = [
+  { value: "all", label: "All Users", icon: "fa-globe", desc: "Every active account" },
+  { value: "role", label: "By Role", icon: "fa-users", desc: "Learners or mentors" },
+  { value: "single", label: "Specific User", icon: "fa-user", desc: "Send to one person" },
+];
+
+const buildPayload = (message, link, targetType, targetRole, targetUserId) => {
+  const payload = { message: message.trim(), targetType, link: link.trim() || undefined };
+  if (targetType === "role") payload.targetRole = targetRole;
+  if (targetType === "single") payload.targetUserId = targetUserId;
+  return payload;
+};
+
+const UserSearchDropdown = ({ results, onSelect }) => {
+  if (!results.length) return null;
+  return (
+    <div style={{
+      position: "absolute", top: "100%", left: 0, right: 0, zIndex: 10,
+      background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, marginTop: 4,
+      boxShadow: "0 10px 30px rgba(0,0,0,0.08)", overflow: "hidden",
+    }}>
+      {results.map((u) => (
+        <button key={u._id} type="button" onClick={() => onSelect(u)}
+          style={{
+            display: "flex", alignItems: "center", gap: "5px", width: "100%", padding: "10px 14px",
+            border: "none", background: "#fff", cursor: "pointer", fontSize: "0.82rem",
+            textAlign: "left", borderBottom: "1px solid #f1f5f9",
+          }}
+          onMouseEnter={(e) => e.target.style.background = "#f8fafc"}
+          onMouseLeave={(e) => e.target.style.background = "#fff"}>
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%",
+            background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+            display: "grid", placeItems: "center", color: "#fff",
+            fontSize: "0.65rem", fontWeight: 700, flexShrink: 0,
+          }}>
+            {u.name?.charAt(0).toUpperCase() || "?"}
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, color: "#1e293b", fontSize: "0.8rem" }}>{u.name}</div>
+            <div style={{ fontSize: "0.68rem", color: "#94a3b8" }}>{u.email}</div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const getBroadcastAudience = (b) => {
+  if (b.targetType === "single") return { label: b.targetUserId?.name || "User", bg: "#ede9fe", color: "#7c3aed" };
+  if (b.targetType === "role") return { label: b.targetRole === "mentor" ? "Mentors" : "Learners", bg: "#dbeafe", color: "#2563eb" };
+  return { label: "Everyone", bg: "#f0fdf4", color: "#16a34a" };
+};
+
+const BroadcastRow = ({ b, deleting, onEdit, onDelete }) => {
+  const { label: audienceLabel, bg: badgeBg, color: badgeColor } = getBroadcastAudience(b);
+
+  return (
+    <tr style={{ borderBottom: "12px solid #f1f5f9" }}>
+      <td>
+        <div className="d-flex align-items-center" style={{ gap: "5px" }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+            background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+            display: "grid", placeItems: "center", color: "#fff", fontSize: "0.8rem",
+          }}>
+            <i className="fa fa-bullhorn" />
+          </div>
+          <span style={{ fontWeight: 600, color: "#1e293b", fontSize: "0.85rem", maxWidth: 260, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {b.message}
+          </span>
+        </div>
+      </td>
+      <td>
+        <span style={{ background: badgeBg, color: badgeColor, padding: "4px 14px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap" }}>
+          {audienceLabel}
+        </span>
+      </td>
+      <td style={{ fontWeight: 600, fontSize: "0.85rem" }}>{b.recipientCount || 0}</td>
+      <td>
+        {b.link ? (
+          <span style={{ color: "#0d6efd", fontSize: "0.8rem", wordBreak: "break-all" }}>
+            <i className="fa fa-link" style={{ ...ic, fontSize: "0.7rem" }} />
+            {b.link.length > 30 ? b.link.substring(0, 30) + "..." : b.link}
+          </span>
+        ) : (
+          <span className="text-muted" style={{ fontSize: "0.8rem" }}>—</span>
+        )}
+      </td>
+      <td style={{ color: "#64748b", fontSize: "0.8rem", whiteSpace: "nowrap" }}>
+        {new Date(b.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+        <br /><small>{new Date(b.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</small>
+      </td>
+      <td className="text-end">
+        <div className="d-flex justify-content-end" style={{ gap: "5px" }}>
+          <button onClick={() => onEdit(b)}
+            className="btn btn-sm btn-outline-primary rounded-pill fw-semibold px-3 py-2"
+            style={{ fontSize: "0.75rem" }}>
+            <i className="fa fa-pen" style={ic} />Edit
+          </button>
+          <button onClick={() => onDelete(b._id)} disabled={deleting === b._id}
+            className="btn btn-sm btn-outline-dark rounded-pill fw-semibold px-3 py-2"
+            style={{ fontSize: "0.75rem" }}>
+            {deleting === b._id ? <span className="spinner-border spinner-border-sm" /> : <><i className="fa fa-trash" style={ic} />Delete</>}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+const AudienceOptionButton = ({ opt, targetType, onSelect }) => {
+  const active = targetType === opt.value;
+  return (
+    <button type="button" onClick={() => onSelect(opt.value)}
+      style={{
+        padding: "14px 12px", borderRadius: 12, cursor: "pointer", textAlign: "left",
+        border: `1.5px solid ${active ? "#0d6efd" : "#eef2f7"}`,
+        background: active ? "#f8faff" : "#fff",
+        transition: "all 0.15s",
+      }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: 8,
+        background: active ? "linear-gradient(135deg, #0d6efd, #6610f2)" : "#f1f5f9",
+        display: "grid", placeItems: "center",
+        color: active ? "#fff" : "#64748b",
+        fontSize: "0.7rem", marginBottom: 8,
+      }}>
+        <i className={`fa ${opt.icon}`} />
+      </div>
+      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#1e293b", marginBottom: 2 }}>{opt.label}</div>
+      <div style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{opt.desc}</div>
+    </button>
+  );
+};
+
+const canSend = (message, sending, targetType, targetUserId, targetRole) =>
+  message.trim() && !sending && (targetType !== "single" || targetUserId) && (targetType !== "role" || targetRole);
+
+const BroadcastStatsCards = ({ broadcasts, totalRecipients }) => (
+  <div className="row g-4 mb-4">
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0">{broadcasts.length}</h3>
+        <p className="text-muted mb-0 small">Total Broadcasts</p>
+      </div>
+    </div>
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0 text-primary">{totalRecipients}</h3>
+        <p className="text-muted mb-0 small">Total Recipients</p>
+      </div>
+    </div>
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0 text-info">{broadcasts.filter((b) => b.targetType === "all").length}</h3>
+        <p className="text-muted mb-0 small">System Wide</p>
+      </div>
+    </div>
+    <div className="col-sm-6 col-lg-3">
+      <div className="learner-card p-4 h-100">
+        <h3 className="fw-bold mb-0 text-success">
+          {broadcasts.length > 0
+            ? new Date(broadcasts[0].createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+            : "—"}
+        </h3>
+        <p className="text-muted mb-0 small">Latest</p>
+      </div>
+    </div>
+  </div>
+);
+
+const BroadcastTableBody = ({ loading, broadcasts, deleting, onEdit, onDelete }) => {
+  if (loading) return (
+    <tr><td colSpan={6} className="text-center py-4 text-muted"><span className="spinner-border spinner-border-sm" style={ic} />Loading...</td></tr>
+  );
+  if (!broadcasts.length) return (
+    <tr><td colSpan={6} className="text-center py-4 text-muted">No broadcasts sent yet</td></tr>
+  );
+  return broadcasts.map((b) => (
+    <BroadcastRow key={b._id} b={b} deleting={deleting} onEdit={onEdit} onDelete={onDelete} />
+  ));
+};
+
 const AdminBroadcast = () => {
   const [message, setMessage] = useState("");
-  const [role, setRole] = useState("");
   const [link, setLink] = useState("");
+  const [targetType, setTargetType] = useState("all");
+  const [targetRole, setTargetRole] = useState("");
+  const [targetUserId, setTargetUserId] = useState("");
+  const [targetUserName, setTargetUserName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const [sending, setSending] = useState(false);
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-    setSending(true);
+  const fetchBroadcasts = useCallback(async () => {
+    setLoading(true);
     try {
-      const res = await Apiservices.broadcastNotification({ message: message.trim(), role: role || undefined, link: link.trim() || undefined });
-      showToast.success(res.data.message || "Notification sent");
-      setMessage("");
-      setLink("");
+      const res = await Apiservices.getBroadcasts({ page: 1, limit: 50 });
+      setBroadcasts(res.data.data || []);
     } catch {
-      showToast.error("Failed to send notification");
+      // fetch failed silently
     } finally {
-      setSending(false);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchBroadcasts(); }, [fetchBroadcasts]);
+
+  useEffect(() => {
+    if (!searchQuery.trim() || targetType !== "single") { setSearchResults([]); return; }
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await Apiservices.searchUsers(searchQuery);
+        setSearchResults(res.data?.data || []);
+      } catch { setSearchResults([]); }
+      finally { setSearching(false); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, targetType]);
+
+  const handleAudienceSelect = (value) => {
+    setTargetType(value); setTargetRole(""); setTargetUserId(""); setTargetUserName("");
+  };
+
+  const selectUser = (user) => {
+    setTargetUserId(user._id);
+    setTargetUserName(`${user.name} (${user.email})`);
+    setSearchQuery("");
+    setSearchResults([]);
+  };
+
+  const resetForm = () => {
+    setMessage(""); setLink(""); setTargetRole(""); setTargetUserId(""); setTargetUserName(""); setTargetType("all"); setEditingId(null);
+  };
+
+  const handleEdit = (b) => {
+    setEditingId(b._id);
+    setMessage(b.message);
+    setLink(b.link || "");
+    setTargetType(b.targetType);
+    setTargetRole(b.targetType === "role" ? (b.targetRole || "") : "");
+    if (b.targetType === "single" && b.targetUserId) {
+      setTargetUserId(b.targetUserId._id || b.targetUserId);
+      setTargetUserName(b.targetUserId.name ? `${b.targetUserId.name} (${b.targetUserId.email})` : "User");
+    } else {
+      setTargetUserId("");
+      setTargetUserName("");
     }
   };
 
-  const audienceLabel = role === "learner" ? "Learners" : role === "mentor" ? "Mentors" : "All Users";
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!message.trim() || (targetType === "single" && !targetUserId) || (targetType === "role" && !targetRole)) return;
+    setSending(true);
+    try {
+      const payload = buildPayload(message, link, targetType, targetRole, targetUserId);
+
+      if (editingId) {
+        const res = await Apiservices.updateBroadcast(editingId, payload);
+        showToast.success(res.data.message || "Broadcast updated");
+      } else {
+        const res = await Apiservices.broadcastNotification(payload);
+        showToast.success(res.data.message || "Broadcast sent");
+      }
+      resetForm();
+      fetchBroadcasts();
+    } catch { showToast.error(editingId ? "Failed to update" : "Failed to send"); }
+    finally { setSending(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this broadcast?")) return;
+    setDeleting(id);
+    try {
+      await Apiservices.deleteBroadcast(id);
+      setBroadcasts((prev) => prev.filter((b) => b._id !== id));
+      showToast.success("Broadcast deleted");
+    } catch { showToast.error("Failed to delete"); }
+    finally { setDeleting(null); }
+  };
+
+  const totalRecipients = broadcasts.reduce((sum, b) => sum + (b.recipientCount || 0), 0);
+  const sendable = canSend(message, sending, targetType, targetUserId, targetRole);
 
   return (
-    <div style={{ maxWidth: 680, margin: "0 auto" }}>
-      <div className="mb-3">
-        <h4 className="fw-bold mb-1" style={{ fontSize: "1.25rem" }}>Broadcast Notification</h4>
-        <p className="text-muted small mb-0">Send a system-wide announcement to all users or filter by role.</p>
+    <>
+      <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+        <div>
+          <h1 className="fw-bold mb-1">Broadcast Center</h1>
+          <p className="text-muted mb-0">Send system notifications to users.</p>
+        </div>
       </div>
 
-      <div style={{ background: "#fff", borderRadius: 14, border: "1px solid #eef2f7", padding: 28 }}>
+      <BroadcastStatsCards broadcasts={broadcasts} totalRecipients={totalRecipients} />
+
+      <div className="learner-card p-4 mb-4">
+        <div className="d-flex align-items-center justify-content-between mb-3 pb-3" style={{ borderBottom: "1px solid #f1f5f9", gap: "5px" }}>
+          <div className="d-flex align-items-center" style={{ gap: "5px" }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "linear-gradient(135deg, #0d6efd, #6610f2)",
+              display: "grid", placeItems: "center", color: "#fff", fontSize: "0.85rem", flexShrink: 0,
+            }}>
+              <i className={editingId ? "fa fa-pen" : "fa fa-pen-fancy"} />
+            </div>
+            <div>
+              <h6 className="fw-bold mb-0">{editingId ? "Edit Broadcast" : "Compose Broadcast"}</h6>
+              <small style={{ color: "#94a3b8", fontSize: "0.75rem" }}>
+                {editingId ? "Update the announcement and re-send" : "Craft and send a system announcement"}
+              </small>
+            </div>
+          </div>
+          {editingId && (
+            <button type="button" onClick={resetForm}
+              style={{
+                padding: "6px 14px", borderRadius: 8, border: "1px solid #e2e8f0",
+                background: "#fff", color: "#64748b", fontWeight: 600, fontSize: "0.75rem",
+                cursor: "pointer",
+              }}>
+              <i className="fa fa-times" style={ic} />Cancel
+            </button>
+          )}
+        </div>
+
         <form onSubmit={handleSend}>
-          <div className="mb-4">
-            <label className="form-label fw-semibold small" style={{ color: "#1e293b", fontSize: "0.8rem", marginBottom: 6 }}>
-              <i className="fa fa-users me-1" style={{ color: "#64748b" }} /> Target Audience
+          <div className="mb-3">
+            <label className="fw-semibold mb-2" style={{ fontSize: "0.8rem", color: "#374151" }}>
+              <i className="fa fa-bullseye" style={{ ...ic, fontSize: "0.75rem" }} />AUDIENCE
             </label>
-            <div className="d-flex gap-2 flex-wrap">
-              {["", "learner", "mentor"].map((r) => (
-                <button key={r} type="button" onClick={() => setRole(r)}
-                  style={{
-                    padding: "8px 18px", borderRadius: 10, border: `2px solid ${role === r ? "#0d6efd" : "#e2e8f0"}`,
-                    background: role === r ? "#eef2ff" : "#fff", color: role === r ? "#0d6efd" : "#64748b",
-                    fontWeight: 600, fontSize: "0.8rem", cursor: "pointer", transition: "all 0.15s",
-                    display: "flex", alignItems: "center", gap: 6,
-                  }}>
-                  <i className={`fa ${r === "" ? "fa-globe" : r === "learner" ? "fa-graduation-cap" : "fa-chalkboard-teacher"}`} />
-                  {r === "" ? "All Users" : r === "learner" ? "Learners Only" : "Mentors Only"}
-                </button>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "5px" }}>
+              {AUDIENCE_OPTIONS.map((opt) => (
+                <AudienceOptionButton key={opt.value} opt={opt} targetType={targetType} onSelect={handleAudienceSelect} />
               ))}
             </div>
           </div>
 
-          <div className="mb-4">
-            <label className="form-label fw-semibold small" style={{ color: "#1e293b", fontSize: "0.8rem", marginBottom: 6 }}>
-              <i className="fa fa-comment me-1" style={{ color: "#64748b" }} /> Message
-            </label>
-            <textarea
-              className="form-control"
-              rows={5}
-              placeholder="Write your announcement message..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              maxLength={500}
-              style={{
-                fontSize: "0.85rem", resize: "vertical", borderRadius: 10,
-                borderColor: "#e2e8f0", padding: "12px 14px",
-              }}
-            />
-            <div className="d-flex justify-content-between mt-1">
-              <small className="text-muted" style={{ fontSize: "0.7rem" }}>Maximum 500 characters</small>
-              <small style={{ fontSize: "0.7rem", fontWeight: 600, color: message.length > 450 ? "#ef4444" : "#94a3b8" }}>{message.length}/500</small>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="form-label fw-semibold small" style={{ color: "#1e293b", fontSize: "0.8rem", marginBottom: 6 }}>
-              <i className="fa fa-link me-1" style={{ color: "#64748b" }} /> Link (optional)
-            </label>
-            <input
-              className="form-control"
-              placeholder="/profile or https://..."
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              style={{ fontSize: "0.85rem", borderRadius: 10, borderColor: "#e2e8f0", padding: "10px 14px" }}
-            />
-            <small className="text-muted" style={{ fontSize: "0.7rem" }}>Users will be able to tap the notification to open this link</small>
-          </div>
-
-          <div style={{ background: "#f8fafc", borderRadius: 10, padding: 16, marginBottom: 24 }}>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <i className="fa fa-eye" style={{ color: "#64748b", fontSize: "0.75rem" }} />
-              <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "#475569", textTransform: "uppercase", letterSpacing: "0.3px" }}>Preview</span>
-            </div>
-            <div style={{
-              background: "#fff", borderRadius: 10, border: "1px solid #eef2f7", padding: "14px 16px",
-              display: "flex", alignItems: "flex-start", gap: 12,
-            }}>
-              <div style={{
-                width: 36, height: 36, borderRadius: "50%",
-                background: "linear-gradient(135deg, #0d6efd, #6610f2)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#fff", fontSize: "0.8rem", flexShrink: 0,
-              }}>
-                <i className="fa fa-bullhorn" />
+          {targetType === "role" && (
+            <div className="learner-card p-3 mb-3" style={{ background: "#f8faff" }}>
+              <label className="fw-semibold mb-2" style={{ fontSize: "0.78rem", color: "#374151" }}>
+                <i className="fa fa-user-tag" style={{ ...ic, fontSize: "0.7rem" }} />SELECT ROLE
+              </label>
+              <div style={{ display: "flex", gap: "5px" }}>
+                {["learner", "mentor"].map((r) => (
+                  <button key={r} type="button" onClick={() => setTargetRole(r)}
+                    style={{
+                      flex: 1, padding: "12px", borderRadius: 10, cursor: "pointer",
+                      border: `1.5px solid ${targetRole === r ? "#0d6efd" : "#e2e8f0"}`,
+                      background: targetRole === r ? "#fff" : "transparent",
+                      fontWeight: 600, fontSize: "0.82rem", color: targetRole === r ? "#0d6efd" : "#64748b",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+                    }}>
+                     <i className={`fa ${ROLE_CONFIG[r].icon}`} />
+                    {ROLE_CONFIG[r].label}
+                  </button>
+                ))}
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#1e293b" }}>System Announcement</div>
-                <div style={{ fontSize: "0.82rem", color: message.trim() ? "#1e293b" : "#94a3b8", marginTop: 2 }}>
-                  {message.trim() || "Your message will appear here..."}
+            </div>
+          )}
+
+          {targetType === "single" && (
+            <div className="learner-card p-3 mb-3" style={{ background: "#f8faff" }}>
+              <label className="fw-semibold mb-2" style={{ fontSize: "0.78rem", color: "#374151" }}>
+                <i className="fa fa-search" style={{ ...ic, fontSize: "0.7rem" }} />SEARCH USER
+              </label>
+              {targetUserName ? (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "5px", padding: "10px 14px",
+                  background: "#f0fdf4", borderRadius: 10, border: "1px solid #bbf7d0",
+                }}>
+                  <i className="fa fa-check-circle" style={{ color: "#16a34a", fontSize: "0.85rem" }} />
+                  <span style={{ fontSize: "0.82rem", fontWeight: 500, color: "#1e293b", flex: 1 }}>{targetUserName}</span>
+                  <button type="button" onClick={() => { setTargetUserId(""); setTargetUserName(""); }}
+                    style={{
+                      background: "none", border: "1px solid #e2e8f0", borderRadius: 8, padding: "4px 12px",
+                      fontSize: "0.72rem", color: "#64748b", cursor: "pointer", fontWeight: 600,
+                    }}>Change</button>
                 </div>
-                {link.trim() && (
-                  <div style={{ fontSize: "0.7rem", color: "#0d6efd", marginTop: 4 }}>
-                    <i className="fa fa-external-link-alt me-1" style={{ fontSize: "0.6rem" }} />{link.trim()}
-                  </div>
-                )}
+              ) : (
+                <div style={{ position: "relative" }}>
+                  <input type="search" className="form-control" placeholder="Type name or email..."
+                    value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10,
+                      padding: "10px 14px", fontSize: "0.82rem",
+                    }} />
+                  {searching && <span className="spinner-border spinner-border-sm" style={{ position: "absolute", right: 12, top: 11 }} />}
+                  <UserSearchDropdown results={searchResults} onSelect={selectUser} />
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="row g-3 mb-3">
+            <div className="col-6">
+              <label className="fw-semibold mb-1" style={{ fontSize: "0.8rem", color: "#374151" }}>
+                <i className="fa fa-link" style={{ ...ic, fontSize: "0.7rem" }} />LINK
+                <span className="text-muted fw-normal" style={{ fontSize: "0.72rem" }}> (optional)</span>
+              </label>
+              <input type="text" className="form-control" placeholder="/profile or https://..."
+                value={link} onChange={(e) => setLink(e.target.value)}
+                style={{
+                  background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10,
+                  padding: "10px 14px", fontSize: "0.82rem",
+                }} />
+            </div>
+            <div className="col-6">
+              <label className="fw-semibold mb-1" style={{ fontSize: "0.8rem", color: "#374151" }}>
+                <i className="fa fa-file-alt" style={{ ...ic, fontSize: "0.7rem" }} />MESSAGE
+              </label>
+              <textarea className="form-control" rows={3} placeholder="Write your announcement..."
+                value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500}
+                style={{
+                  background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10,
+                  padding: "10px 14px", fontSize: "0.82rem", resize: "vertical",
+                }} />
+              <div className="d-flex justify-content-end mt-1">
+                <small className={message.length > 450 ? "text-danger fw-semibold" : "text-muted"} style={{ fontSize: "0.68rem" }}>
+                  {message.length}/500
+                </small>
               </div>
-              <span style={{ fontSize: "0.62rem", color: "#94a3b8", whiteSpace: "nowrap" }}>Just now</span>
             </div>
           </div>
 
-          <div className="d-flex align-items-center gap-3">
-            <button className="btn fw-semibold" type="submit" disabled={sending || !message.trim()}
+          <div style={{ display: "flex", gap: "5px" }}>
+            <button type="submit" disabled={!sendable}
               style={{
-                background: sending || !message.trim() ? "#e2e8f0" : "linear-gradient(135deg, #0d6efd, #6610f2)",
-                color: sending || !message.trim() ? "#94a3b8" : "#fff", border: "none",
-                padding: "10px 28px", borderRadius: 10, fontSize: "0.85rem",
-                display: "flex", alignItems: "center", gap: 8, cursor: sending || !message.trim() ? "not-allowed" : "pointer",
-                transition: "opacity 0.2s",
-              }}
-              onMouseEnter={(e) => { if (!sending && message.trim()) e.target.style.opacity = "0.9"; }}
-              onMouseLeave={(e) => { e.target.style.opacity = "1"; }}>
-              {sending ? <><span className="spinner-border spinner-border-sm" style={{ width: 16, height: 16 }} /> Sending to {audienceLabel}...</>
-                : <><i className="fa fa-paper-plane" /> Send to {audienceLabel}</>}
+                padding: "10px 24px", borderRadius: 10, border: "none", cursor: !sendable ? "not-allowed" : "pointer",
+                background: !sendable ? "#e2e8f0" : "linear-gradient(135deg, #0d6efd, #6610f2)",
+                color: !sendable ? "#94a3b8" : "#fff", fontWeight: 600, fontSize: "0.82rem",
+                display: "flex", alignItems: "center", gap: "5px",
+              }}>
+              {sending ? <><span className="spinner-border spinner-border-sm" /> {editingId ? "Updating..." : "Sending..."}</>
+                : <><i className={`fa ${editingId ? "fa-save" : "fa-paper-plane"}`} /> {editingId ? "Update Broadcast" : "Send Broadcast"}</>}
             </button>
-            {role && (
-              <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
-                <i className="fa fa-info-circle me-1" />Only active {role} accounts will receive this
-              </span>
+            {message.trim() && (
+              <button type="button" onClick={resetForm}
+                style={{
+                  padding: "10px 24px", borderRadius: 10, border: "1px solid #e2e8f0",
+                  background: "#fff", color: "#64748b", fontWeight: 600, fontSize: "0.82rem",
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: "5px",
+                }}>
+                <i className="fa fa-times" /> {editingId ? "Cancel" : "Clear"}
+              </button>
             )}
           </div>
         </form>
       </div>
-    </div>
+
+      <div className="learner-card p-4">
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <h5 className="fw-bold mb-0">
+            <i className="fa fa-history" style={{ ...ic, color: "#64748b" }} />Broadcast History
+          </h5>
+          <button onClick={fetchBroadcasts} className="btn btn-sm btn-outline-secondary rounded-pill fw-semibold px-3 py-2" style={{ fontSize: "0.8rem" }}>
+            <i className="fa fa-refresh" style={ic} />Refresh
+          </button>
+        </div>
+
+        <div className="table-responsive">
+          <table className="table align-middle mb-0">
+            <thead className="table-light">
+              <tr>
+                <th>Message</th>
+                <th>Audience</th>
+                <th>Recipients</th>
+                <th>Link</th>
+                <th>Date</th>
+                <th className="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <BroadcastTableBody loading={loading} broadcasts={broadcasts} deleting={deleting} onEdit={handleEdit} onDelete={handleDelete} />
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
   );
 };
 

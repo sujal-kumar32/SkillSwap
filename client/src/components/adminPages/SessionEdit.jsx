@@ -21,6 +21,9 @@ const SessionEdit = () => {
     status: "active",
     sessionType: "online",
     meetLink: "",
+    bookingTypes: ["paid"],
+    creditCost: 0,
+    creditSnapshot: null,
   });
 
   useEffect(() => {
@@ -38,6 +41,9 @@ const SessionEdit = () => {
             status: data.status || "active",
             sessionType: data.sessionType || "online",
             meetLink: data.meetLink || "",
+            bookingTypes: data.bookingTypes || ["paid"],
+            creditCost: data.creditCost || 0,
+            creditSnapshot: data.creditSnapshot || null,
           });
           if (data.thumbnail) setThumbnailPreview(data.thumbnail);
         } else {
@@ -83,6 +89,9 @@ const SessionEdit = () => {
       data.append("status", form.status);
       data.append("sessionType", form.sessionType);
       data.append("meetLink", form.meetLink);
+      if (form.bookingTypes.includes("credits")) {
+        data.append("bookingTypes", "credits");
+      }
       if (thumbnailFile) data.append("thumbnail", thumbnailFile);
       const response = await Apiservices.updateSession(id, data);
       if (response.data.success) {
@@ -128,9 +137,27 @@ const SessionEdit = () => {
                   style={{ borderRadius: 12, border: "1px solid #eef2f7", padding: "12px 16px" }} />
               </div>
               <div className="col-md-6">
-                <label className="form-label fw-semibold">Price</label>
+                <label className="form-label fw-semibold">Price (₹)</label>
                 <input type="number" className="form-control" value={form.price} onChange={handleChange("price")} min="0"
                   style={{ borderRadius: 12, border: "1px solid #eef2f7", padding: "12px 16px" }} />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label fw-semibold">Credits</label>
+                <div className="d-flex flex-wrap align-items-center" style={{ gap: 10 }}>
+                  <button type="button"
+                    className={`px-3 py-1 fw-semibold rounded-pill border-0 ${form.bookingTypes.includes("credits") ? "btn btn-success" : "btn btn-outline-secondary"}`}
+                    onClick={() => setForm((prev) => ({ ...prev, bookingTypes: prev.bookingTypes.includes("credits") ? ["paid"] : ["paid", "credits"] }))}
+                    style={{ fontSize: "0.85rem" }}>
+                    <i className={`fa ${form.bookingTypes.includes("credits") ? "fa-check-circle" : "fa-coins"}`} style={{ marginRight: 6 }} />
+                    {form.bookingTypes.includes("credits") ? "Credits Enabled" : "Enable Credits"}
+                  </button>
+                  {form.bookingTypes.includes("credits") && (
+                    <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.75rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
+                      <i className="fa fa-coins" />{form.creditCost || "auto"} per booking
+                    </span>
+                  )}
+                </div>
+                <small className="text-muted" style={{ fontSize: "0.72rem" }}>Students can pay with skill credits instead of money</small>
               </div>
               <div className="col-md-6">
                 <label className="form-label fw-semibold">Status</label>

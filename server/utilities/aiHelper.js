@@ -145,6 +145,20 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function handleAIError(error, attempt) {
+  const httpStatus = error.status || error.statusCode;
+  if (httpStatus && httpStatus >= 400 && httpStatus < 500 && httpStatus !== 429) {
+    const groqMsg = error.error?.error?.message || error.message;
+    if (attempt < MAX_RETRIES) {
+      console.log(`AI non-retryable error on attempt ${attempt + 1}: ${shorten(groqMsg)}`);
+    }
+    throw Object.assign(
+      new Error(shorten(groqMsg)),
+      { statusCode: httpStatus, expose: true }
+    );
+  }
+}
+
 async function generateContent(systemKey, userMessage, options = {}) {
   const { maxLength = 1000, temperature = 0.7 } = options;
   const validated = validatePrompt(userMessage, maxLength);
@@ -188,18 +202,7 @@ async function generateContent(systemKey, userMessage, options = {}) {
       return text;
     } catch (error) {
       lastError = error;
-
-      const httpStatus = error.status || error.statusCode;
-      if (httpStatus && httpStatus >= 400 && httpStatus < 500 && httpStatus !== 429) {
-        const groqMsg = error.error?.error?.message || error.message;
-        if (attempt < MAX_RETRIES) {
-          console.log(`AI non-retryable error on attempt ${attempt + 1}: ${shorten(groqMsg)}`);
-        }
-        throw Object.assign(
-          new Error(shorten(groqMsg)),
-          { statusCode: httpStatus, expose: true }
-        );
-      }
+      handleAIError(error, attempt);
     }
   }
 

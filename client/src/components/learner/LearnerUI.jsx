@@ -80,6 +80,23 @@ export const StatusBadge = ({ status }) => {
   );
 };
 
+const getTrustScoreStyle = (ts) => {
+  if (ts >= 90) return { bg: "#d1fae5", color: "#065f46", iconColor: "#16a34a" };
+  if (ts >= 70) return { bg: "#fef3c7", color: "#92400e", iconColor: "#d97706" };
+  if (ts >= 50) return { bg: "#ffedd5", color: "#9a3412", iconColor: "#ea580c" };
+  return { bg: "#fee2e2", color: "#991b1b", iconColor: "#dc2626" };
+};
+
+const TrustBadge = ({ trustScore }) => {
+  if (trustScore == null) return null;
+  const { bg, color, iconColor } = getTrustScoreStyle(trustScore);
+  return (
+    <span className="badge" style={{ background: bg, color, fontSize: "0.6rem", fontWeight: 500, marginLeft: 5 }}>
+      <i className="fa fa-shield-alt" style={{ marginRight: 5, color: iconColor }} />{trustScore}
+    </span>
+  );
+};
+
 export const SessionCard = ({ session, onBook, onToggleSave }) => {
   const skill = session.skillId?.name || session.skill || "Skill";
   const category = session.skillId?.categoryId?.name || "Learning";
@@ -96,10 +113,10 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
         {onToggleSave && (
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleSave?.(session); }}
-            style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,0.9)", border: "none", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(8px)", zIndex: 3, transition: "all 0.2s" }}
+            style={{ position: "absolute", top: 12, right: 12, background: "rgba(255,255,255,0.95)", border: "1px solid #e2e8f0", borderRadius: "50%", width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", backdropFilter: "blur(8px)", zIndex: 3, transition: "all 0.2s" }}
             title={session.isSaved ? "Remove from wishlist" : "Save to wishlist"}
           >
-            <i className={`fa ${session.isSaved ? "fa-heart" : "fa-heart-o"}`} style={{ color: session.isSaved ? "#dc2626" : "#64748b", fontSize: "0.85rem" }} />
+            <i className="fa fa-heart" style={{ color: session.isSaved ? "#dc2626" : "#cbd5e1", fontSize: "0.85rem", transition: "color 0.2s" }} />
           </button>
         )}
         <div className="position-absolute top-0 start-0 m-3 d-flex gap-2 flex-wrap" style={{ zIndex: 2 }}>
@@ -127,6 +144,7 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
         <p className="text-muted small mb-3 d-flex align-items-center" style={{ gap: 6 }}>
           <i className="fa fa-user-tie text-primary" />
           <UserLink user={session.mentorId} name={mentor} />
+          <TrustBadge trustScore={session.mentorId?.trustScore} />
         </p>
         <div className="d-flex flex-wrap small text-muted mb-3" style={{ gap: 8 }}>
           {session.rating ? <span className="d-flex align-items-center" style={{ gap: 5 }}>
@@ -152,11 +170,18 @@ export const SessionCard = ({ session, onBook, onToggleSave }) => {
           {session.description || "A practical learning session led by an experienced mentor."}
         </p>
         <div className="d-flex align-items-center justify-content-between gap-2">
-          <strong style={{ fontSize: "1.1rem", color: "#1e293b" }}>
-            {session.price ? `₹${session.price}` : (
-              <span className="text-success fw-bold">Free</span>
+          <div className="d-flex align-items-center" style={{ gap: 8 }}>
+            <strong style={{ fontSize: "1.1rem", color: "#1e293b" }}>
+              {session.price ? `₹${session.price}` : (
+                <span className="text-success fw-bold">Free</span>
+              )}
+            </strong>
+            {session.bookingTypes?.includes("credits") && session.creditCost > 0 && (
+              <span className="d-inline-flex align-items-center" style={{ gap: 4, padding: "2px 8px", borderRadius: 999, fontSize: "0.7rem", fontWeight: 600, background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }}>
+                <i className="fa fa-coins" />{session.creditCost}
+              </span>
             )}
-          </strong>
+          </div>
           <div className="btn-group">
             <Link
               to={`/learner/sessions/${session._id}`}
