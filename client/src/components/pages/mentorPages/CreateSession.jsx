@@ -304,10 +304,7 @@ const CreateSession = () => {
       payload.append("price", Number(form.price) || 0);
       payload.append("maxLearners", Number(form.maxLearners) || 0);
       payload.append("meetLink", form.meetLink);
-      payload.append("bookingTypes", "paid");
-      if (form.bookingTypes.includes("credits")) {
-        payload.append("bookingTypes", "credits");
-      }
+      payload.append("bookingTypes", form.bookingTypes.includes("credits") ? "paid,credits" : "paid");
 
       if (thumbnailFile) {
         payload.append("thumbnail", thumbnailFile);

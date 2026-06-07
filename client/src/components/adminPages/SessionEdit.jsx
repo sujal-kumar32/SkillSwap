@@ -89,10 +89,7 @@ const SessionEdit = () => {
       data.append("status", form.status);
       data.append("sessionType", form.sessionType);
       data.append("meetLink", form.meetLink);
-      data.append("bookingTypes", "paid");
-      if (form.bookingTypes.includes("credits")) {
-        data.append("bookingTypes", "credits");
-      }
+      data.append("bookingTypes", form.bookingTypes.includes("credits") ? "paid,credits" : "paid");
       if (thumbnailFile) data.append("thumbnail", thumbnailFile);
       const response = await Apiservices.updateSession(id, data);
       if (response.data.success) {
