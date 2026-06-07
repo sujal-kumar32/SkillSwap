@@ -841,14 +841,20 @@ exports.startSession = asyncHandler(async (req, res) => {
   request.startedAt = now;
   await request.save();
 
-  const io = req.app.get("io");
-  io.to(`user:${request.learnerId}`).emit("session_started", {
-    requestId: request._id,
-    sessionId: session._id,
-    sessionTitle: session.title,
-    meetLink: session.meetLink,
-    startedAt: now,
-  });
+  try {
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user:${request.learnerId}`).emit("session_started", {
+        requestId: request._id,
+        sessionId: session._id,
+        sessionTitle: session.title,
+        meetLink: session.meetLink,
+        startedAt: now,
+      });
+    }
+  } catch (e) {
+    console.error("Socket emit (session_started) failed:", e.message);
+  }
   sendNotification(request.learnerId, req.user.id, "system", `"${session.title}" has started!`, session.meetLink);
 
   res.json({
@@ -886,14 +892,20 @@ exports.joinSession = asyncHandler(async (req, res) => {
   await request.save();
 
   const learner = await User.findById(req.user.id).select("name").lean();
-  const io = req.app.get("io");
-  io.to(`user:${request.mentorId}`).emit("learner_joined", {
-    requestId: request._id,
-    sessionId: session._id,
-    sessionTitle: session.title,
-    learnerName: learner?.name || "A learner",
-    joinedAt: request.joinedAt,
-  });
+  try {
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user:${request.mentorId}`).emit("learner_joined", {
+        requestId: request._id,
+        sessionId: session._id,
+        sessionTitle: session.title,
+        learnerName: learner?.name || "A learner",
+        joinedAt: request.joinedAt,
+      });
+    }
+  } catch (e) {
+    console.error("Socket emit (learner_joined) failed:", e.message);
+  }
   sendNotification(request.mentorId, req.user.id, "system", `${learner?.name || "A learner"} joined "${session.title}"`, `/mentor/sessions/${session._id}`);
 
   res.json({
