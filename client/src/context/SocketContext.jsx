@@ -46,7 +46,7 @@ export function SocketProvider({ children }) {
       if (res.data?.success) setSidebarCounts(res.data.data || {});
     }).catch(() => {});
 
-    const backendUrl = import.meta.env.DEV ? "http://localhost:3000" : window.location.origin;
+    const backendUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:3000" : window.location.origin);
     const s = io(backendUrl, {
       withCredentials: true,
       transports: ["websocket", "polling"],

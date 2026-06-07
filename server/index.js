@@ -39,6 +39,7 @@ const followRoutes = require("./routes/followRoutes");
 const feedRoutes = require("./routes/feedRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const sidebarRoutes = require("./routes/sidebarRoutes");
 
 app.use(helmet());
 app.set("trust proxy", 1);
@@ -112,6 +113,7 @@ app.use("/api/follow", followRoutes);
 app.use("/api/feed", feedRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/sidebar", sidebarRoutes);
 app.use("/api/disputes", require("./routes/disputeRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 
