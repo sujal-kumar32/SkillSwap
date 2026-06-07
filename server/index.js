@@ -119,7 +119,7 @@ app.use("/api/admin", require("./routes/adminRoutes"));
 
 app.use((err, req, res, next) => {
   const message = err?.error?.description || err?.message || "Internal server error";
-  console.error("Unhandled Error:", message);
+  console.error("Unhandled Error:", err.stack || err);
   if (err?.code === 11000) {
     return res.status(409).json({ success: false, message: "A record with this value already exists" });
   }
