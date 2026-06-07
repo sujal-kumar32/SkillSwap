@@ -86,20 +86,18 @@ const requestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-requestSchema.pre("save", function (next) {
+requestSchema.pre("save", function () {
   if (this.isModified("requestStatus") && ["completed", "cancelled", "rejected", "disputed"].includes(this.requestStatus)) {
     this.endedAt = new Date();
   }
-  next();
 });
 
-requestSchema.pre("findOneAndUpdate", function (next) {
+requestSchema.pre("findOneAndUpdate", function () {
   const update = this.getUpdate();
   const status = update?.requestStatus || update?.$set?.requestStatus;
   if (status && ["completed", "cancelled", "rejected", "disputed"].includes(status)) {
     this.set({ endedAt: new Date() });
   }
-  next();
 });
 
 requestSchema.index({ learnerId: 1, createdAt: -1 });
