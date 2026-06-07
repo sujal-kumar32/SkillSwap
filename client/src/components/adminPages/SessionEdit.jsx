@@ -89,6 +89,7 @@ const SessionEdit = () => {
       data.append("status", form.status);
       data.append("sessionType", form.sessionType);
       data.append("meetLink", form.meetLink);
+      data.append("bookingTypes", "paid");
       if (form.bookingTypes.includes("credits")) {
         data.append("bookingTypes", "credits");
       }
