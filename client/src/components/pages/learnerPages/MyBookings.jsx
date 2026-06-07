@@ -50,6 +50,30 @@ const MyBookings = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleJoinSession = async (booking) => {
+    try {
+      await Apiservices.joinBooking(booking._id);
+      setBookings((prev) =>
+        prev.map((item) =>
+          item._id === booking._id
+            ? { ...item, learnerJoined: true, joinedAt: new Date().toISOString() }
+            : item,
+        ),
+      );
+    } catch (error) {
+      showToast.error(error.response?.data?.message || "Failed to mark attendance");
+    }
+  };
+
+  const handleJoinWithAttendance = async (booking) => {
+    const link = booking.sessionId?.meetLink;
+    if (!booking.learnerJoined) {
+      await handleJoinSession(booking);
+    }
+    if (link) window.open(link, "_blank");
+    else showToast.info("Meeting link not available");
+  };
+
   const handleCancelBooking = async (booking) => {
     const confirmed = await deleteConfirmAlert("this booking");
     if (!confirmed) return;
@@ -161,13 +185,22 @@ const MyBookings = () => {
                           <i className="fa fa-comment" />
                         </button>
                         <Link to={`/learner/sessions/${booking.sessionId?._id}`} className="btn btn-sm btn-outline-primary rounded-pill px-3 py-2 fw-semibold">Details</Link>
-                        {(booking._sessionState === "live" || booking._sessionState === "upcoming") && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
+                        {booking._sessionState === "live" && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
+                          booking.learnerJoined ? (
+                            <button className="btn btn-sm btn-success rounded-pill px-3 py-2 fw-semibold" disabled>
+                              <i className="fa fa-check" /> Joined
+                            </button>
+                          ) : (
+                            <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"
+                              onClick={() => handleJoinWithAttendance(booking)}>Join</button>
+                          )
+                        ) : booking._sessionState === "upcoming" && booking.requestStatus === "accepted" && booking.sessionId?.sessionType === "online" ? (
                           <button className="btn btn-sm btn-primary rounded-pill px-3 py-2 fw-semibold"
                             onClick={() => {
                               const link = booking.sessionId?.meetLink;
                               if (link) window.open(link, "_blank");
                               else showToast.info("Meeting link not available");
-                            }}>{booking._sessionState === "live" ? "Join" : "Join Early"}</button>
+                            }}>Join Early</button>
                         ) : (
                           <button className="btn btn-sm btn-secondary rounded-pill px-3 py-2 fw-semibold" disabled>Join</button>
                         )}

@@ -1,4 +1,5 @@
-﻿const Skill = require("./skillModel");
+﻿const AdminAuditLog = require("../../models/AdminAuditLog");
+const Skill = require("./skillModel");
 const Category = require("../Categories/categoryModel");
 const User = require("../Users/userModel");
 const { uploadBuffer, destroyImage } = require("../../utilities/cloudinaryUpload");
@@ -255,6 +256,17 @@ exports.updateSkill = asyncHandler(async (req, res) => {
     await handleSkillThumbnail(req, skill);
 
     await skill.save();
+
+    if (status && isAdmin(req) && ["approved", "rejected"].includes(status)) {
+      await AdminAuditLog.create({
+        adminId: req.user.id,
+        action: status === "approved" ? "approve_skill" : "reject_skill",
+        targetModel: "Skill",
+        targetId: skill._id,
+        details: `Skill ${status === "approved" ? "approved" : "rejected"} (${skill.name})`,
+        ip: req.ip || req.connection?.remoteAddress,
+      });
+    }
 
     res.json({
       success: true,

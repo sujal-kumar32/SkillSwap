@@ -5,6 +5,7 @@ const User = require("../Users/userModel");
 const Request = require("../Request/requestModel");
 const Wallet = require("../Wallet/walletModel");
 const Transaction = require("../Wallet/transactionModel");
+const AdminAuditLog = require("../../models/AdminAuditLog");
 const BroadcastMessage = require("./broadcastMessageModel");
 const asyncHandler = require("../../utilities/asyncHandler");
 const getPagination = require("../../utilities/paginate");
@@ -95,6 +96,15 @@ exports.broadcastNotification = asyncHandler(async (req, res) => {
   if (req.app.get("io")) {
     emitSocketNotifications(req.app.get("io"), adminUser, message, link, users);
   }
+
+  await AdminAuditLog.create({
+    adminId: req.user.id,
+    action: "broadcast",
+    targetModel: "BroadcastMessage",
+    targetId: broadcastMsg._id,
+    details: `Broadcast sent to ${users.length} user(s) targeting ${type}${type === "role" ? ` (${targetRole})` : ""}`,
+    ip: req.ip || req.connection?.remoteAddress,
+  });
 
   res.json({
     success: true,
@@ -290,6 +300,16 @@ exports.resolveDispute = asyncHandler(async (req, res) => {
     await request.save({ session: mongoSession });
     await mongoSession.commitTransaction();
 
+    await AdminAuditLog.create({
+      adminId: req.user.id,
+      action: "resolve_dispute",
+      targetModel: "Request",
+      targetId: request._id,
+      details: `Dispute resolved — credits ${action === "release" ? "released to mentor" : "refunded to learner"}`,
+      metadata: { action, learnerId: request.learnerId, mentorId: request.mentorId, creditsLocked: request.creditsLocked },
+      ip: req.ip || req.connection?.remoteAddress,
+    });
+
     Promise.all([
       recalculateTrustScore(request.learnerId),
       recalculateTrustScore(request.mentorId),
@@ -424,4 +444,37 @@ exports.getCreditHistory = asyncHandler(async (req, res) => {
   ]);
 
   res.json({ success: true, total, page, pages: Math.ceil(total / limit), data: txns });
+});
+
+exports.getAuditLogs = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 50, action, search } = req.query;
+  const skip = (Math.max(1, parseInt(page)) - 1) * Math.min(100, Math.max(1, parseInt(limit)));
+
+  const filter = {};
+  if (action) filter.action = action;
+  if (search) {
+    const safe = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    filter.details = { $regex: safe, $options: "i" };
+  }
+
+  const [logs, total] = await Promise.all([
+    AdminAuditLog.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Math.min(100, Math.max(1, parseInt(limit))))
+      .populate("adminId", "name email profileImage")
+      .lean(),
+    AdminAuditLog.countDocuments(filter),
+  ]);
+
+  res.json({
+    success: true,
+    data: logs,
+    pagination: {
+      page: Math.max(1, parseInt(page)),
+      limit: Math.min(100, Math.max(1, parseInt(limit))),
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  });
 });

@@ -16,6 +16,7 @@ const SessionMaterial = require("../SessionMaterial/sessionMaterialModel");
 const { ensureMeetLinks, ensureMeetLink } = require("../../utilities/meetLinkHelper");
 const { createFeedEvent } = require("../../services/feedService");
 const { releaseCredits, transferCredits } = require("../../services/creditService");
+const { sendNotification } = require("../../services/notificationService");
 const CREDIT_RATES = require("../../config/creditRates");
 
 const isAdmin = (req) => req.user?.roles?.includes("admin");
@@ -684,6 +685,18 @@ exports.startSessionSession = asyncHandler(async (req, res) => {
       req.startedAt = now;
       await req.save();
     }
+  }
+
+  const io = req.app.get("io");
+  for (const req of accepted) {
+    io.to(`user:${req.learnerId}`).emit("session_going_live", {
+      requestId: req._id,
+      sessionId: session._id,
+      sessionTitle: session.title,
+      meetLink: session.meetLink,
+      startedAt: now,
+    });
+    sendNotification(req.learnerId, session.mentorId, "system", `"${session.title}" has started!`, session.meetLink);
   }
 
   res.json({

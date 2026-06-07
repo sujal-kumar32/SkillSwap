@@ -841,9 +841,64 @@ exports.startSession = asyncHandler(async (req, res) => {
   request.startedAt = now;
   await request.save();
 
+  const io = req.app.get("io");
+  io.to(`user:${request.learnerId}`).emit("session_started", {
+    requestId: request._id,
+    sessionId: session._id,
+    sessionTitle: session.title,
+    meetLink: session.meetLink,
+    startedAt: now,
+  });
+  sendNotification(request.learnerId, req.user.id, "system", `"${session.title}" has started!`, session.meetLink);
+
   res.json({
     success: true,
     message: "Session started",
     data: { startedAt: request.startedAt, meetLink: session.meetLink },
+  });
+});
+
+exports.joinSession = asyncHandler(async (req, res) => {
+  const request = await Request.findById(req.params.id).populate("sessionId");
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  if (!idsEqual(request.learnerId, req.user.id)) {
+    return res.status(403).json({ success: false, message: "Only the learner can join the session" });
+  }
+
+  if (request.requestStatus !== "accepted") {
+    return res.status(400).json({ success: false, message: "Session can only be joined after the request is accepted" });
+  }
+
+  if (request.learnerJoined) {
+    return res.status(400).json({ success: false, message: "You already joined this session" });
+  }
+
+  const session = request.sessionId;
+  if (session.status !== "ongoing") {
+    return res.status(400).json({ success: false, message: "Session is not currently ongoing" });
+  }
+
+  request.learnerJoined = true;
+  request.joinedAt = new Date();
+  await request.save();
+
+  const learner = await User.findById(req.user.id).select("name").lean();
+  const io = req.app.get("io");
+  io.to(`user:${request.mentorId}`).emit("learner_joined", {
+    requestId: request._id,
+    sessionId: session._id,
+    sessionTitle: session.title,
+    learnerName: learner?.name || "A learner",
+    joinedAt: request.joinedAt,
+  });
+  sendNotification(request.mentorId, req.user.id, "system", `${learner?.name || "A learner"} joined "${session.title}"`, `/mentor/sessions/${session._id}`);
+
+  res.json({
+    success: true,
+    message: "Joined session successfully",
+    data: { learnerJoined: true, joinedAt: request.joinedAt },
   });
 });

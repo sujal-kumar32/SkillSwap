@@ -14,6 +14,7 @@ const {
   deleteRequest,
   startSession,
   disputeRequest,
+  joinSession,
 } = require("../apis/Request/requestController");
 
 router.post("/", protect, validate(request.create), createRequest);
@@ -25,6 +26,7 @@ router.get("/", protect, getRequests);
 router.put("/:id/status", protect, validate(request.updateStatus), updateRequestStatus);
 router.put("/:id/dispute", protect, disputeRequest);
 router.put("/:id/start", protect, startSession);
+router.put("/:id/join", protect, joinSession);
 router.delete("/:id", protect, deleteRequest);
 
 module.exports = router;

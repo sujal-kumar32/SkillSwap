@@ -59,23 +59,20 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { success: false, message: "Too many requests, please try again later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 const PORT = process.env.PORT || 3000;
 
 const adminSeeder = require("./config/seeder");
 const { seedBadges } = require("./apis/Badges/badgeSeeder");
 const cron = require("node-cron");
-const { checkSessionReminders, autoCompleteSessions } = require("./jobs/sessionReminder");
-
-adminSeeder();
-seedBadges();
-
-cron.schedule("* * * * *", () => {
-  checkSessionReminders();
-});
-
-cron.schedule("*/5 * * * *", () => {
-  autoCompleteSessions();
-});
+const { checkSessionReminders, autoCompleteSessions, setSocketIO: setSessRemIO } = require("./jobs/sessionReminder");
 
 app.get("/", (req, res) => {
   res.send("welcome back");
@@ -86,6 +83,7 @@ app.get("/myself", (req, res) => {
 });
 
 app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api", apiLimiter);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/sessions", sessionRoutes);
@@ -143,36 +141,50 @@ const { initSocket } = require("./socket");
 const { setSocketIO: setNotifIO } = require("./services/notificationService");
 const { setSocketIO: setChatIO } = require("./apis/Chat/chatController");
 
-const io = initSocket(server);
-app.set("io", io);
-setNotifIO(io);
-setChatIO(io);
+(async () => {
+  await adminSeeder();
+  await seedBadges();
 
-server.listen(PORT, (err) => {
-  if (err) {
-    console.log("Server Error", err);
-  } else {
-    console.log("Server is Listening on", PORT);
-  }
-});
-
-const gracefulShutdown = async (signal) => {
-  console.log(`\n${signal} received. Shutting down gracefully...`);
-  server.close(() => {
-    console.log("HTTP server closed.");
+  cron.schedule("* * * * *", () => {
+    checkSessionReminders();
   });
-  try {
-    await mongoose.disconnect();
-    console.log("MongoDB disconnected.");
-  } catch (e) {
-    console.error("Error disconnecting MongoDB:", e.message);
-  }
-  io?.close(() => {
-    console.log("Socket.io closed.");
-    process.exit(0);
-  });
-  setTimeout(() => process.exit(0), 5000);
-};
 
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+  cron.schedule("*/5 * * * *", () => {
+    autoCompleteSessions();
+  });
+
+  const io = initSocket(server);
+  app.set("io", io);
+  setNotifIO(io);
+  setChatIO(io);
+  setSessRemIO(io);
+
+  server.listen(PORT, (err) => {
+    if (err) {
+      console.log("Server Error", err);
+    } else {
+      console.log("Server is Listening on", PORT);
+    }
+  });
+
+  const gracefulShutdown = async (signal) => {
+    console.log(`\n${signal} received. Shutting down gracefully...`);
+    server.close(() => {
+      console.log("HTTP server closed.");
+    });
+    try {
+      await mongoose.disconnect();
+      console.log("MongoDB disconnected.");
+    } catch (e) {
+      console.error("Error disconnecting MongoDB:", e.message);
+    }
+    io?.close(() => {
+      console.log("Socket.io closed.");
+      process.exit(0);
+    });
+    setTimeout(() => process.exit(0), 5000);
+  };
+
+  process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+})();

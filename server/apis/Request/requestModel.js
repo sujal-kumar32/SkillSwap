@@ -72,6 +72,16 @@ const requestSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    learnerJoined: {
+      type: Boolean,
+      default: false,
+    },
+
+    joinedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

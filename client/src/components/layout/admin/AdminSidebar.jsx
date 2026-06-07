@@ -20,6 +20,7 @@ const links = [
   { to: "/admin/credits", label: "Credit Management", icon: "fa-coins" },
   { to: "/admin/reviews", label: "Reviews & Ratings", icon: "fa-star" },
   { to: "/admin/broadcast", label: "Broadcast", icon: "fa-bullhorn" },
+  { to: "/admin/audit-logs", label: "Audit Logs", icon: "fa-history" },
   { to: "/admin/settings", label: "Settings", icon: "fa-gear" },
 ];
 

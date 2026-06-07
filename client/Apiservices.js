@@ -180,10 +180,6 @@ class Apiservices {
     return axios.get(baseUrl + "profile/stats");
   }
 
-  getPublicProfile(userId) {
-    return axios.get(baseUrl + "users/public/" + userId);
-  }
-
   getSidebarCounts() {
     return axios.get(baseUrl + "sidebar/counts");
   }
@@ -551,6 +547,14 @@ class Apiservices {
 
   resolveDispute(id, data) {
     return axios.put(baseUrl + `disputes/${id}/resolve`, data);
+  }
+
+  joinBooking(id) {
+    return axios.put(baseUrl + `requests/${id}/join`);
+  }
+
+  getAuditLogs(params = {}) {
+    return axios.get(baseUrl + "admin/audit-logs", { params });
   }
 
 }

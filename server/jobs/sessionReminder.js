@@ -4,11 +4,18 @@ const Session = require("../apis/Session/sessionModel");
 const User = require("../apis/Users/userModel");
 const Wallet = require("../apis/Wallet/walletModel");
 const Transaction = require("../apis/Wallet/transactionModel");
+const Payment = require("../apis/Payment/paymentModel");
 const { sendEmail } = require("../utilities/emailService");
 const { sessionReminder } = require("../utilities/emailTemplates");
 const { releaseCredits, transferCredits } = require("../services/creditService");
+const { sendNotification } = require("../services/notificationService");
 
+let _io = null;
 let isAutoCompleting = false;
+
+function setSocketIO(io) {
+  _io = io;
+}
 
 function getStartDateTime(session) {
   const startTime = session.date ? new Date(session.date) : new Date();
@@ -66,6 +73,7 @@ const transferSessionCredits = async (req) => {
 
 const refundPaymentForRequest = async (req, session) => {
   if (req.paymentStatus !== "paid" || !session.price || session.price <= 0) return;
+
   let wallet = await Wallet.findOne({ userId: req.learnerId });
   if (!wallet) wallet = await Wallet.create({ userId: req.learnerId });
   await Transaction.create({
@@ -82,6 +90,13 @@ const refundPaymentForRequest = async (req, session) => {
   });
   wallet.balance += session.price;
   await wallet.save();
+
+  await Payment.findOneAndUpdate(
+    { requestId: req._id, paymentStatus: "success" },
+    { paymentStatus: "refunded", refundStatus: "processed", refundedAt: new Date() },
+  );
+
+  await Request.findByIdAndUpdate(req._id, { paymentStatus: "refunded" });
 };
 
 const releaseSessionCredits = async (req) => {
@@ -110,11 +125,32 @@ const releaseSessionCredits = async (req) => {
   return { creditsLocked: 0 };
 };
 
+const emitSessionEvent = (userId, event, data) => {
+  if (_io) {
+    _io.to(`user:${userId}`).emit(event, data);
+  }
+};
+
 const processStartedRequest = async (req, session) => {
-  await creditMentorForRequest(req, session);
-  const creditResult = await transferSessionCredits(req);
-  if (!creditResult) {
-    await Request.findByIdAndUpdate(req._id, { requestStatus: "completed" });
+  if (req.learnerJoined) {
+    await creditMentorForRequest(req, session);
+    const creditResult = await transferSessionCredits(req);
+    if (!creditResult) {
+      await Request.findByIdAndUpdate(req._id, { requestStatus: "completed" });
+    }
+    emitSessionEvent(req.learnerId, "session_completed", { requestId: req._id, sessionId: session._id, sessionTitle: session.title });
+    emitSessionEvent(req.mentorId, "session_completed", { requestId: req._id, sessionId: session._id, sessionTitle: session.title });
+    sendNotification(req.learnerId, null, "system", `"${session.title}" completed`, "");
+    sendNotification(req.mentorId, null, "system", `"${session.title}" completed — earnings credited`, "");
+  } else {
+    await refundPaymentForRequest(req, session);
+    const creditResult = await releaseSessionCredits(req);
+    if (!creditResult) {
+      await Request.findByIdAndUpdate(req._id, { requestStatus: "cancelled" });
+    }
+    emitSessionEvent(req.learnerId, "session_refunded", { requestId: req._id, sessionId: session._id, sessionTitle: session.title });
+    sendNotification(req.learnerId, null, "system", `"${session.title}" — refunded (mentor started but you didn't join)`, "");
+    sendNotification(req.mentorId, null, "system", `"${session.title}" — no learner attendance, session cancelled`, "");
   }
 };
 
@@ -124,6 +160,10 @@ const processUnstartedRequest = async (req, session) => {
   if (!creditResult) {
     await Request.findByIdAndUpdate(req._id, { requestStatus: "cancelled" });
   }
+  emitSessionEvent(req.learnerId, "session_cancelled", { requestId: req._id, sessionId: session._id, sessionTitle: session.title });
+  emitSessionEvent(req.mentorId, "session_cancelled", { requestId: req._id, sessionId: session._id, sessionTitle: session.title });
+  sendNotification(req.learnerId, null, "system", `"${session.title}" cancelled — mentor never started`, "");
+  sendNotification(req.mentorId, null, "system", `"${session.title}" cancelled — you didn't start the session`, "");
 };
 
 const completeOngoingSessions = async (now) => {
@@ -254,4 +294,4 @@ async function checkSessionReminders() {
   }
 }
 
-module.exports = { checkSessionReminders, autoCompleteSessions };
+module.exports = { checkSessionReminders, autoCompleteSessions, setSocketIO };
