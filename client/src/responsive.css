@@ -661,3 +661,27 @@ img { max-width: 100%; height: auto; }
     margin-top: -30px;
   }
 }
+
+/* ── SwapMind AI Chat Widget responsive ── */
+@media (max-width: 767.98px) {
+  .swapmind-widget {
+    bottom: 0 !important;
+    right: 0 !important;
+  }
+  .swapMind-bubble {
+    width: 50px !important;
+    height: 50px !important;
+    margin: 0 16px 16px 0 !important;
+  }
+  .swapMind-bubble svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+}
+@media (max-width: 575.98px) {
+  .swapMind-bubble {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 12px 12px 0 !important;
+  }
+}

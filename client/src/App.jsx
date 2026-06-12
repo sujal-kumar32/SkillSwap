@@ -71,6 +71,7 @@ import NotificationPage from "./components/pages/NotificationPage";
 import MessagesPage from "./components/pages/MessagesPage";
 import { SocketProvider } from "./context/SocketContext";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
+import AiChatWidget from "./components/shared/AiChatWidget";
 import { SkeletonInjector } from "./components/ui/Skeleton";
 import "./responsive.css";
 import Apiservices from "../Apiservices";
@@ -351,6 +352,7 @@ function App() {
           </Route>
         </Routes>
 
+        <AiChatWidget />
         <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover draggable theme="light" />
       </BrowserRouter>
       </SocketProvider>
