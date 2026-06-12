@@ -15,6 +15,12 @@ const {
   searchSessions,
 } = require("../apis/AI/aiController");
 
+const {
+  getWelcome,
+  guideChat,
+  updateOnboarding,
+} = require("../apis/AI/guideController");
+
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 10,
@@ -32,5 +38,9 @@ router.post("/generate-roadmap", protect, aiLimiter, generateRoadmap);
 router.post("/mentor-assistant", protect, aiLimiter, mentorAssistant);
 router.post("/chat", protect, aiLimiter, chatAssistant);
 router.post("/search", protect, aiLimiter, searchSessions);
+
+router.get("/guide/welcome", protect.optional, getWelcome);
+router.post("/guide/chat", protect.optional, guideChat);
+router.put("/guide/onboarding", protect, updateOnboarding);
 
 module.exports = router;

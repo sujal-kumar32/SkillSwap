@@ -75,6 +75,7 @@ const userSchema = new mongoose.Schema(
     lastActive: { type: Date, default: Date.now },
 
     onboardingDismissed: { type: Boolean, default: false },
+    onboardingStatus: { type: String, enum: ["not_started", "in_progress", "completed"], default: "not_started" },
 
     trustScore: { type: Number, default: 100, min: 0, max: 100 },
     totalCompletedSessions: { type: Number, default: 0 },

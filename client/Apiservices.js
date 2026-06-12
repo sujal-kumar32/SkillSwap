@@ -557,6 +557,18 @@ class Apiservices {
     return axios.get(baseUrl + "admin/audit-logs", { params });
   }
 
+  guideWelcome() {
+    return axios.get(baseUrl + "ai/guide/welcome");
+  }
+
+  guideChat(message, context = {}) {
+    return axios.post(baseUrl + "ai/guide/chat", { message, ...context });
+  }
+
+  updateOnboardingStatus(status) {
+    return axios.put(baseUrl + "ai/guide/onboarding", { status });
+  }
+
 }
 
 let isRefreshing = false;
