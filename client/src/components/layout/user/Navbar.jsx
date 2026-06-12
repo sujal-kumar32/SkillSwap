@@ -3,8 +3,12 @@ import { Link, NavLink } from "react-router-dom";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [pagesOpen, setPagesOpen] = useState(false);
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setPagesOpen(false);
+  };
 
   return (
     <>
@@ -89,15 +93,19 @@ function Navbar() {
               >
                 Sessions
               </NavLink>
-              <div className="nav-item dropdown">
+              <div
+                className={`nav-item dropdown${pagesOpen ? " show" : ""}`}
+                onMouseEnter={() => setPagesOpen(true)}
+                onMouseLeave={() => setPagesOpen(false)}
+              >
                 <a
                   href="#"
-                  className="nav-link dropdown-toggle"
-                  onClick={(e) => e.preventDefault()}
+                  className={`nav-link dropdown-toggle${pagesOpen ? " show" : ""}`}
+                  onClick={(e) => { e.preventDefault(); setPagesOpen(!pagesOpen); }}
                 >
                   Pages
                 </a>
-                <div className="dropdown-menu m-0">
+                <div className={`dropdown-menu m-0${pagesOpen ? " show" : ""}`}>
                   <Link to="/features" className="dropdown-item" onClick={closeMenu}>
                     Features
                   </Link>
