@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Apiservices from "../../../Apiservices";
 
@@ -7,15 +6,28 @@ function Testimonial() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
+  const [testimonials, setTestimonials] = useState([]);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
-    Apiservices.getCategories().then(res => setCategories(res.data.data || [])).catch(() => {});
+    Promise.all([
+      Apiservices.getCategories(),
+      Apiservices.getPublicReviews(),
+    ])
+      .then(([catRes, revRes]) => {
+        setCategories(catRes.data.data || []);
+        setTestimonials(revRes.data.data || []);
+      })
+      .catch(() => {})
+      .finally(() => setDataReady(true));
   }, []);
 
   useEffect(() => {
+    if (!dataReady) return;
+
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
-      if (carousel.hasClass("owl-loaded")) {
+      if (carousel && carousel.hasClass("owl-loaded")) {
         carousel.trigger("destroy.owl.carousel");
         carousel.removeClass("owl-loaded");
         carousel.find(".owl-stage-outer").children().unwrap();
@@ -49,7 +61,7 @@ function Testimonial() {
 
     const timer = setTimeout(() => {
       initTestimonialCarousel();
-    }, 1000);
+    }, 100);
 
     return () => {
       clearTimeout(timer);
@@ -57,7 +69,8 @@ function Testimonial() {
         destroyCarousel(".testimonial-carousel");
       }
     };
-  }, []);
+  }, [dataReady]);
+
   return (
     <>
       <>
@@ -70,7 +83,7 @@ function Testimonial() {
             <h1 className="text-white display-1">Testimonials</h1>
             <div className="d-inline-flex text-white mb-5">
               <p className="m-0 text-uppercase">
-                <a className="text-white" href="">
+                <a className="text-white" href="/">
                   Home
                 </a>
               </p>
@@ -119,65 +132,25 @@ function Testimonial() {
                 </p>
               </div>
               <div className="col-lg-7">
+                {testimonials.length === 0 ? (
+                  <div className="bg-light p-5 text-center text-muted">No testimonials yet.</div>
+                ) : (
                 <div className="owl-carousel testimonial-carousel">
-                  <div className="bg-light p-5">
-                    <i className="fa fa-3x fa-quote-left text-primary mb-4" />
-                    <p>
-                      I joined SkillSwap as a complete beginner in web development. Within two months, 
-                      I built my first portfolio website with guidance from my mentor. The live sessions 
-                      are far more effective than any pre-recorded course I've tried.
-                    </p>
-                    <div className="d-flex flex-shrink-0 align-items-center mt-4">
-                      <img
-                        className="img-fluid mr-4"
-                        src="img/testimonial-2.jpg"
-                        alt=""
-                      />
-                      <div>
-                        <h5>Ananya Gupta</h5>
-                        <span>Web Development Learner</span>
+                  {testimonials.map((t) => (
+                    <div className="bg-light p-5" key={t._id}>
+                      <i className="fa fa-3x fa-quote-left text-primary mb-4" />
+                      <p>{t.comment || "Great experience with SkillSwap!"}</p>
+                      <div className="d-flex flex-shrink-0 align-items-center mt-4">
+                        <img className="img-fluid mr-4" src={t.image || "img/testimonial-2.jpg"} alt={t.name} />
+                        <div>
+                          <h5>{t.name}</h5>
+                          <span>{t.role}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="bg-light p-5">
-                    <i className="fa fa-3x fa-quote-left text-primary mb-4" />
-                    <p>
-                      As a mentor on SkillSwap, I've been able to share my 8 years of design experience 
-                      with eager learners from all over India. The platform makes it effortless to schedule 
-                      sessions, share resources, and track progress. Truly rewarding!
-                    </p>
-                    <div className="d-flex flex-shrink-0 align-items-center mt-4">
-                      <img
-                        className="img-fluid mr-4"
-                        src="img/testimonial-1.jpg"
-                        alt=""
-                      />
-                      <div>
-                        <h5>Neha Patel</h5>
-                        <span>UI/UX Design Mentor</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="bg-light p-5">
-                    <i className="fa fa-3x fa-quote-left text-primary mb-4" />
-                    <p>
-                      I was struggling with DSA interview preparation until I found Vikram on SkillSwap. 
-                      His structured approach and real-world examples made complex topics click. Landed my 
-                      dream job at a top tech company thanks to this platform!
-                    </p>
-                    <div className="d-flex flex-shrink-0 align-items-center mt-4">
-                      <img
-                        className="img-fluid mr-4"
-                        src="img/testimonial-2.jpg"
-                        alt=""
-                      />
-                      <div>
-                        <h5>Rohit Mehta</h5>
-                        <span>DSA Interview Prep Learner</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
+                )}
               </div>
             </div>
           </div>
@@ -189,7 +162,3 @@ function Testimonial() {
 }
 
 export default Testimonial;
-
-
-
-

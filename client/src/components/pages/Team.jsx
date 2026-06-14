@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Apiservices from "../../../Apiservices";
 
@@ -7,24 +6,28 @@ function Team() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
-
-  const mentors = [
-    { name: "Mentor One", skill: "Web Development", img: "img/team-1.jpg" },
-    { name: "Mentor Two", skill: "Data Science", img: "img/team-2.jpg" },
-    { name: "Mentor Three", skill: "UI/UX Design", img: "img/team-3.jpg" },
-    { name: "Mentor Four", skill: "Mobile Development", img: "img/team-4.jpg" },
-    { name: "Mentor Five", skill: "DevOps", img: "img/team-1.jpg" },
-    { name: "Mentor Six", skill: "Machine Learning", img: "img/team-2.jpg" },
-  ];
+  const [mentors, setMentors] = useState([]);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
-    Apiservices.getCategories().then(res => setCategories(res.data.data || [])).catch(() => {});
+    Promise.all([
+      Apiservices.getCategories(),
+      Apiservices.getTopMentors(),
+    ])
+      .then(([catRes, menRes]) => {
+        setCategories(catRes.data.data || []);
+        setMentors(menRes.data.data || []);
+      })
+      .catch(() => {})
+      .finally(() => setDataReady(true));
   }, []);
 
   useEffect(() => {
+    if (!dataReady) return;
+
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
-      if (carousel.hasClass("owl-loaded")) {
+      if (carousel && carousel.hasClass("owl-loaded")) {
         carousel.trigger("destroy.owl.carousel");
         carousel.removeClass("owl-loaded");
         carousel.find(".owl-stage-outer").children().unwrap();
@@ -64,7 +67,7 @@ function Team() {
 
     const timer = setTimeout(() => {
       initTeamCarousel();
-    }, 1000);
+    }, 100);
 
     return () => {
       clearTimeout(timer);
@@ -72,7 +75,8 @@ function Team() {
         destroyCarousel(".team-carousel");
       }
     };
-  }, []);
+  }, [dataReady]);
+
   return (
     <>
       <>
@@ -85,7 +89,7 @@ function Team() {
             <h1 className="text-white display-1">Top Mentors</h1>
             <div className="d-inline-flex text-white mb-5">
               <p className="m-0 text-uppercase">
-                <a className="text-white" href="">
+                <a className="text-white" href="/">
                   Home
                 </a>
               </p>
@@ -126,37 +130,46 @@ function Team() {
               </h6>
               <h1 className="display-4">Learn From the Best</h1>
             </div>
+            {mentors.length === 0 ? (
+              <div className="text-center py-5 text-muted">No mentors available yet.</div>
+            ) : (
             <div
               className="owl-carousel team-carousel position-relative"
               style={{ padding: "0 30px" }}
             >
-              {mentors.map((mentor, index) => (
-                <div className="team-item" key={index}>
-                  <img className="img-fluid w-100" src={mentor.img} alt="" />
-                  <div className="bg-light text-center p-4">
-                    <h5 className="mb-3">{mentor.name}</h5>
-                    <p className="mb-2">{mentor.skill}</p>
-                    <div className="d-flex justify-content-center">
-                      <a className="mx-2 p-2" href="#">
-                        <i className="fab fa-twitter" />
-                      </a>
-                      <a className="mx-2 p-2" href="#">
-                        <i className="fab fa-facebook-f" />
-                      </a>
-                      <a className="mx-2 p-2" href="#">
-                        <i className="fab fa-linkedin-in" />
-                      </a>
-                      <a className="mx-2 p-2" href="#">
-                        <i className="fab fa-instagram" />
-                      </a>
-                      <a className="mx-2 p-2" href="#">
-                        <i className="fab fa-youtube" />
-                      </a>
+              {mentors.map((m, i) => (
+                <div className="team-item" key={m._id}>
+                  <img className="img-fluid w-100" src={m.profileImage || `img/team-${(i % 6) + 1}.jpg`} alt={m.name} style={{ height: 200, objectFit: "cover" }} />
+                  <div className="bg-light text-center p-4" style={{ minHeight: 140 }}>
+                    <h5 className="mb-3">{m.name}</h5>
+                    <p className="mb-2 text-truncate">{m.bio ? (m.bio.length > 60 ? m.bio.slice(0, 60) + "..." : m.bio) : "Expert Mentor"}</p>
+                    <div className="d-flex justify-content-center" style={{ minHeight: 40 }}>
+                      {m.socialLinks?.twitter && (
+                        <a className="mx-2 p-2" href={m.socialLinks.twitter} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-twitter" />
+                        </a>
+                      )}
+                      {m.socialLinks?.linkedin && (
+                        <a className="mx-2 p-2" href={m.socialLinks.linkedin} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-linkedin-in" />
+                        </a>
+                      )}
+                      {m.socialLinks?.youtube && (
+                        <a className="mx-2 p-2" href={m.socialLinks.youtube} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-youtube" />
+                        </a>
+                      )}
+                      {m.socialLinks?.github && (
+                        <a className="mx-2 p-2" href={m.socialLinks.github} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-github" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+            )}
           </div>
         </div>
         {/* Team End */}
@@ -166,7 +179,3 @@ function Team() {
 }
 
 export default Team;
-
-
-
-

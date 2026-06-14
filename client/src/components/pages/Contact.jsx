@@ -6,6 +6,8 @@ function Contact() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
+  const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [contactSent, setContactSent] = useState(false);
 
   useEffect(() => {
     Apiservices.getCategories().then(res => setCategories(res.data.data || [])).catch(() => {});
@@ -100,14 +102,25 @@ function Contact() {
                   <h1 className="display-4">Let's Connect</h1>
                 </div>
                 <div className="contact-form">
-                  <form>
+                  {contactSent ? (
+                    <div className="alert alert-success">Thank you! We'll get back to you soon.</div>
+                  ) : (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await Apiservices.submitContact(contactForm);
+                      setContactSent(true);
+                    } catch { /* ignore */ }
+                  }}>
                     <div className="row">
                       <div className="col-6 form-group">
                         <input
                           type="text"
                           className="form-control border-top-0 border-right-0 border-left-0 p-0"
                           placeholder="Your Name"
-                          required="required"
+                          required
+                          value={contactForm.name}
+                          onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
                         />
                       </div>
                       <div className="col-6 form-group">
@@ -115,7 +128,9 @@ function Contact() {
                           type="email"
                           className="form-control border-top-0 border-right-0 border-left-0 p-0"
                           placeholder="Your Email"
-                          required="required"
+                          required
+                          value={contactForm.email}
+                          onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
                         />
                       </div>
                     </div>
@@ -124,7 +139,8 @@ function Contact() {
                         type="text"
                         className="form-control border-top-0 border-right-0 border-left-0 p-0"
                         placeholder="Subject"
-                        required="required"
+                        value={contactForm.subject}
+                        onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
                       />
                     </div>
                     <div className="form-group">
@@ -132,8 +148,9 @@ function Contact() {
                         className="form-control border-top-0 border-right-0 border-left-0 p-0"
                         rows={5}
                         placeholder="Message"
-                        required="required"
-                        defaultValue={""}
+                        required
+                        value={contactForm.message}
+                        onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                       />
                     </div>
                     <div>
@@ -145,6 +162,7 @@ function Contact() {
                       </button>
                     </div>
                   </form>
+                  )}
                 </div>
               </div>
             </div>
