@@ -22,7 +22,7 @@ function Feature() {
             <h1 className="text-white display-1">Features</h1>
             <div className="d-inline-flex text-white mb-5">
               <p className="m-0 text-uppercase">
-                <a className="text-white" href="">
+                <a className="text-white" href="/">
                   Home
                 </a>
               </p>
@@ -68,18 +68,18 @@ function Feature() {
                   </h1>
                 </div>
                 <p className="mb-4 pb-2">
-                  SkillSwap combines the best of mentorship, technology, and community to create 
+                  SkillSwap combines live mentorship, gamified progression, and AI-powered guidance to create 
                   a learning experience that's personal, practical, and effective. Here's what makes us different.
                 </p>
                 <div className="d-flex mb-3">
                   <div className="btn-icon bg-primary mr-4">
-                    <i className="fa fa-2x fa-users text-white" />
+                    <i className="fa fa-2x fa-video text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Skill-Based Learning</h4>
+                    <h4>Live Peer-to-Peer Sessions</h4>
                     <p>
-                      Focus on practical skills that matter. Whether it's coding, music, or public speaking, 
-                      our sessions are hands-on and project-based.
+                      Learn directly from skilled mentors through live 1-on-1 or group sessions. 
+                      Real-time interaction, personalized feedback, and hands-on practice — not pre-recorded videos.
                     </p>
                   </div>
                 </div>
@@ -88,34 +88,58 @@ function Feature() {
                     <i className="fa fa-2x fa-robot text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>AI Recommendations</h4>
+                    <h4>SwapMind AI Guide</h4>
                     <p>
-                      Get personalized session and mentor suggestions powered by AI that learns your 
-                      preferences, goals, and learning style.
+                      Meet your AI onboarding assistant. SwapMind greets new users, recommends sessions, 
+                      creates personalized learning roadmaps, and answers platform questions in real-time.
+                    </p>
+                  </div>
+                </div>
+                <div className="d-flex mb-3">
+                  <div className="btn-icon bg-success mr-4">
+                    <i className="fa fa-2x fa-wallet text-white" />
+                  </div>
+                  <div className="mt-n1">
+                    <h4>Wallet &amp; Skill Credits</h4>
+                    <p>
+                      Pay for sessions via Razorpay or earn Skill Credits — a virtual currency. 
+                      Mentors set credit costs based on expertise, and learners track all transactions in their wallet.
                     </p>
                   </div>
                 </div>
                 <div className="d-flex mb-3">
                   <div className="btn-icon bg-warning mr-4">
-                    <i className="fa fa-2x fa-calendar-check text-white" />
+                    <i className="fa fa-2x fa-trophy text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Real-Time Bookings</h4>
+                    <h4>XP, Levels &amp; Badges</h4>
                     <p>
-                      Book sessions in real-time with instant confirmation. Choose from available slots 
-                      that fit your schedule perfectly.
+                      Earn XP by completing sessions and writing reviews. Level up, unlock achievement badges, 
+                      and climb the mentor or learner leaderboard to showcase your progress.
+                    </p>
+                  </div>
+                </div>
+                <div className="d-flex mb-3">
+                  <div className="btn-icon bg-info mr-4">
+                    <i className="fa fa-2x fa-comments text-white" />
+                  </div>
+                  <div className="mt-n1">
+                    <h4>Real-Time Chat &amp; Messaging</h4>
+                    <p className="m-0">
+                      Stay connected with built-in real-time chat. Send DMs, share files, use emoji reactions, 
+                      and get read receipts — all within your session workspace.
                     </p>
                   </div>
                 </div>
                 <div className="d-flex">
-                  <div className="btn-icon bg-info mr-4">
-                    <i className="fa fa-2x fa-chart-simple text-white" />
+                  <div className="btn-icon bg-danger mr-4">
+                    <i className="fa fa-2x fa-certificate text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Progress Tracking</h4>
+                    <h4>Certificates &amp; Reviews</h4>
                     <p className="m-0">
-                      Track every session you complete, skill you learn, and milestone you achieve. 
-                      Your learning journey, visualized.
+                      Auto-generated PDF certificates after completing a skill session. Leave 5-star reviews 
+                      for mentors and build your reputation with trust scores and ratings.
                     </p>
                   </div>
                 </div>

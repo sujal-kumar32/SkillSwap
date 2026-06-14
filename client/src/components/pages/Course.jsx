@@ -25,7 +25,7 @@ function Course() {
 
   useEffect(() => {
     Promise.all([
-      Apiservices.fetchSessions({ limit: 20 }).then((res) => setSessions(res.data.data || [])),
+      Apiservices.fetchSessions({ limit: 50 }).then((res) => setSessions(res.data.data || [])),
       Apiservices.getCategories().then((res) => setCategories(res.data.data || [])),
     ]).catch(() => setError("Failed to load sessions")).finally(() => setLoading(false));
   }, []);
@@ -195,6 +195,7 @@ function Course() {
                   <h1 className="display-4">
                     Find Your Perfect Skill Session
                   </h1>
+                  {!loading && <p className="text-muted">{filtered.length} session{filtered.length !== 1 ? "s" : ""} found</p>}
                 </div>
               </div>
             </div>
@@ -217,11 +218,11 @@ function Course() {
               </div>
             ) : (
               <div className="row">
-                {filtered.slice(0, 6).map((s, i) => (
+                {filtered.map((s, i) => (
                   <div className="col-lg-4 col-md-6 pb-4" key={s._id}>
                     <Link
                       className="courses-list-item position-relative d-block overflow-hidden mb-2"
-                      to={`/learner/sessions/${s._id}`}
+                      to={`/courses/${s._id}`}
                     >
                       <img className="img-fluid" src={fallbackImgs[i % 6]} alt={s.title} />
                       <div className="courses-text">

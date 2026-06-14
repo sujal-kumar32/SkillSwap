@@ -211,7 +211,7 @@ function Home() {
                   <div className="col-3 px-0">
                     <div className="bg-success text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        {stats?.totalSessions || 0}
+                        {stats?.totalSkills || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Available<span className="d-block">Skills</span>
@@ -221,7 +221,7 @@ function Home() {
                   <div className="col-3 px-0">
                     <div className="bg-primary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        {stats?.totalCompleted || 0}
+                        {stats?.totalSessions || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Live<span className="d-block">Sessions</span>
@@ -357,7 +357,7 @@ function Home() {
                     </div>
                   </div>
                   <div className="w-100 bg-white text-center p-4">
-                    <Link className="btn btn-primary" to={`/courses?s=${s._id}`}>
+                    <Link className="btn btn-primary" to={`/courses/${s._id}`}>
                       Session Detail
                     </Link>
                   </div>

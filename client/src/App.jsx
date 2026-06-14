@@ -3,7 +3,7 @@ import { ToastContainer } from "react-toastify";
 import Home from "./components/pages/Home";
 import About from "./components/pages/About";
 import Course from "./components/pages/Course";
-import Detail from "./components/pages/Detail";
+import PublicSessionDetail from "./components/pages/PublicSessionDetail";
 import Team from "./components/pages/Team";
 import Feature from "./components/pages/Feature";
 import Testimonial from "./components/pages/Testimonial";
@@ -176,7 +176,7 @@ function App() {
             <Route index element={<HomeRoute />} />
             <Route path="/about" element={<About />} />
             <Route path="/courses" element={<Course />} />
-            <Route path="/detail" element={<Detail />} />
+            <Route path="/courses/:id" element={<PublicSessionDetail />} />
             <Route path="/features" element={<Feature />} />
             <Route path="/team" element={<Team />} />
             <Route path="/testimonial" element={<Testimonial />} />

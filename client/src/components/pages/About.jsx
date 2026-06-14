@@ -9,15 +9,25 @@ function About() {
   const [catSearch, setCatSearch] = useState("");
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState("");
+  const [stats, setStats] = useState(null);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
-    Apiservices.getCategories()
-      .then(res => setCategories(res.data.data || []))
-      .catch(() => setCatError("Failed to load categories"))
-      .finally(() => setCatLoading(false));
+    Promise.all([
+      Apiservices.getCategories(),
+      Apiservices.getPublicStats(),
+    ])
+      .then(([catRes, statRes]) => {
+        setCategories(catRes.data.data || []);
+        setStats(statRes.data.data || null);
+      })
+      .catch(() => setCatError("Failed to load data"))
+      .finally(() => { setCatLoading(false); setDataReady(true); });
   }, []);
 
   useEffect(() => {
+    if (!dataReady) return;
+
     const timer = setTimeout(() => {
 
       if (window.$) {
@@ -28,10 +38,10 @@ function About() {
           });
         }
       }
-    }, 1000);
+    }, 100);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [dataReady]);
 
   return (
     <>
@@ -116,7 +126,7 @@ function About() {
                   <div className="col-3 px-0">
                     <div className="bg-success text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        50
+                        {stats?.totalSkills || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Available<span className="d-block">Skills</span>
@@ -126,7 +136,7 @@ function About() {
                   <div className="col-3 px-0">
                     <div className="bg-primary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        200
+                        {stats?.totalSessions || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Live<span className="d-block">Sessions</span>
@@ -136,7 +146,7 @@ function About() {
                   <div className="col-3 px-0">
                     <div className="bg-secondary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        80
+                        {stats?.totalMentors || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Expert<span className="d-block">Mentors</span>
@@ -146,7 +156,7 @@ function About() {
                   <div className="col-3 px-0">
                     <div className="bg-warning text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        1000
+                        {stats?.totalLearners || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Happy<span className="d-block">Learners</span>
@@ -173,43 +183,55 @@ function About() {
                   </h1>
                 </div>
                 <p className="mb-4 pb-2">
-                  Our mission is to democratize skill-sharing by creating a platform where anyone can teach 
-                  and anyone can learn. We break down barriers between experts and beginners, making 
-                  mentorship accessible, affordable, and effective.
+                  Our mission is to make skill-sharing accessible to everyone. We connect passionate mentors 
+                  with eager learners through live sessions, powered by AI guidance, gamified progression, 
+                  and a thriving community.
                 </p>
                 <div className="d-flex mb-3">
                   <div className="btn-icon bg-primary mr-4">
-                    <i className="fa fa-2x fa-handshake text-white" />
+                    <i className="fa fa-2x fa-video text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Community-Driven</h4>
+                    <h4>Live Mentorship Sessions</h4>
                     <p>
-                      SkillSwap is built by learners, for learners. Our community guidelines ensure 
-                      respectful, supportive, and productive interactions between mentors and mentees.
+                      Real-time 1-on-1 or group sessions with vetted mentors. Learn coding, design, music, 
+                      public speaking, and more — with instant feedback and personalized attention.
                     </p>
                   </div>
                 </div>
                 <div className="d-flex mb-3">
                   <div className="btn-icon bg-secondary mr-4">
-                    <i className="fa fa-2x fa-brain text-white" />
+                    <i className="fa fa-2x fa-robot text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>AI-Powered Matching</h4>
+                    <h4>SwapMind AI Assistant</h4>
                     <p>
-                      Our smart algorithms analyze your skills, interests, and learning goals to recommend 
-                      the most relevant mentors and sessions, saving you time and accelerating your growth.
+                      An AI guide that helps you discover sessions, creates personalized learning roadmaps, 
+                      and answers questions about the platform — available 24/7 from any page.
+                    </p>
+                  </div>
+                </div>
+                <div className="d-flex mb-3">
+                  <div className="btn-icon bg-success mr-4">
+                    <i className="fa fa-2x fa-trophy text-white" />
+                  </div>
+                  <div className="mt-n1">
+                    <h4>Gamified Learning Journey</h4>
+                    <p>
+                      Earn XP, level up, collect badges, and climb leaderboards. Complete sessions to earn 
+                      PDF certificates and Skill Credits for future learning.
                     </p>
                   </div>
                 </div>
                 <div className="d-flex">
                   <div className="btn-icon bg-warning mr-4">
-                    <i className="fa fa-2x fa-chart-line text-white" />
+                    <i className="fa fa-2x fa-wallet text-white" />
                   </div>
                   <div className="mt-n1">
-                    <h4>Track Your Progress</h4>
+                    <h4>Wallet &amp; Earnings</h4>
                     <p className="m-0">
-                      Monitor your learning journey with detailed progress tracking. See completed sessions, 
-                      skills acquired, and milestones achieved as you grow with SkillSwap.
+                      Learners pay via Razorpay or Skill Credits. Mentors earn real money, track analytics, 
+                      manage availability with Google Calendar sync, and withdraw earnings seamlessly.
                     </p>
                   </div>
                 </div>
