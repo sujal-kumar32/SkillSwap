@@ -40,6 +40,8 @@ const feedRoutes = require("./routes/feedRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const sidebarRoutes = require("./routes/sidebarRoutes");
+const statsRoutes = require("./routes/statsRoutes");
+const contactRoutes = require("./routes/contactRoutes");
 
 app.use(helmet());
 app.set("trust proxy", 1);
@@ -114,6 +116,8 @@ app.use("/api/feed", feedRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/sidebar", sidebarRoutes);
+app.use("/api/stats", statsRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/disputes", require("./routes/disputeRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 

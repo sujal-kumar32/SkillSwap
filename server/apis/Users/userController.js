@@ -281,6 +281,16 @@ exports.getPresence = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { isOnline: user.isOnline, lastActive: user.lastActive } });
 });
 
+exports.getTopMentors = asyncHandler(async (req, res) => {
+  const mentors = await User.find({ roles: "mentor", status: "active" })
+    .select("name profileImage bio trustScore xp level totalCompletedSessions socialLinks")
+    .sort({ xp: -1, trustScore: -1 })
+    .limit(6)
+    .lean();
+
+  res.json({ success: true, data: mentors });
+});
+
 exports.applyForMentor = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user.id);
