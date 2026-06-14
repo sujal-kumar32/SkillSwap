@@ -569,6 +569,22 @@ class Apiservices {
     return axios.put(baseUrl + "ai/guide/onboarding", { status });
   }
 
+  getPublicStats() {
+    return axios.get(baseUrl + "stats/public");
+  }
+
+  getTopMentors() {
+    return axios.get(baseUrl + "users/top-mentors");
+  }
+
+  getPublicReviews() {
+    return axios.get(baseUrl + "reviews/public");
+  }
+
+  submitContact(data) {
+    return axios.post(baseUrl + "contact", data);
+  }
+
 }
 
 let isRefreshing = false;

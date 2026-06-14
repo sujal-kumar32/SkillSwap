@@ -13,6 +13,7 @@ const {
   blockInteraction,
   unblockInteraction,
   getBlockedUsers,
+  getTopMentors,
 } = require("../apis/Users/userController");
 
 const protect = require("../middleware/authMiddleware");
@@ -34,5 +35,6 @@ router.post("/:userId/block", protect, blockInteraction);
 router.post("/:userId/unblock", protect, unblockInteraction);
 router.get("/blocked", protect, getBlockedUsers);
 router.get("/:userId/presence", protect, getPresence);
+router.get("/top-mentors", getTopMentors);
 
 module.exports = router;

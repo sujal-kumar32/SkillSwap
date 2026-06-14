@@ -7,20 +7,41 @@ function Home() {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [catSearch, setCatSearch] = useState("");
+  const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [contactSent, setContactSent] = useState(false);
   const [catLoading, setCatLoading] = useState(true);
   const [catError, setCatError] = useState("");
+  const [sessions, setSessions] = useState([]);
+  const [mentors, setMentors] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [dataReady, setDataReady] = useState(false);
 
   useEffect(() => {
-    Apiservices.getCategories()
-      .then(res => setCategories(res.data.data || []))
-      .catch(() => setCatError("Failed to load categories"))
-      .finally(() => setCatLoading(false));
+    Promise.all([
+      Apiservices.getCategories(),
+      Apiservices.fetchSessions({ sort: "latest", limit: 8 }),
+      Apiservices.getTopMentors(),
+      Apiservices.getPublicReviews(),
+      Apiservices.getPublicStats(),
+    ])
+      .then(([catRes, sessRes, menRes, revRes, statRes]) => {
+        setCategories(catRes.data.data || []);
+        setSessions(sessRes.data.data || []);
+        setMentors(menRes.data.data || []);
+        setTestimonials(revRes.data.data || []);
+        setStats(statRes.data.data || null);
+      })
+      .catch(() => setCatError("Failed to load data"))
+      .finally(() => { setCatLoading(false); setDataReady(true); });
   }, []);
 
   useEffect(() => {
+    if (!dataReady) return;
+
     const destroyCarousel = (selector) => {
       const carousel = window.$(selector);
-      if (carousel.hasClass("owl-loaded")) {
+      if (carousel && carousel.hasClass("owl-loaded")) {
         carousel.trigger("destroy.owl.carousel");
         carousel.removeClass("owl-loaded");
         carousel.find(".owl-stage-outer").children().unwrap();
@@ -107,7 +128,7 @@ function Home() {
 
         initCarousels();
       }
-    }, 1000);
+    }, 100);
 
     return () => {
       clearTimeout(timer);
@@ -117,7 +138,7 @@ function Home() {
         destroyCarousel(".testimonial-carousel");
       }
     };
-  }, []);
+  }, [dataReady]);
 
   return (
     <>
@@ -190,7 +211,7 @@ function Home() {
                   <div className="col-3 px-0">
                     <div className="bg-success text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        50
+                        {stats?.totalSessions || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Available<span className="d-block">Skills</span>
@@ -200,7 +221,7 @@ function Home() {
                   <div className="col-3 px-0">
                     <div className="bg-primary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        200
+                        {stats?.totalCompleted || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Live<span className="d-block">Sessions</span>
@@ -210,7 +231,7 @@ function Home() {
                   <div className="col-3 px-0">
                     <div className="bg-secondary text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        80
+                        {stats?.totalMentors || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Expert<span className="d-block">Mentors</span>
@@ -220,7 +241,7 @@ function Home() {
                   <div className="col-3 px-0">
                     <div className="bg-warning text-center p-4">
                       <h1 className="text-white" data-toggle="counter-up">
-                        1000
+                        {stats?.totalLearners || 0}
                       </h1>
                       <h6 className="text-uppercase text-white">
                         Happy<span className="d-block">Learners</span>
@@ -315,162 +336,40 @@ function Home() {
             </div>
           </div>
           <div className="owl-carousel courses-carousel">
-            <div className="courses-item position-relative">
-              <img className="img-fluid" src="img/courses-1.jpg" alt="" />
-              <div className="courses-text">
-                <h4 className="text-center text-white px-3">
-                  React.js – Build Modern Web Apps
-                </h4>
-                <div className="border-top w-100 mt-3">
-                  <div className="d-flex justify-content-between p-4">
-                    <span className="text-white">
-                      <i className="fa fa-user mr-2" />
-                      Priya Sharma
-                    </span>
-                    <span className="text-white">
-                      <i className="fa fa-star mr-2" />
-                      4.8 <small>(320)</small>
-                    </span>
+            {sessions.length === 0 && (
+              <div className="text-center py-4 text-muted">No sessions available yet.</div>
+            )}
+            {sessions.map((s, i) => (
+              <div className="courses-item position-relative" key={s._id}>
+                <img className="img-fluid" src={`img/courses-${(i % 6) + 1}.jpg`} alt={s.title} />
+                <div className="courses-text">
+                  <h4 className="text-center text-white px-3">{s.title}</h4>
+                  <div className="border-top w-100 mt-3">
+                    <div className="d-flex justify-content-between p-4">
+                      <span className="text-white">
+                        <i className="fa fa-user mr-2" />
+                        {s.mentorId?.name || "Mentor"}
+                      </span>
+                      <span className="text-white">
+                        <i className="fa fa-star mr-2" />
+                        {s.rating || "—"} {s.reviewCount ? <small>({s.reviewCount})</small> : null}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-100 bg-white text-center p-4">
+                    <Link className="btn btn-primary" to={`/courses?s=${s._id}`}>
+                      Session Detail
+                    </Link>
                   </div>
                 </div>
-                <div className="w-100 bg-white text-center p-4">
-                  <Link className="btn btn-primary" to="/detail">
-                    Session Detail
-                  </Link>
-                </div>
               </div>
-            </div>
-            <div className="courses-item position-relative">
-              <img className="img-fluid" src="img/courses-2.jpg" alt="" />
-              <div className="courses-text">
-                <h4 className="text-center text-white px-3">
-                  Guitar Basics – Strum Your First Song
-                </h4>
-                <div className="border-top w-100 mt-3">
-                  <div className="d-flex justify-content-between p-4">
-                    <span className="text-white">
-                      <i className="fa fa-user mr-2" />
-                      Arjun Kapoor
-                    </span>
-                    <span className="text-white">
-                      <i className="fa fa-star mr-2" />
-                      4.9 <small>(180)</small>
-                    </span>
-                  </div>
-                </div>
-                <div className="w-100 bg-white text-center p-4">
-                  <Link className="btn btn-primary" to="/detail">
-                    Session Detail
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="courses-item position-relative">
-              <img className="img-fluid" src="img/courses-3.jpg" alt="" />
-              <div className="courses-text">
-                <h4 className="text-center text-white px-3">
-                  UI/UX Design – Figma for Beginners
-                </h4>
-                <div className="border-top w-100 mt-3">
-                  <div className="d-flex justify-content-between p-4">
-                    <span className="text-white">
-                      <i className="fa fa-user mr-2" />
-                      Neha Patel
-                    </span>
-                    <span className="text-white">
-                      <i className="fa fa-star mr-2" />
-                      4.7 <small>(210)</small>
-                    </span>
-                  </div>
-                </div>
-                <div className="w-100 bg-white text-center p-4">
-                  <Link className="btn btn-primary" to="/detail">
-                    Session Detail
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="courses-item position-relative">
-              <img className="img-fluid" src="img/courses-4.jpg" alt="" />
-              <div className="courses-text">
-                <h4 className="text-center text-white px-3">
-                  Public Speaking – Speak with Confidence
-                </h4>
-                <div className="border-top w-100 mt-3">
-                  <div className="d-flex justify-content-between p-4">
-                    <span className="text-white">
-                      <i className="fa fa-user mr-2" />
-                      Rahul Verma
-                    </span>
-                    <span className="text-white">
-                      <i className="fa fa-star mr-2" />
-                      4.6 <small>(150)</small>
-                    </span>
-                  </div>
-                </div>
-                <div className="w-100 bg-white text-center p-4">
-                  <Link className="btn btn-primary" to="/detail">
-                    Session Detail
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="courses-item position-relative">
-              <img className="img-fluid" src="img/courses-5.jpg" alt="" />
-              <div className="courses-text">
-                <h4 className="text-center text-white px-3">
-                  DSA Interview Prep – Crack the Code
-                </h4>
-                <div className="border-top w-100 mt-3">
-                  <div className="d-flex justify-content-between p-4">
-                    <span className="text-white">
-                      <i className="fa fa-user mr-2" />
-                      Vikram Singh
-                    </span>
-                    <span className="text-white">
-                      <i className="fa fa-star mr-2" />
-                      4.9 <small>(420)</small>
-                    </span>
-                  </div>
-                </div>
-                <div className="w-100 bg-white text-center p-4">
-                  <Link className="btn btn-primary" to="/detail">
-                    Session Detail
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="courses-item position-relative">
-              <img className="img-fluid" src="img/courses-6.jpg" alt="" />
-              <div className="courses-text">
-                <h4 className="text-center text-white px-3">
-                  Cricket Coaching – Batting Techniques
-                </h4>
-                <div className="border-top w-100 mt-3">
-                  <div className="d-flex justify-content-between p-4">
-                    <span className="text-white">
-                      <i className="fa fa-user mr-2" />
-                      Rohit Yadav
-                    </span>
-                    <span className="text-white">
-                      <i className="fa fa-star mr-2" />
-                      4.8 <small>(290)</small>
-                    </span>
-                  </div>
-                </div>
-                <div className="w-100 bg-white text-center p-4">
-                  <Link className="btn btn-primary" to="/detail">
-                    Session Detail
-                  </Link>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
           <div className="row justify-content-center bg-image mx-0 mb-5">
             <div className="col-lg-6 py-5">
               <div className="bg-white p-5 my-5">
                 <h1 className="text-center mb-4">Become a Mentor Today</h1>
-                <form>
+                <form onSubmit={(e) => { e.preventDefault(); navigate("/login"); }}>
                   <div className="form-row">
                     <div className="col-sm-6">
                       <div className="form-group">
@@ -501,9 +400,9 @@ function Home() {
                           style={{ height: 60 }}
                         >
                           <option defaultValue="">Select Your Skill</option>
-                          <option value={1}>Web Development</option>
-                          <option value={2}>Creative Arts</option>
-                          <option value={3}>Sports & Music</option>
+                          {categories.filter((c) => c.status !== "inactive").map((c) => (
+                            <option key={c._id} value={c._id}>{c.name}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -536,102 +435,40 @@ function Home() {
               className="owl-carousel team-carousel position-relative"
               style={{ padding: "0 30px" }}
             >
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-1.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Priya Sharma</h5>
-                  <p className="mb-2">React & Full-Stack Development</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
+              {mentors.length === 0 && (
+                <div className="text-center py-4 text-muted">No mentors available yet.</div>
+              )}
+              {mentors.map((m, i) => (
+                <div className="team-item" key={m._id}>
+                  <img className="img-fluid w-100" src={m.profileImage || `img/team-${(i % 4) + 1}.jpg`} alt={m.name} style={{ height: 200, objectFit: "cover" }} />
+                  <div className="bg-light text-center p-4" style={{ minHeight: 160 }}>
+                    <h5 className="mb-3">{m.name}</h5>
+                    <p className="mb-2 text-truncate">{m.bio ? (m.bio.length > 60 ? m.bio.slice(0, 60) + "..." : m.bio) : "Expert Mentor"}</p>
+                    <div className="d-flex justify-content-center" style={{ minHeight: 40 }}>
+                      {m.socialLinks?.twitter && (
+                        <a className="mx-2 p-2" href={m.socialLinks.twitter} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-twitter" />
+                        </a>
+                      )}
+                      {m.socialLinks?.linkedin && (
+                        <a className="mx-2 p-2" href={m.socialLinks.linkedin} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-linkedin-in" />
+                        </a>
+                      )}
+                      {m.socialLinks?.youtube && (
+                        <a className="mx-2 p-2" href={m.socialLinks.youtube} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-youtube" />
+                        </a>
+                      )}
+                      {m.socialLinks?.github && (
+                        <a className="mx-2 p-2" href={m.socialLinks.github} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-github" />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-2.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Arjun Kapoor</h5>
-                  <p className="mb-2">Guitar & Music Production</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-3.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Neha Patel</h5>
-                  <p className="mb-2">UI/UX Design & Branding</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="team-item">
-                <img className="img-fluid w-100" src="img/team-4.jpg" alt="" />
-                <div className="bg-light text-center p-4">
-                  <h5 className="mb-3">Rahul Verma</h5>
-                  <p className="mb-2">Public Speaking & Communication</p>
-                  <div className="d-flex justify-content-center">
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-twitter" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-linkedin-in" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-instagram" />
-                    </a>
-                    <a className="mx-2 p-2" href="#">
-                      <i className="fab fa-youtube" />
-                    </a>
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
@@ -657,45 +494,23 @@ function Home() {
               </div>
               <div className="col-lg-7">
                 <div className="owl-carousel testimonial-carousel">
-                  <div className="bg-white p-5">
+                {testimonials.length === 0 && (
+                  <div className="bg-white p-5 text-center text-muted">No testimonials yet.</div>
+                )}
+                {testimonials.map((t) => (
+                  <div className="bg-white p-5" key={t._id}>
                     <i className="fa fa-3x fa-quote-left text-primary mb-4" />
-                    <p>
-                      SkillSwap completely changed how I learn. Instead of watching dull tutorials, I now get 
-                      live feedback from mentors who actually care. I went from knowing zero React to building 
-                      full-stack apps in just 3 months!
-                    </p>
+                    <p>{t.comment || "Great experience with SkillSwap!"}</p>
                     <div className="d-flex flex-shrink-0 align-items-center mt-4">
-                      <img
-                        className="img-fluid mr-4"
-                        src="img/testimonial-2.jpg"
-                        alt=""
-                      />
+                      <img className="img-fluid mr-4" src={t.image || "img/testimonial-2.jpg"} alt={t.name} />
                       <div>
-                        <h5>Ananya Gupta</h5>
-                        <span>Web Development Learner</span>
+                        <h5>{t.name}</h5>
+                        <span>{t.role}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white p-5">
-                    <i className="fa fa-3x fa-quote-left text-primary mb-4" />
-                    <p>
-                      As a mentor, SkillSwap gave me a platform to share my guitar knowledge with passionate 
-                      learners. It's incredibly rewarding to see my students strum their first song. The 
-                      community is supportive and the platform is easy to use.
-                    </p>
-                    <div className="d-flex flex-shrink-0 align-items-center mt-4">
-                      <img
-                        className="img-fluid mr-4"
-                        src="img/testimonial-1.jpg"
-                        alt=""
-                      />
-                      <div>
-                        <h5>Arjun Kapoor</h5>
-                        <span>Guitar Mentor</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                ))}
+              </div>
               </div>
             </div>
           </div>
@@ -747,14 +562,25 @@ function Home() {
                   <h1 className="display-4">Send Us A Message</h1>
                 </div>
                 <div className="contact-form">
-                  <form>
+                  {contactSent ? (
+                    <div className="alert alert-success">Thank you! We'll get back to you soon.</div>
+                  ) : (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await Apiservices.submitContact(contactForm);
+                      setContactSent(true);
+                    } catch { /* ignore */ }
+                  }}>
                     <div className="row">
                       <div className="col-6 form-group">
                         <input
                           type="text"
                           className="form-control border-top-0 border-right-0 border-left-0 p-0"
                           placeholder="Your Name"
-                          required="required"
+                          required
+                          value={contactForm.name}
+                          onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
                         />
                       </div>
                       <div className="col-6 form-group">
@@ -762,7 +588,9 @@ function Home() {
                           type="email"
                           className="form-control border-top-0 border-right-0 border-left-0 p-0"
                           placeholder="Your Email"
-                          required="required"
+                          required
+                          value={contactForm.email}
+                          onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
                         />
                       </div>
                     </div>
@@ -771,7 +599,8 @@ function Home() {
                         type="text"
                         className="form-control border-top-0 border-right-0 border-left-0 p-0"
                         placeholder="Subject"
-                        required="required"
+                        value={contactForm.subject}
+                        onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
                       />
                     </div>
                     <div className="form-group">
@@ -779,8 +608,9 @@ function Home() {
                         className="form-control border-top-0 border-right-0 border-left-0 p-0"
                         rows={5}
                         placeholder="Message"
-                        required="required"
-                        defaultValue={""}
+                        required
+                        value={contactForm.message}
+                        onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                       />
                     </div>
                     <div>
@@ -792,6 +622,7 @@ function Home() {
                       </button>
                     </div>
                   </form>
+                  )}
                 </div>
               </div>
             </div>

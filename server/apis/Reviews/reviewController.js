@@ -201,6 +201,26 @@ exports.updateReview = asyncHandler(async (req, res) => {
 
 });
 
+exports.getPublicReviews = asyncHandler(async (req, res) => {
+  const reviews = await Review.find({ rating: { $gte: 4 } })
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .populate("learnerId", "name profileImage")
+    .populate("mentorId", "name profileImage")
+    .lean();
+
+  const data = reviews.map((r) => ({
+    _id: r._id,
+    name: r.learnerId?.name || r.learner || "Anonymous",
+    image: r.learnerId?.profileImage || "",
+    role: (r.session || "SkillSwap Learner"),
+    comment: r.comment,
+    rating: r.rating,
+  }));
+
+  res.json({ success: true, data });
+});
+
 exports.deleteReview = asyncHandler(async (req, res) => {
 
     const review = await Review.findById(req.params.id);

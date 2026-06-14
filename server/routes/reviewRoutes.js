@@ -6,11 +6,13 @@ const protect = require("../middleware/authMiddleware");
 
 const {
   getReviews,
+  getPublicReviews,
   createReview,
   updateReview,
   deleteReview,
 } = require("../apis/Reviews/reviewController");
 
+router.get("/public", getPublicReviews);
 router.get("/", protect, getReviews);
 router.post("/", protect, validate(review.create), createReview);
 router.put("/:id", protect, validate(review.update), updateReview);
